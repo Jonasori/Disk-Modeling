@@ -234,25 +234,38 @@ def chiSq(infile):
 	Creates: 	None
 	"""
 
-	data = fits.open('./' + data_file + '.uvf')
-
-
-	# Grab infile because that is what sumdisks exported
-	model = fits.open(infile + '.uvf')
-
 	# GET VISIBILITIES
-	data_vis=data[0].data['data']
-	model_vis=model[0].data['data']
+	data = fits.open('./' + data_file + '.uvf')
+	data_vis=data[0].data['data'].squeeze()
+
+	model = fits.open(infile + '.uvf')
+	model_vis=model[0].data['data'].squeeze()
 
 	# PREPARE STUFF FOR CHI SQUARED
 	# np.ravel flattens the [45xxx,1,1,1,51,2,3] array into a [234xxxx, 1] (1D) array.
 	# Ordering: np.ravel([[1,2],[3,4]]) gives [1,3,2,4], so its flattening index-wise, rather than channel-wise (i.e. by col rather than row)
 
+	# Turn polarized data to stokes
+	"""
 	data_real = np.ravel((data_vis[:,0,0,0,:,0,0] + data_vis[:,0,0,0,:,1,0])/2.0, order='F')
 	data_imag = np.ravel((data_vis[:,0,0,0,:,0,1] + data_vis[:,0,0,0,:,1,1])/2.0, order='F')
+	
 	model_real = np.ravel(model_vis[::2,0,0,:,0,0],order='F')
 	model_imag = np.ravel(model_vis[::2,0,0,:,0,1],order='F')
+	
 	wt = np.ravel(data_vis[:,0,0,0,:,0,2])
+        loc = np.where(wt>0)
+	"""
+	
+	# Should the 2s be floats?
+	data_real = (data_vis[:,:,0,0]+data_vis[:,:,1,0])/2.
+	data_imag = (data_vis[:,:,0,1] + data_vis[:,:,1,1])/2. 
+
+	# These defintely aren't right yet	
+	model_real = model_vis[:,:,0,0]
+	model_imag = model_vis[::2,:,1]
+
+	wt = data_vis[:,:,0,2]
 	loc = np.where(wt>0)
 
 	raw_chi = np.sum( wt*(data_real - model_real)**2 ) + np.sum( wt*(data_imag - model_imag)**2 )
