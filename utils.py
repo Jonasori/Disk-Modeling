@@ -257,12 +257,20 @@ def chiSq(infile):
         loc = np.where(wt>0)
 	"""
 	
+	# data_vis.squeeze(): [visibilities, channels, polarizations?, real/imaginary]	
+
 	# Should the 2s be floats?
 	data_real = (data_vis[:,:,0,0]+data_vis[:,:,1,0])/2.
 	data_imag = (data_vis[:,:,0,1] + data_vis[:,:,1,1])/2. 
+	
+	# get real and imaginary values, skipping repeating values created by uvmodel.
+	# when uvmodel converts to Stokes I, it either puts the value in place
+        # of BOTH xx and yy, or makes xx and yy the same.
+        # either way, selecting every other value solves the problem.	
 
-	# These defintely aren't right yet	
-	model_real = model_vis[:,:,0,0]
+	# These might not be right yet	
+	# chiSq is coming out around 300, which seems way too high
+	model_real = model_vis[::2,:,0]
 	model_imag = model_vis[::2,:,1]
 
 	wt = data_vis[:,:,0,2]
