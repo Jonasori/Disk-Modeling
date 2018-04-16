@@ -58,13 +58,16 @@ freq = ((np.arange(hdr['naxis4']) + 1 - hdr['crpix4']) * hdr['cdelt4'] + hdr['cr
 obsv = (restfreq-freq)/restfreq*2.99e5
 # Just change this since it's an actual run parameter
 
-Chanstep = np.abs(obsv[1]-obsv[0])
+Chanstep = (-1)* np.abs(obsv[1]-obsv[0])
 
 
-# Specify each disk's ??
+# Find the max spread between systemic velocity and observed channel velocity,
+#	divide that by how big each channel step is, and double it
+# Unclear why two of these are needed.
+# np.abs in the denominator to keep nchans positive even when chanstep is negative
 Nchans = [0,0]
-Nchans[1] = int(2*np.ceil(np.abs(obsv-sysv[1]).max()/Chanstep)+1)
-Nchans[0] = int(2*np.ceil(np.abs(obsv-sysv[0]).max()/Chanstep)+1)
+Nchans[1] = int(2*np.ceil(np.abs(obsv-sysv[1]).max()/np.abs(Chanstep))+1)
+Nchans[0] = int(2*np.ceil(np.abs(obsv-sysv[0]).max()/np.abs(Chanstep))+1)
 
 
 # Specify each disks's min chan velocity
@@ -97,12 +100,12 @@ def makeModel(diskParams, outputName, DI):
 	# Clear out space
 	# sp.call('rm -rf {}.{{fits,vis,uvf,im}}'.format(outputName), shell=True)
 
-	Tatms = diskParams[0]
-	Tqq = diskParams[1]
-	Xmol = diskParams[2]								# Only an index, so must be raised as 10**Xmol
-	RAout = diskParams[3]
-	PA = diskParams[4]
-	Incl = diskParams[5]
+	Tatms = diskParams[0]				# Atmospheric disk temp
+	Tqq = diskParams[1]				# Temp structure power law index
+	Xmol = diskParams[2]				# Log10 of Relative molecular abundance (used in code as 10**xmol) 
+	RAout = diskParams[3]				# Outer radius
+	PA = diskParams[4]				# Position angle
+	Incl = diskParams[5]				# Inclination
 
 	a=Disk(params=[Tqq,
 			m_disk[DI],
@@ -122,6 +125,7 @@ def makeModel(diskParams, outputName, DI):
 			rotHand[DI]])
 
 	# The data have 51 channels (from the casa split()), so nchans must be 51.
+	# 	why is this not shooting an error: Nchans is [57,59] (4/15/18)
 	rt.total_model(a, imres=0.1,
 			nchans=Nchans[DI],
 			chanmin=Chanmin[DI],
@@ -246,6 +250,7 @@ def chiSq(infile):
 	# Ordering: np.ravel([[1,2],[3,4]]) gives [1,3,2,4], so its flattening index-wise, rather than channel-wise (i.e. by col rather than row)
 
 	# Turn polarized data to stokes
+	
 	"""
 	data_real = np.ravel((data_vis[:,0,0,0,:,0,0] + data_vis[:,0,0,0,:,1,0])/2.0, order='F')
 	data_imag = np.ravel((data_vis[:,0,0,0,:,0,1] + data_vis[:,0,0,0,:,1,1])/2.0, order='F')
@@ -253,6 +258,7 @@ def chiSq(infile):
 	model_real = np.ravel(model_vis[::2,0,0,:,0,0],order='F')
 	model_imag = np.ravel(model_vis[::2,0,0,:,0,1],order='F')
 	
+	print data_real.shape	
 	wt = np.ravel(data_vis[:,0,0,0,:,0,2])
         loc = np.where(wt>0)
 	"""
