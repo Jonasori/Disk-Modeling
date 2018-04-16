@@ -16,4 +16,4 @@ File Structure
     * It also holds all the disk-specific constants and such stuff. Maybe they should be elsewhere?
 * run_params.py: holds the actual run parameters.
 * tools.py: Some functions that are useful for things like plotting, convolving, and so on.
-centering_for_olay.cgdisp: a Miriad OLAY file, describing what part of the image to zoom in on.
+* centering_for_olay.cgdisp: a Miriad OLAY file, describing what part of the image to zoom in on.
