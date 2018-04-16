@@ -60,6 +60,8 @@ def icr(modelName):
         'map={}.mp'.format(modelName),
         'beam={}.bm'.format(modelName),
         'options=systemp',
+	'cell=0.045',
+	'imsize=256',
         'robust=2'])
 
     sp.call(['clean',

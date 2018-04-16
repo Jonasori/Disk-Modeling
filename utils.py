@@ -100,12 +100,12 @@ def makeModel(diskParams, outputName, DI):
 	# Clear out space
 	# sp.call('rm -rf {}.{{fits,vis,uvf,im}}'.format(outputName), shell=True)
 
-	Tatms = diskParams[0]				# Atmospheric disk temp
-	Tqq = diskParams[1]				# Temp structure power law index
-	Xmol = diskParams[2]				# Log10 of Relative molecular abundance (used in code as 10**xmol) 
-	RAout = diskParams[3]				# Outer radius
-	PA = diskParams[4]				# Position angle
-	Incl = diskParams[5]				# Inclination
+	Tatms = diskParams[0]
+	Tqq = diskParams[1]
+	Xmol = diskParams[2]								# Only an index, so must be raised as 10**Xmol
+	RAout = diskParams[3]
+	PA = diskParams[4]
+	Incl = diskParams[5]
 
 	a=Disk(params=[Tqq,
 			m_disk[DI],
@@ -125,7 +125,6 @@ def makeModel(diskParams, outputName, DI):
 			rotHand[DI]])
 
 	# The data have 51 channels (from the casa split()), so nchans must be 51.
-	# 	why is this not shooting an error: Nchans is [57,59] (4/15/18)
 	rt.total_model(a, imres=0.1,
 			nchans=Nchans[DI],
 			chanmin=Chanmin[DI],

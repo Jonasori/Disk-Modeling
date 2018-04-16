@@ -11,6 +11,7 @@ import subprocess as sp
 import astropy.units as u
 from utils import makeModel, sumDisks, chiSq
 from run_params import diskAParams, diskBParams
+from tools import icr
 
 # Velocity axes might be backwards
 # options=3value csize=1,2
@@ -43,7 +44,7 @@ diskBRedX2 = np.zeros((len(diskAParams[0]), len(diskBParams[1]), len(diskBParams
 td = datetime.datetime.now()
 months = ['jan', 'feb', 'march', 'april', 'may', 'june', 'july', 'aug', 'sep', 'oct', 'nov', 'dec']
 today = months[td.month - 1] + str(td.day)
-outputName = 'model_' + today + '_chan-dir-new'
+outputName = 'model_' + today
 
 
 
@@ -192,6 +193,7 @@ def gridSearch(VariedDiskParams, StaticDiskParams, DI, num_iters):
 	# No need to do a sumDisks() since we've only got one good disk so far
 
 
+
 	print "Best-fit model created: ", outputName
 	# Return the min value and where that value is
 	print [minRedX2, minX2Vals]
@@ -262,7 +264,8 @@ def fullRun(diskAParams, diskBParams):
 	makeModel(fitAParams, diskAName, 0)
 	makeModel(fitBParams, diskBName, 1)
 	sumDisks(diskAName, diskBName, outputName)
-	print "Best-fit model created: ", outputName, ".fits"
+	icr(outputName)
+	print "Best-fit model created: ", outputName, ".[fits/some other ones]"
 
 
 	# Calculate and present the final X2 values. Note that here, outputName is just the infile for chiSq()
