@@ -43,7 +43,8 @@ diskBRedX2 = np.zeros((len(diskAParams[0]), len(diskBParams[1]), len(diskBParams
 td = datetime.datetime.now()
 months = ['jan', 'feb', 'march', 'april', 'may', 'june', 'july', 'aug', 'sep', 'oct', 'nov', 'dec']
 today = months[td.month - 1] + str(td.day)
-outputName = 'model_' + today
+outputName = 'model_' + today + '_chan-dir-new'
+
 
 
 ### GRID SEARCH OVER ONE DISK HOLDING OTHER CONSTANT ###

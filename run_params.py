@@ -22,8 +22,10 @@ PAB = np.array([135])
 InclB = np.array([30])
 """
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-
 # Short test run values
+
+"""
+# Parameters for Disk A
 TatmsA = np.array([300])
 TqqA = -1 * np.array([-0.5])
 XmolA = -1 * np.array([6.])
@@ -38,7 +40,26 @@ XmolB = -1 * np.array([7.])
 RAoutB = np.array([200])
 PAB = np.array([135])
 InclB = np.array([30])
+"""
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+# Medium-length test run values
+
+# Parameters for Disk B
+TatmsA = np.array([100, 300, 500])
+TqqA = -1 * np.array([-0.5, -0.7, -1.])
+XmolA = -1 * np.array([6., 7.5, 9.])
+RAoutA = np.array([200, 400, 600])
+PAA = np.array([250])
+InclA = np.array([65])
+
+# Parameters for Disk B
+TatmsB = np.array([200, 400])
+TqqB = -1 * np.array([-0.6, -0.9])
+XmolB = -1 * np.array([7., 9.])
+RAoutB = np.array([200, 400])
+PAB = np.array([135])
+InclB = np.array([30])
 
 
 

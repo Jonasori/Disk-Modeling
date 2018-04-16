@@ -19,7 +19,6 @@ import astropy.units as u
 # Drop some sweet chanmaps
 # Takes in an .im or .cm
 # csize: 0 sets to default, and the third number controls 3pixel text size
-# This just numbers each frame; really want options=3value?
 r = '(-2,-2,2,2)'
 def cgdisp(imageName):
     sp.call(['cgdisp',
