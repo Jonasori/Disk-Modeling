@@ -245,25 +245,10 @@ def chiSq(infile):
 	model_vis=model[0].data['data'].squeeze()
 
 	# PREPARE STUFF FOR CHI SQUARED
-	# np.ravel flattens the [45xxx,1,1,1,51,2,3] array into a [234xxxx, 1] (1D) array.
-	# Ordering: np.ravel([[1,2],[3,4]]) gives [1,3,2,4], so its flattening index-wise, rather than channel-wise (i.e. by col rather than row)
 
 	# Turn polarized data to stokes
-	
-	"""
-	data_real = np.ravel((data_vis[:,0,0,0,:,0,0] + data_vis[:,0,0,0,:,1,0])/2.0, order='F')
-	data_imag = np.ravel((data_vis[:,0,0,0,:,0,1] + data_vis[:,0,0,0,:,1,1])/2.0, order='F')
-	
-	model_real = np.ravel(model_vis[::2,0,0,:,0,0],order='F')
-	model_imag = np.ravel(model_vis[::2,0,0,:,0,1],order='F')
-	
-	print data_real.shape	
-	wt = np.ravel(data_vis[:,0,0,0,:,0,2])
-        loc = np.where(wt>0)
-	"""
-	
+		
 	# data_vis.squeeze(): [visibilities, channels, polarizations?, real/imaginary]	
-
 	# Should the 2s be floats?
 	data_real = (data_vis[:,:,0,0]+data_vis[:,:,1,0])/2.
 	data_imag = (data_vis[:,:,0,1] + data_vis[:,:,1,1])/2. 
