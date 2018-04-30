@@ -13,10 +13,19 @@ from utils import makeModel, sumDisks, chiSq
 from run_params import diskAParams, diskBParams
 from tools import icr
 import pandas as pd
+from numba import jit
+
 
 # Velocity axes might be backwards
 # options=3value csize=1,2
 # Write into short log file how many steps were taken
+
+
+# Name the output file
+td = datetime.datetime.now()
+months = ['jan', 'feb', 'march', 'april', 'may', 'june', 'july', 'aug', 'sep', 'oct', 'nov', 'dec']
+today = months[td.month - 1] + str(td.day)
+outputName = 'model_' + today + 'df_out_test'
 
 
 # Data file name:
@@ -25,28 +34,12 @@ data_file = 'data-hco'
 
 
 # Prep some storage space for all the chisq vals
-"""
-diskARawX2 = np.zeros((len(TatmsA), len(TqqA), len(XmolA), len(RAoutA), len(PAA), len(InclA)))
-diskBRawX2 = np.zeros((len(TatmsB), len(TqqB), len(XmolB), len(RAoutB), len(PAB), len(InclB)))
-
-diskARedX2 = np.zeros((len(TatmsA), len(TqqA), len(XmolA), len(RAoutA), len(PAA), len(InclA)))
-diskBRedX2 = np.zeros((len(TatmsB), len(TqqB), len(XmolB), len(RAoutB), len(PAB), len(InclB)))
-"""
 
 diskARawX2 = np.zeros((len(diskAParams[0]), len(diskAParams[1]), len(diskAParams[2]), len(diskAParams[3]), len(diskAParams[4]), len(diskAParams[5])))
 diskBRawX2 = np.zeros((len(diskBParams[0]), len(diskBParams[1]), len(diskBParams[2]), len(diskBParams[3]), len(diskBParams[4]), len(diskBParams[5])))
 
 diskARedX2 = np.zeros((len(diskAParams[0]), len(diskAParams[1]), len(diskAParams[2]), len(diskAParams[3]), len(diskAParams[4]), len(diskAParams[5])))
 diskBRedX2 = np.zeros((len(diskAParams[0]), len(diskBParams[1]), len(diskBParams[2]), len(diskBParams[3]), len(diskBParams[4]), len(diskBParams[5])))
-
-
-
-# Name the output file
-td = datetime.datetime.now()
-months = ['jan', 'feb', 'march', 'april', 'may', 'june', 'july', 'aug', 'sep', 'oct', 'nov', 'dec']
-today = months[td.month - 1] + str(td.day)
-outputName = 'model_' + today
-
 
 
 ### GRID SEARCH OVER ONE DISK HOLDING OTHER CONSTANT ###
@@ -90,10 +83,9 @@ def gridSearch(VariedDiskParams, StaticDiskParams, DI, num_iters):
 	# num_iters = len(Tatms)*len(Tqq)*len(Xmol)*len(RAout)*len(PA)*len(Incl)
 	# Set up a counter for the print out
 	counter = 1
+	# if DI==1:
+	#	counter += num_steps(disk A)
 
-)
-	# The params to be logged for the static disk (declaring them here clears things up at the pit of the for loop)
-	outstrStatic = str(StaticDiskParams[0]) + ", " + str(StaticDiskParams[1]) + ", " + str(StaticDiskParams[2]) + ", " + str(StaticDiskParams[3]) + ", " + str(StaticDiskParams[4]) + ", " + str(StaticDiskParams[5])
 
 	# Set up huge initial chi squared values so that later they will be improved upon.
 	minRedX2 = 10000000000
@@ -117,14 +109,6 @@ def gridSearch(VariedDiskParams, StaticDiskParams, DI, num_iters):
 							params = [ta, tqq, xmol, raout, pa, incl]
 		
 							
-							df_row = {
-								'Atms Temp':ta,
-								'Temp Struct':tqq,
-								'Molecular Abundance':xmol,
-								'Outer Radius':raout,
-								'Pos. Angle':pa,
-								'Incl.':incl
-								}
 
 							### Tell us where we are ###
 							print "\n\n\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
@@ -139,8 +123,8 @@ def gridSearch(VariedDiskParams, StaticDiskParams, DI, num_iters):
 
 
 							# Careful to put these in the right spot!
-							rawX2 = chiSq(outputName)[0]
-							redX2 = chiSq(outputName)[1]
+							X2s = chiSq(outputName)
+							rawX2, redX2 = X2s[0], X2s[1]
 
 							# It's ok to split these up by disk since disk B's optimized params
 							# will be independent of where disk A is.
@@ -148,15 +132,14 @@ def gridSearch(VariedDiskParams, StaticDiskParams, DI, num_iters):
 								diskARawX2[i, j, k, l, m, n] = rawX2
 								diskARedX2[i, j, k, l, m, n] = redX2
 							else:
-								diskBRawX2[i, j, k, l, m, n] = chiSq(outputName)[0]
-								diskBRedX2[i, j, k, l, m, n] = chiSq(outputName)[1]
+								diskBRawX2[i, j, k, l, m, n] = rawX2
+								diskBRedX2[i, j, k, l, m, n] = redX2
 
 							counter += 1
 
 
 							### PRINTOUT some info
-							print
-							print
+							print "\n\n"
 							print "Raw Chi-Squared value:	 ", rawX2
 							print "Reduced Chi-Squared value:", redX2
 							
@@ -202,10 +185,11 @@ def gridSearch(VariedDiskParams, StaticDiskParams, DI, num_iters):
 	
 	# Knit the dataframe
 	step_log = pd.DataFrame(df_rows)
+	print "Shape of long-log data frame is ", step_log.shape
 
 
 	# Return the min value and where that value is
-	print [minRedX2, minX2Vals]
+	print "Minimum Chi2 value and where it happened: ", [minRedX2, minX2Vals]
 	return step_log
 
 
@@ -215,7 +199,6 @@ def gridSearch(VariedDiskParams, StaticDiskParams, DI, num_iters):
 
 
 ### PERFORM A FULL RUN USING FUNCTIONS ABOVE ###
-
 def fullRun(diskAParams, diskBParams):
 	# diskXParams are fed in from full_run.py where the parameter selections are made.
 
@@ -258,31 +241,40 @@ def fullRun(diskAParams, diskBParams):
 		dBInit.append(i[0])
 
 
-	# Grid search over Disk A, retrieve the resulting pd.DataFrame
-	df_A_fit = gridSearch(diskAParams, dBInit, 0, n)
-	# Add a column identifying this one as the dataframe that works with Disk A. Useful for when we bind dfA and dfB.
-	df_A_fit.assign('Disk' = 'A')
-	# Find the row where the the reduced Chi2 was minimized and save it as an index
-	idx_of_best_fit_A = df_A_fit.index[df_A_fit['Reduced Chi2'] == np.min(df_A_fit['Reduced Chi2'])]
-	# Make a list of those parameters to pass to the next round of grid searching.
-	fit_A_params = df_A_fit.iloc[idx_of_best_fit_A].tolist()
+
+	df_A_fit = gridSearch(diskAParams, dBInit, 0, n)	# Grid search over Disk A, retrieve the resulting pd.DataFrame
+	df_A_fit.assign(Disk_Name = 'A')			# Add a column to tell which disk this is
+
+	print "Shape of df_A_fit is ", df_A_fit.shape
+
+	# Find where the chi2 is minimized and save it
+	idx_of_BF_A = df_A_fit.index[df_A_fit['Reduced Chi2'] == np.min(df_A_fit['Reduced Chi2'])][0]
+	print "Index of Best Fit, A is ", idx_of_BF_A
 	
+	# Make a list of those parameters to pass to the next round of grid searching.
+	Ps_A = [df_A_fit['Atms Temp'][idx_of_BF_A], 
+		df_A_fit['Temp Struct'][idx_of_BF_A],
+		df_A_fit['Molecular Abundance'][idx_of_BF_A],
+		df_A_fit['Outer Radius'][idx_of_BF_A],
+		df_A_fit['Pos. Angle'][idx_of_BF_A],
+		df_A_fit['Incl.'][idx_of_BF_A]]
+	fit_A_params = np.array(Ps_A)
+
+
 	print "First disk has been fit\n"
 
 
 	# Now search over the other disk
 	df_B_fit = gridSearch(diskBParams, fit_A_params, 1, n)
-	df_B_fit.assign('Disk' = 'B')
-	idx_of_best_fit_B = df_B_fit.index[df_B_fit['Reduced Chi2'] == np.min(df_B_fit['Reduced Chi2'])]
-	fit_B_params = df_A_fit.iloc[idx_of_best_fit_B].tolist()
-
-
-
-	# Concatanate the two dfs
-	final_df = pd.concat([df_A_fit, df_B_fit])
-
-	 # Write out a long log file of the whole df.
-        final_df.to_csv(path_or_buf='{}-long.csv'.format(name))
+	df_B_fit.assign(Disk_Name = 'B')
+	idx_of_BF_B = df_B_fit.index[df_B_fit['Reduced Chi2'] == np.min(df_B_fit['Reduced Chi2'])][0]
+	Ps_B = [df_B_fit['Atms Temp'][idx_of_BF_B],
+                df_B_fit['Temp Struct'][idx_of_BF_B],
+                df_B_fit['Molecular Abundance'][idx_of_BF_B],
+                df_B_fit['Outer Radius'][idx_of_BF_B],
+                df_B_fit['Pos. Angle'][idx_of_BF_B],
+                df_B_fit['Incl.'][idx_of_BF_B]]
+	fit_B_params = np.array(Ps_B)	
 
 
 	# Create the final best-fit model.
@@ -293,6 +285,13 @@ def fullRun(diskAParams, diskBParams):
 	makeModel(fit_B_params, diskBName, 1)
 	sumDisks(diskAName, diskBName, outputName)
 	
+	
+	# Bind the data frames, output them.
+	full_log = pd.concat([df_A_fit, df_B_fit])
+	full_log.to_csv(path_or_buf='{}_step-log.csv'.format(outputName))
+
+
+
 	# Convolve the final model
 	icr(outputName)
 	print "Best-fit model created: ", outputName, ".[fits/some other ones]"
@@ -300,8 +299,10 @@ def fullRun(diskAParams, diskBParams):
 
 	# Calculate and present the final X2 values. Note that here, outputName is just the infile for chiSq()
 	finalX2s = chiSq(outputName)
-	print "Final Raw Chi-Squared Value: ", 
+	print "Final Raw Chi-Squared Value: ", finalX2s[0] 
 	print "Final Reduced Chi-Squared Value: ", finalX2s[1]
+
+
 
 
 	# A short log file with best fit vals, range queried, indices of best vals, best chi-squared.
@@ -309,7 +310,12 @@ def fullRun(diskAParams, diskBParams):
 	# 	- (maybe figure out how to round these for better readability)
 	f = open( outputName + '-short.log', 'w')
 	s1 = '\nBest Chi-Squared values [raw, reduced]:' + str(finalX2s)
-/u
+	f.write(s1)
+	s2 = '\n\n\nParameter ranges queried:\n' + '\nDisk A:' + str(diskAParams) + '\n\nDisk B:' + str(diskBParams)
+	f.write(s2)
+	s3 = '\n\n\nBest-fit values (Tatm, Tqq, Xmol, outerR, PA, Incl):' + '\nDisk A:' + str(fit_A_params) + '\nDisk B:' + str(fit_B_params)
+	f.write(s3)
+	f.close()
 
 
 

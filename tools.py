@@ -32,10 +32,28 @@ def cgdisp(imageName):
 	'csize=0,0.7,0,0'])
 
 
+r = '(-2,-2,2,2)'
+def cgdisp_w_contours(imageName):
+    sp.call(['cgdisp',
+        'in={},{}'.format(imageName,imageName),
+        'device=/xs',
+	'type=pix,con',
+        'region=arcsec,box{}'.format(r),
+        'olay={}'.format('centering_for_olay.cgdisp'),
+        'beamtyp=b,l,3',
+	'slev=a,6.8e-3',
+	'levs1=2,3,4,5,6,7,8,9',
+        'labtyp=arcsec,arcsec,abskms',
+        'options=3value,mirror,beambl',
+        'csize=0,0.7,0,0'])
+
+
+
 
 
 # Drop a sweet spectrum
 # Takes in a .im
+
 def imspec(imageName):
     sp.call(['imspec',
         'in={}'.format(imageName),
@@ -68,7 +86,8 @@ def icr(modelName):
         'map={}.mp'.format(modelName),
         'beam={}.bm'.format(modelName),
         'out={}.cl'.format(modelName),
-        'niters=1000'])
+        'niters=10000',
+	'threshold=1.3e-2'])
 
     sp.call(['restor',
         'map={}.mp'.format(modelName),
