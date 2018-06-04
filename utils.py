@@ -41,9 +41,10 @@ rotHand = [1, -1]					# Handedness of rotation
 
 
 # Offsets seem to be weird: x is negative (x=1 is on the left), and y is normal.
-#offsets = [ [0.41, 0.1], [-0.6, -0.13] ] 		# Not sure where I got these numbers
-offsets = [ [0,0], [-1.0512, -0.2916] ]			# Offsets (from center?), in arcseconds
-
+# Remember that centering_for_olay.cgdisp is the file that actually makes the green crosses!
+offsets = [ [0.41, 0.1], [-0.6, -0.13] ]	
+#offsets = [ [0,0], [-1.0512, -0.2916] ]		# Offsets (from center?), in arcseconds
+offsets = [ [0, 1.5], [-1.05, -2.85] ] 			# arcsecs (derivation in 5/2/18 notes)
 
 
 # General constants

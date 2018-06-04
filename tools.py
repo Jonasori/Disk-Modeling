@@ -1,4 +1,3 @@
-
 """
 Turn some Miriad commands/sequences into python commands so that a) they can be
 run from iPython more easily and b) so that they're just easier to run
@@ -20,7 +19,7 @@ import astropy.units as u
 # Takes in an .im or .cm
 # csize: 0 sets to default, and the third number controls 3pixel text size
 r = '(-2,-2,2,2)'
-def cgdisp(imageName):
+def cgdisp_no_contours(imageName):
     sp.call(['cgdisp',
         'in={}'.format(imageName),
         'device=/xs',
@@ -33,20 +32,30 @@ def cgdisp(imageName):
 
 
 r = '(-2,-2,2,2)'
-def cgdisp_w_contours(imageName):
-    sp.call(['cgdisp',
-        'in={},{}'.format(imageName,imageName),
-        'device=/xs',
-	'type=pix,con',
-        'region=arcsec,box{}'.format(r),
-        'olay={}'.format('centering_for_olay.cgdisp'),
-        'beamtyp=b,l,3',
-	'slev=a,6.8e-3',
-	'levs1=2,3,4,5,6,7,8,9',
-        'labtyp=arcsec,arcsec,abskms',
-        'options=3value,mirror,beambl',
-        'csize=0,0.7,0,0'])
-
+def cgdisp(imageName, contours=True):
+    if contours==True:
+	sp.call(['cgdisp',
+        	'in={},{}'.format(imageName,imageName),
+	        'device=/xs',
+		'type=pix,con',
+	        'region=arcsec,box{}'.format(r),
+	        'olay={}'.format('centering_for_olay.cgdisp'),
+	        'beamtyp=b,l,3',
+		'slev=a,6.8e-3',
+		'levs1=2,3,4,5,6,7,8,9',
+	        'labtyp=arcsec,arcsec,abskms',
+        	'options=3value,mirror,beambl',
+        	'csize=0,0.7,0,0'])
+    else:
+	sp.call(['cgdisp',
+        	'in={}'.format(imageName),
+        	'device=/xs',
+        	'region=arcsec,box{}'.format(r),
+        	'olay={}'.format('centering_for_olay.cgdisp'),
+        	'beamtyp=b,l,3',
+        	'labtyp=arcsec,arcsec,abskms',
+        	'options=3value',
+        	'csize=0,0.7,0,0'])	
 
 
 

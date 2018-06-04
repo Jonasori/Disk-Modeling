@@ -13,6 +13,7 @@ from utils import makeModel, sumDisks, chiSq
 from run_params import diskAParams, diskBParams
 from tools import icr
 import pandas as pd
+import cPickle as pickle
 from numba import jit
 
 
@@ -25,7 +26,7 @@ from numba import jit
 td = datetime.datetime.now()
 months = ['jan', 'feb', 'march', 'april', 'may', 'june', 'july', 'aug', 'sep', 'oct', 'nov', 'dec']
 today = months[td.month - 1] + str(td.day)
-outputName = 'model_' + today + 'df_out_test'
+outputName = 'model_' + today	# + 'df_out_test'
 
 
 # Data file name:
@@ -288,7 +289,13 @@ def fullRun(diskAParams, diskBParams):
 	
 	# Bind the data frames, output them.
 	full_log = pd.concat([df_A_fit, df_B_fit])
-	full_log.to_csv(path_or_buf='{}_step-log.csv'.format(outputName))
+	# Pickle the step log df.
+	pickle.dump( full_log, open( '{}_step-log.pickle'.format(outputName), "wb" ) )
+	# To read the pickle:
+	# full_log = pickle.load( open( '{}_step-log.pickle'.format(outputName), "rb" ) )
+	
+	# Alternatively, to get a csv:
+	#full_log.to_csv(path_or_buf='{}_step-log.csv'.format(outputName))
 
 
 
