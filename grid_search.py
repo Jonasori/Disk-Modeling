@@ -112,6 +112,7 @@ def gridSearch(VariedDiskParams, StaticDiskParams, DI, num_iters):
 							
 
 							### Tell us where we are ###
+							# Make this print na + counter when fitting B
 							print "\n\n\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 							print "Currently fitting for: ", outNameVaried
 							print "Beginning model ", str(counter)+"/"+str(num_iters)
@@ -207,9 +208,11 @@ def fullRun(diskAParams, diskBParams):
 	na = 1
 	for a in range(0, len(diskAParams)):
 		na *= len(diskAParams[a])
+
 	nb = 1
 	for b in range(0, len(diskBParams)):
-		nb *= len(diskBParams[b])
+		nb *= len(diskAParams[b])
+
 	n = na + nb
 	dt = 1.5							# minutes (time per iteration, approximately)
 	t = dt * n / 60							# hours
@@ -318,9 +321,9 @@ def fullRun(diskAParams, diskBParams):
 	f = open( outputName + '-short.log', 'w')
 	s1 = '\nBest Chi-Squared values [raw, reduced]:' + str(finalX2s)
 	f.write(s1)
-	s2 = '\n\n\nParameter ranges queried:\n' + '\nDisk A:' + str(diskAParams) + '\n\nDisk B:' + str(diskBParams)
+	s2 = '\n\n\nParameter ranges queried:\n' + '\nDisk A:\n' + str(diskAParams) + '\n\nDisk B:\n' + str(diskBParams)
 	f.write(s2)
-	s3 = '\n\n\nBest-fit values (Tatm, Tqq, Xmol, outerR, PA, Incl):' + '\nDisk A:' + str(fit_A_params) + '\nDisk B:' + str(fit_B_params)
+	s3 = '\n\n\nBest-fit values (Tatm, Tqq, Xmol, outerR, PA, Incl):' + '\nDisk A:\n' + str(fit_A_params) + '\nDisk B:\n' + str(fit_B_params)
 	f.write(s3)
 	f.close()
 
