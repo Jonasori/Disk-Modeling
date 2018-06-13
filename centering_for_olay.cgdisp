@@ -5,5 +5,5 @@
 
 # Different alignment; not yet sure which is right (4/30/18)
 # OFIG XOTYPE YOTYPE ID WRITE X Y XS YS
-star arcsec arcsec diskA no 0.41 0.1 0.1 0.1
-star arcsec arcsec diskB no -0.6 -0.13 0.1 0.1
+star arcsec arcsec diskA no -0.0298 0.072 0.1
+star arcsec arcsec diskB no -1.0456 -0.1879 0.1 0.1
