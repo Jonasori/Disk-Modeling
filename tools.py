@@ -18,44 +18,32 @@ import astropy.units as u
 # Drop some sweet chanmaps
 # Takes in an .im or .cm
 # csize: 0 sets to default, and the third number controls 3pixel text size
-r = '(-2,-2,2,2)'
-def cgdisp_no_contours(imageName):
-    sp.call(['cgdisp',
-        'in={}'.format(imageName),
-        'device=/xs',
-        'region=arcsec,box{}'.format(r),
-        'olay={}'.format('centering_for_olay.cgdisp'),
-	'beamtyp=b,l,3',
-	'labtyp=arcsec,arcsec,abskms',
-	'options=3value',
-	'csize=0,0.7,0,0'])
-
 
 r = '(-2,-2,2,2)'
 def cgdisp(imageName, contours=True):
     if contours==True:
 	sp.call(['cgdisp',
-        	'in={},{}'.format(imageName,imageName),
-	        'device=/xs',
-		'type=pix,con',
-	        'region=arcsec,box{}'.format(r),
-	        'olay={}'.format('centering_for_olay.cgdisp'),
-	        'beamtyp=b,l,3',
-		'slev=a,6.8e-3',
-		'levs1=2,3,4,5,6,7,8,9',
-	        'labtyp=arcsec,arcsec,abskms',
-        	'options=3value,mirror,beambl',
-        	'csize=0,0.7,0,0'])
+        	 'in={},{}'.format(imageName,imageName),
+	         'device=/xs',
+		 'type=pix,con',
+	         'region=arcsec,box{}'.format(r),
+	         'olay={}'.format('centering_for_olay.cgdisp'),
+	         'beamtyp=b,l,3',
+		 'slev=a,6.8e-3',
+		 'levs1=2,3,4,5,6,7,8,9',
+	         'labtyp=arcsec,arcsec,abskms',
+        	 'options=3value,mirror,beambl',
+        	 'csize=0,0.7,0,0'])
     else:
 	sp.call(['cgdisp',
-        	'in={}'.format(imageName),
-        	'device=/xs',
-        	'region=arcsec,box{}'.format(r),
-        	'olay={}'.format('centering_for_olay.cgdisp'),
-        	'beamtyp=b,l,3',
-        	'labtyp=arcsec,arcsec,abskms',
-        	'options=3value',
-        	'csize=0,0.7,0,0'])	
+        	 'in={}'.format(imageName),
+        	 'device=/xs',
+        	 'region=arcsec,box{}'.format(r),
+        	 'olay={}'.format('centering_for_olay.cgdisp'),
+        	 'beamtyp=b,l,3',
+        	 'labtyp=arcsec,arcsec,abskms',
+        	 'options=3value',
+        	 'csize=0,0.7,0,0'])	
 
 
 
@@ -65,11 +53,12 @@ def cgdisp(imageName, contours=True):
 
 def imspec(imageName):
     sp.call(['imspec',
-        'in={}'.format(imageName),
-        'device=/xs, plot=sum'])
+             'in={}'.format(imageName),
+             'device=/xs, plot=sum'])
 
 
 # Invert/clean/restor: Take in a visibility, put out a convolved clean map.
+# Note that right now the restfreq is HCO+ specifici
 def icr(modelName):
     print "\n\nEntering icr()\n\n"
     sp.call('rm -rf {}.mp'.format(modelName), shell=True)
@@ -79,30 +68,33 @@ def icr(modelName):
 
     # Add restfreq to this vis
     sp.call(['puthd',
-	'in={}.vis/restfreq'.format(modelName),
-	'value=356.73422300'])
+	     'in={}.vis/restfreq'.format(modelName),
+	     'value=356.73422300'])
 
+    # See June 7 notes and baseline_cutoff.py for how 30 klambda was decided
+    # in select=-uvrange(0,30)
     sp.call(['invert',
-        'vis={}.vis'.format(modelName),
-        'map={}.mp'.format(modelName),
-        'beam={}.bm'.format(modelName),
-        'options=systemp',
-	'cell=0.045',
-	'imsize=256',
-        'robust=2'])
+             'vis={}.vis'.format(modelName),
+             'map={}.mp'.format(modelName),
+             'beam={}.bm'.format(modelName),
+             'options=systemp',
+             'select=-uvrange(0,30)',
+	     'cell=0.045',
+	     'imsize=256',
+             'robust=2'])
 
     sp.call(['clean',
-        'map={}.mp'.format(modelName),
-        'beam={}.bm'.format(modelName),
-        'out={}.cl'.format(modelName),
-        'niters=10000',
-	'threshold=1.3e-2'])
+             'map={}.mp'.format(modelName),
+             'beam={}.bm'.format(modelName),
+             'out={}.cl'.format(modelName),
+             'niters=10000',
+	     'threshold=1e-3'])
 
     sp.call(['restor',
-        'map={}.mp'.format(modelName),
-        'beam={}.bm'.format(modelName),
-        'model={}.cl'.format(modelName),
-        'out={}.cm'.format(modelName)])
+             'map={}.mp'.format(modelName),
+             'beam={}.bm'.format(modelName),
+             'model={}.cl'.format(modelName),
+             'out={}.cm'.format(modelName)])
 
 
 # Convert a fits file to im,vis,uvf
@@ -115,21 +107,23 @@ def im2vis(Name):
 
     sp.call('rm -rf *{}.im'.format(Name), shell=True)
     sp.call(['fits', 'op=xyin',
-        'in={}.fits'.format(Name),
-        'out={}.im'.format(Name)])
+             'in={}.fits'.format(Name),
+             'out={}.im'.format(Name)])
 
     # Sample the model image using the observation uv coverage
     sp.call('rm -rf *{}.vis'.format(Name), shell=True)
-    sp.call(['uvmodel', 'options=replace',
-        'vis={}'.format(data_vis),
-        'model={}.im'.format(Name),
-        'out={}.vis'.format(Name)])
+    sp.call(['uvmodel', 
+	     'options=replace',
+             'vis={}'.format(data_vis),
+             'model={}.im'.format(Name),
+             'out={}.vis'.format(Name)])
 
     #Convert to UVfits
     sp.call('rm -rf *{}.uvf'.format(Name), shell=True)
-    sp.call(['fits', 'op=uvout',
-        'in={}.vis'.format(Name),
-        'out={}.uvf'.format(Name)])
+    sp.call(['fits', 
+	     'op=uvout',
+             'in={}.vis'.format(Name),
+             'out={}.uvf'.format(Name)])
 
 
 
@@ -154,9 +148,10 @@ def visualizeFitsToIm(name):
 
     # Make it into an image for viewing
     sp.call('rm -rf *{}.im'.format(name), shell=True)
-    sp.call(['fits', 'op=xyin',
-            'in={}.fits'.format(name),
-            'out={}.im'.format(name)])
+    sp.call(['fits', 
+	     'op=xyin',
+             'in={}.fits'.format(name),
+             'out={}.im'.format(name)])
 
     image_name = name + '.im'
     cgdisp(image_name)
@@ -175,9 +170,10 @@ def createConvolvedMap(fname):
     # Convolve that vis file with the beam, out a clean map (.cm)
     icr(fname)
     # Turn that .cm back to a .fits (useful for plotting)
-    sp.call(['fits', 'op=xyout',
-            'in={}.cm'.format(fname),
-            'out={}_convolved.fits'.format(fname)])
+    sp.call(['fits',
+	     'op=xyout',
+             'in={}.cm'.format(fname),
+             'out={}_convolved.fits'.format(fname)])
 
     # Plotting needs the good header, so let's also get an image out.
     # Note that this also has a cgdisp call built in.

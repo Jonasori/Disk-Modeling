@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 
-baselines = [i*10 for i in range(1, 15)]
+baselines = [i*5 for i in range(1, 30)]
 dfile = 'data-hco'
 
 
@@ -100,15 +100,22 @@ def analysis(df):
     f, axarr = plt.subplots(2, sharex=True)
     axarr[0].grid(axis='x')
     axarr[0].set_title('RMS Noise')
+    axarr[0].ylabel('RMS Off-Source Flux (Jy/Beam)')
     axarr[0].plot(baselines, rmss)
 
     axarr[1].grid(axis='x')
     axarr[1].set_title('Mean Noise')
+    axarr[1].ylabel('Mean Off-Source Flux (Jy/Beam)')
+    axarr[1].xlabel('Baseline (kilalambda)')
     axarr[1].plot(baselines, means)
-
-    # plt.plot(baselines, means)
+    plt.savefig('baseline_analysis.png')
     plt.show(block=False)
     return [baselines, means, rmss]
+
+
+def run(modelName, Baselines=baselines):
+    ds = find_baseline_cutoff(modelName, Baselines)
+    analysis(ds)
 
 
 def sqrt(N, nsteps=5):
