@@ -12,6 +12,7 @@ from astropy.io import fits
 import numpy as np
 import subprocess as sp
 import astropy.units as u
+import pickle
 
 
 
@@ -192,6 +193,30 @@ def makeResidualMap(modelDisk, dataDisk):
 	sp.call('cgdisp device={}.ps/ps in=data.cm,resid.cm type=pix,con slev=1.5e-5,a levs1=-2,2,4,6 nxy=5,4 options=full,beambl labtyp=arcsec'.format(residMapName), shell=True)
 
 
+
+# Read in the pickle'd full-log file from a run.
+
+def depickleLogFile(filename):
+    df = pickle.load(open('{}_step-log.pickle'.format(filename), 'rb'))
+    # Note that we can find the min Chi2 val with:
+    # m = df.set_index('Reduced Chi2').loc[min(df['Reduced Chi2'])]
+    # This indexes the whole df by RedX2 and then finds the values that minimize
+    # that new index.
+    # Note, too, that it can be indexed either by slicing or by keys.
+    df_a, df_b = df.loc['A', :], df.loc['B', :]
+    min_X2_a = min(df_a['Reduced Chi2'])
+    min_X2_b = min(df_b['Reduced Chi2'])
+    # These come out as length-1 dicts
+    best_fit_a = df_a.loc[df_a['Reduced Chi2']==min_X2_a]
+    best_fit_b = df_b.loc[df_b['Reduced Chi2']==min_X2_b]
+
+    out = {'full_log': df,
+	   'Disk A log': df_a,
+	   'Disk B log': df_b,
+	   'Best Fit A': best_fit_a,
+	   'Best Fit B': best_fit_b
+	  }
+    return out
 
 
 #The End
