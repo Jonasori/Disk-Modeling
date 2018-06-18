@@ -44,7 +44,7 @@ diskBRedX2 = np.zeros((len(diskAParams[0]), len(diskBParams[1]), len(diskBParams
 
 
 ### GRID SEARCH OVER ONE DISK HOLDING OTHER CONSTANT ###
-def gridSearch(VariedDiskParams, StaticDiskParams, DI, num_iters):
+def gridSearch(VariedDiskParams, StaticDiskParams, DI, num_iters, steps_so_far=0):
 	"""
 	Takes: 		VariedDiskParams: list of lists
 		   		StaticDiskParams: list of floats! Not searching over lists for the static one
@@ -83,7 +83,7 @@ def gridSearch(VariedDiskParams, StaticDiskParams, DI, num_iters):
 	# Calculate the number of iterations this run will take (iterating over both disks)
 	# num_iters = len(Tatms)*len(Tqq)*len(Xmol)*len(RAout)*len(PA)*len(Incl)
 	# Set up a counter for the print out
-	counter = 1
+	counter = steps_so_far
 	# if DI==1:
 	#	counter += num_steps(disk A)
 
@@ -269,7 +269,7 @@ def fullRun(diskAParams, diskBParams):
 
 
 	# Now search over the other disk
-	df_B_fit = gridSearch(diskBParams, fit_A_params, 1, n)
+	df_B_fit = gridSearch(diskBParams, fit_A_params, 1, n, steps_so_far=na)
 	df_B_fit.assign(Disk_Name = 'B')
 	idx_of_BF_B = df_B_fit.index[df_B_fit['Reduced Chi2'] == np.min(df_B_fit['Reduced Chi2'])][0]
 	Ps_B = [df_B_fit['Atms Temp'][idx_of_BF_B],
@@ -291,7 +291,9 @@ def fullRun(diskAParams, diskBParams):
 	
 	
 	# Bind the data frames, output them.
-	full_log = pd.concat([df_A_fit, df_B_fit])
+        # This is reiterated in tools.py/depickler(), but we can unwrap these vals with:
+	# full_log.loc['A', :] to get all the columns for disk A, or full_log[:, 'Incl.'] to see which inclinations both disks tried.
+	full_log = pd.concat([df_A_fit, df_B_fit], keys=['A', 'B'], names=['Disk'])
 	# Pickle the step log df.
 	pickle.dump( full_log, open( '{}_step-log.pickle'.format(outputName), "wb" ) )
 	# To read the pickle:
