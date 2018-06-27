@@ -55,15 +55,18 @@ def imstat(modelName, b_max=''):
 
     Want an offsource region so that we can look at the noise.
     """
+    # Want a bigger box (minimum three beams across)
     r_offsource = '(-3,-3,-1,-1)'
     print '\n\n IMSTATING ', modelName + str(b_max)
+    # Want to actually be grabbing the rms from a contaminated channel
+    # (the worst looking one I can find, probably around v-11 or 12)
     imstat_out = sp.check_output(['imstat',
                                   'in={}.cm'.format(modelName + str(b_max)),
                                   'region=arcsec,box{}'.format(r_offsource)
                                   ])
 
     # Just return the last chunk of text and figure out what to do w/ it later
-    return imstat_out[-140:]
+    return imstat_out   #[-140:]
 
 
 def find_baseline_cutoff(modelName, baselines):
