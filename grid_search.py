@@ -44,7 +44,7 @@ diskBRedX2 = np.zeros((len(diskAParams[0]), len(diskBParams[1]), len(diskBParams
 
 
 ### GRID SEARCH OVER ONE DISK HOLDING OTHER CONSTANT ###
-def gridSearch(VariedDiskParams, StaticDiskParams, DI, num_iters, steps_so_far=0):
+def gridSearch(VariedDiskParams, StaticDiskParams, DI, num_iters, steps_so_far=1):
 	"""
 	Takes: 		VariedDiskParams: list of lists
 		   		StaticDiskParams: list of floats! Not searching over lists for the static one
@@ -211,7 +211,7 @@ def fullRun(diskAParams, diskBParams):
 
 	nb = 1
 	for b in range(0, len(diskBParams)):
-		nb *= len(diskAParams[b])
+		nb *= len(diskBParams[b])
 
 	n = na + nb
 	dt = 1.5							# minutes (time per iteration, approximately)
@@ -247,9 +247,6 @@ def fullRun(diskAParams, diskBParams):
 
 
 	df_A_fit = gridSearch(diskAParams, dBInit, 0, n)	# Grid search over Disk A, retrieve the resulting pd.DataFrame
-	df_A_fit.assign(Disk_Name = 'A')			# Add a column to tell which disk this is
-
-	print "Shape of df_A_fit is ", df_A_fit.shape
 
 	# Find where the chi2 is minimized and save it
 	idx_of_BF_A = df_A_fit.index[df_A_fit['Reduced Chi2'] == np.min(df_A_fit['Reduced Chi2'])][0]
@@ -270,7 +267,7 @@ def fullRun(diskAParams, diskBParams):
 
 	# Now search over the other disk
 	df_B_fit = gridSearch(diskBParams, fit_A_params, 1, n, steps_so_far=na)
-	df_B_fit.assign(Disk_Name = 'B')
+	
 	idx_of_BF_B = df_B_fit.index[df_B_fit['Reduced Chi2'] == np.min(df_B_fit['Reduced Chi2'])][0]
 	Ps_B = [df_B_fit['Atms Temp'][idx_of_BF_B],
                 df_B_fit['Temp Struct'][idx_of_BF_B],

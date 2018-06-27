@@ -21,7 +21,7 @@ import pickle
 # csize: 0 sets to default, and the third number controls 3pixel text size
 
 r = '(-2,-2,2,2)'
-def cgdisp(imageName, contours=True):
+def cgdisp(imageName, contours=True, rms=6.8e-3):
     if contours==True:
 	sp.call(['cgdisp',
         	 'in={},{}'.format(imageName,imageName),
@@ -30,8 +30,8 @@ def cgdisp(imageName, contours=True):
 	         'region=arcsec,box{}'.format(r),
 	         'olay={}'.format('centering_for_olay.cgdisp'),
 	         'beamtyp=b,l,3',
-		 'slev=a,6.8e-3',
-		 'levs1=2,3,4,5,6,7,8,9',
+		 'slev=a,{}'.format(rms),
+		 'levs1=3,6,9',
 	         'labtyp=arcsec,arcsec,abskms',
         	 'options=3value,mirror,beambl',
         	 'csize=0,0.7,0,0'])
@@ -60,7 +60,7 @@ def imspec(imageName):
 
 # Invert/clean/restor: Take in a visibility, put out a convolved clean map.
 # Note that right now the restfreq is HCO+ specifici
-def icr(modelName):
+def icr(modelName, min_baseline=30):
     print "\n\nEntering icr()\n\n"
     sp.call('rm -rf {}.mp'.format(modelName), shell=True)
     sp.call('rm -rf {}.bm'.format(modelName), shell=True)
@@ -79,7 +79,7 @@ def icr(modelName):
              'map={}.mp'.format(modelName),
              'beam={}.bm'.format(modelName),
              'options=systemp',
-             'select=-uvrange(0,30)',
+             #'select=-uvrange(0,{})'.format(min_baseline),
 	     'cell=0.045',
 	     'imsize=256',
              'robust=2'])
@@ -89,7 +89,8 @@ def icr(modelName):
              'beam={}.bm'.format(modelName),
              'out={}.cl'.format(modelName),
              'niters=10000',
-	     'threshold=1e-3'])
+	     #'threshold=3.33e-02'
+	     ])
 
     sp.call(['restor',
              'map={}.mp'.format(modelName),

@@ -37,7 +37,7 @@ r_in = [1.,1.]                                          # Inner disk radius, in 
 r_out = [500,300]                                       # Outer disk radius, in AU
 # Formerly [10.55, 10.85]
 sysv = [10.55, 10.85]					# Systemic velocities, in km/s
-rotHand = [1, -1]					# Handedness of rotation
+rotHand = [-1, -1]					# Handedness of rotation
 
 
 # Offsets seem to be weird: x is negative (x=1 is on the left), and y is normal.
