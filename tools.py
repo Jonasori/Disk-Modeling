@@ -20,8 +20,11 @@ import pickle
 # Takes in an .im or .cm
 # csize: 0 sets to default, and the third number controls 3pixel text size
 
-r = '(-2,-2,2,2)'
-def cgdisp(imageName, contours=True, rms=6.8e-3):
+def cgdisp(imageName, crop=True, contours=True, rms=6.8e-3):
+    if crop:
+        r = '(-2,-2,2,2)'
+    else:
+        r = '(-5,-5,5,5)'
     if contours==True:
 	sp.call(['cgdisp',
         	 'in={},{}'.format(imageName,imageName),
