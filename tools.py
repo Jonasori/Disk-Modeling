@@ -96,12 +96,18 @@ def imspec(imageName):
 
 # Invert/clean/restor: Take in a visibility, put out a convolved clean map.
 # Note that right now the restfreq is HCO+ specific
-def icr(modelName, min_baseline=0, rms=3.33e-02):
+def icr(modelName, min_baseline=0, niters=1e5, rms=3.33e-02):
     """Invert/clean/restor: Turn a vis into a convolved clean map.
 
     Note that right now the restfreq is HCO+ specific
     """
-    sp.call('rm -rf {}.{{mp, bm, cl, cm}}'.format(modelName), shell=True)
+    # Add a shorthand name (easier to write)
+    b = min_baseline
+    sp.call('rm -rf {}.cm'.format(modelName + str(b)), shell=True)
+    sp.call('rm -rf {}.cl'.format(modelName + str(b)), shell=True)
+    sp.call('rm -rf {}.bm'.format(modelName + str(b)), shell=True)
+    sp.call('rm -rf {}.mp'.format(modelName + str(b)), shell=True)
+    print "Deleted", modelName + str(b) + '*'
 
     # Add restfreq to this vis
     sp.call(['puthd',
@@ -112,6 +118,8 @@ def icr(modelName, min_baseline=0, rms=3.33e-02):
     # in select=-uvrange(0,30)
     if min_baseline == 0:
         # can't call select=-uvrange(0,0) so just get rid of that line for 0.
+        # This way we also don't get files called data-hco0
+        b = ''
         sp.call(['invert',
                  'vis={}.vis'.format(modelName),
                  'map={}.mp'.format(modelName),
@@ -123,27 +131,28 @@ def icr(modelName, min_baseline=0, rms=3.33e-02):
     else:
         sp.call(['invert',
                  'vis={}.vis'.format(modelName),
-                 'map={}.mp'.format(modelName),
-                 'beam={}.bm'.format(modelName),
+                 'map={}.mp'.format(modelName + str(b)),
+                 'beam={}.bm'.format(modelName + str(b)),
                  'options=systemp',
-                 'select=-uvrange(0,{})'.format(min_baseline),
+                 'select=-uvrange(0,{})'.format(b),
                  'cell=0.045',
                  'imsize=256',
                  'robust=2'])
 
     sp.call(['clean',
-             'map={}.mp'.format(modelName),
-             'beam={}.bm'.format(modelName),
-             'out={}.cl'.format(modelName),
-             'niters=100000',
+             'map={}.mp'.format(modelName + str(b)),
+             'beam={}.bm'.format(modelName + str(b)),
+             'out={}.cl'.format(modelName + str(b)),
+             'niters={}'.format(niters),
              'threshold={}'.format(rms)
              ])
 
     sp.call(['restor',
-             'map={}.mp'.format(modelName),
-             'beam={}.bm'.format(modelName),
-             'model={}.cl'.format(modelName),
-             'out={}.cm'.format(modelName)])
+             'map={}.mp'.format(modelName + str(b)),
+             'beam={}.bm'.format(modelName + str(b)),
+             'model={}.cl'.format(modelName + str(b)),
+             'out={}.cm'.format(modelName + str(b))
+             ])
 
 
 def sample_model_in_uvplane(Name):
