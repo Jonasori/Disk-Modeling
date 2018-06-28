@@ -8,8 +8,8 @@ Some nice functions to be used in making models
 ################
 
 import os, sys, datetime
-from disk import *
-import raytrace as rt
+from disk_model.disk import *
+import disk_model.raytrace as rt
 from astropy.io import fits
 import numpy as np
 import subprocess as sp
