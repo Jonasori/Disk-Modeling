@@ -7,6 +7,7 @@ import subprocess as sp
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
+from tools import imstat
 
 baselines = [i*5 for i in range(1, 30)]
 dfile = 'data-hco'
@@ -47,39 +48,6 @@ def icr_w_baselines(modelName, b_max):
              ])
 
 
-def imstat(modelName, b_max='', plane_to_check=30):
-    """Find rms and mean.
-
-    Want an offsource region so that we can look at the noise. Decision to look
-    at plane_to_check=30 is deliberate and is specific to this line of these
-    data. Look at June 27 notes for justification of it.
-
-    """
-    r_offsource = '(-5,-5,5,-1)'
-    print '\n\n IMSTATING ', modelName + str(b_max)
-    imstat_raw = sp.check_output(['imstat',
-                                  'in={}.cm'.format(modelName + str(b_max)),
-                                  'region=arcsec,box{}'.format(r_offsource)
-                                  ])
-    imstat_out = imstat_raw.split('\n')
-    hdr = filter(None, imstat_out[9].split(' '))
-
-    # Split the output on spaces and then drop empty elements.
-    imstat_list = filter(None, imstat_out[plane_to_check].split(' '))
-    # A space gets crunched out between RMS and mean, so fix that:
-    if len(imstat_list) == 7:
-        imstat_list.insert(6, imstat_list[5][9:])
-        imstat_list[5] = imstat_list[5][:9]
-    print imstat_list
-    # Make a dict out of that stuff. Note that this is really just for fun,
-    # since I'm not actually returning it, but it could be nice to have.
-    d = {}
-    for i in range(len(hdr) - 1):
-        d[hdr[i]] = imstat_list[i]
-
-    # Return the mean and rms
-    return float(imstat_list[3]), float(imstat_list[4])
-
 
 def get_baseline_rmss(modelName, baselines=baselines):
     """Iterate through a range of baseline cutoffs and compare the results."""
@@ -91,7 +59,7 @@ def get_baseline_rmss(modelName, baselines=baselines):
         print '\n\n'
 
         icr_w_baselines(modelName, b)
-        mean, rms = imstat(modelName, b)
+        mean, rms = imstat(modelName + str(b))
         step_output = {'RMS': rms,
                        'Mean': mean,
                        'Baseline': str(b)}

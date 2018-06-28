@@ -51,6 +51,42 @@ def cgdisp(imageName, crop=True, contours=True, rms=6.8e-3):
 
 
 
+def imstat(modelName, plane_to_check=30):
+    """Find rms and mean.
+
+    Want an offsource region so that we can look at the noise. Decision to look
+    at plane_to_check=30 is deliberate and is specific to this line of these
+    data. Look at June 27 notes for justification of it.
+    Args:
+        modelName (str): name of the input file. Not necessarily a model.
+        plane_to_check (int): Basically which channel to look at, but that this includes the ~10 header planes, too, so I think plane 30 corresponds to channel 21 or so.
+    """
+    r_offsource = '(-5,-5,5,-1)'
+    print '\n\n IMSTATING ', modelName
+    imstat_raw = sp.check_output(['imstat',
+                                  'in={}.cm'.format(modelName),
+                                  'region=arcsec,box{}'.format(r_offsource)
+                                  ])
+    imstat_out = imstat_raw.split('\n')
+    hdr = filter(None, imstat_out[9].split(' '))
+
+    # Split the output on spaces and then drop empty elements.
+    imstat_list = filter(None, imstat_out[plane_to_check].split(' '))
+    # A space gets crunched out between RMS and mean, so fix that:
+    if len(imstat_list) == 7:
+        imstat_list.insert(6, imstat_list[5][9:])
+        imstat_list[5] = imstat_list[5][:9]
+    # Make a dict out of that stuff. Note that this is really just for fun,
+    # since I'm not actually returning it, but it could be nice to have.
+    d = {}
+    for i in range(len(hdr) - 1):
+        d[hdr[i]] = imstat_list[i]
+        print hdr[i], ': ', imstat_list[i]
+
+    # Return the mean and rms
+    return float(imstat_list[3]), float(imstat_list[4])
+
+
 
 # Drop a sweet spectrum
 # Takes in a .im
