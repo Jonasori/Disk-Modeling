@@ -36,7 +36,11 @@ def cgdisp(imageName, crop=True, contours=True, rms=6.8e-3):
                  'levs1=3,6,9',
                  'labtyp=arcsec,arcsec,abskms',
                  'options=3value,mirror,beambl',
-                 'csize=0,0.7,0,0'])
+                 'cols1=2',
+                 'cols2=7',
+                 'cols3=5',
+                 'csize=0,0.7,0,0'
+                 ])
     else:
         sp.call(['cgdisp',
                  'in={}'.format(imageName),
@@ -46,7 +50,11 @@ def cgdisp(imageName, crop=True, contours=True, rms=6.8e-3):
                  'beamtyp=b,l,3',
                  'labtyp=arcsec,arcsec,abskms',
                  'options=3value',
-                 'csize=0,0.7,0,0'])
+                 'csize=0,0.7,0,0',
+                 'cols1=2',
+                 'cols2=7',
+                 'cols3=5'
+                 ])
 
 
 def imstat(modelName, plane_to_check=30):
