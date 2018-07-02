@@ -19,7 +19,12 @@ from constants import restfreqs
 def cgdisp(imageName, crop=True, contours=True, rms=6.8e-3):
     """Drop some sweet chanmaps.
 
-    Takes in an .im or .cm
+    Args:
+        imageName (str): name of the image to view, including .im or .cm
+        crop (bool): whether or not to show constained image.
+        contours (bool): whether or not to show 3-, 6-, and 9-sigma contours.
+        rms (float): value to use for sigma.
+
     csize: 0 sets to default, and the third number controls 3pixel text size
     """
     if crop:
@@ -103,7 +108,7 @@ def icr(modelName, min_baseline=0, niters=1e5, rms=3.33e-02, mol='hco'):
     """Invert/clean/restor: Turn a vis into a convolved clean map.
 
     Args:
-        modelName (str): name of the file.
+        modelName (str): name of the file. Do not include extension.
         min_baseline (int): minimum baseline length to use. Cuts all below.
         niters (int): how many iterations of cleaning to run. Want this to be
                       big enough that it never gets triggered.
@@ -113,19 +118,15 @@ def icr(modelName, min_baseline=0, niters=1e5, rms=3.33e-02, mol='hco'):
     print "\nConvolving image\n"
     # Add a shorthand name (easier to write)
     b = min_baseline
-    sp.call('rm -rf {}.cm'.format(modelName + str(b)), shell=True)
-    sp.call('rm -rf {}.cl'.format(modelName + str(b)), shell=True)
-    sp.call('rm -rf {}.bm'.format(modelName + str(b)), shell=True)
-    sp.call('rm -rf {}.mp'.format(modelName + str(b)), shell=True)
-    print "Deleted", modelName + str(b) + '*'
 
     # Add restfreq to this vis
+    """
     sp.call(['puthd',
              'in={}.vis/restfreq'.format(modelName),
              'value={}'.format(restfreqs[mol])
              ],
             stdout=open(os.devnull, 'wb'))
-
+    """
     if min_baseline == 0:
         # can't call select=-uvrange(0,0) so just get rid of that line for 0.
         # This way we also don't get files called data-hco0
@@ -140,6 +141,10 @@ def icr(modelName, min_baseline=0, niters=1e5, rms=3.33e-02, mol='hco'):
                  'robust=2'],
                 stdout=open(os.devnull, 'wb'))
     else:
+        sp.call('rm -rf {}.{{cm, cl, bm, mp}}'.format(modelName + str(b)),
+                shell=True)
+        print "Deleted", modelName + str(b) + '*'
+
         sp.call(['invert',
                  'vis={}.vis'.format(modelName),
                  'map={}.mp'.format(modelName + str(b)),
