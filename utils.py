@@ -31,7 +31,9 @@ vsys, restfreq, freq0, obsv, chanstep, n_chans, chanmins, jnum = obs_stuff(mol)
 col_dens, Tfo, Tmid, Tatm, Tqq, m_star, m_disk, r_in, r_out, rotHand = other_params
 
 if mol == 'co' or mol == 'cs':
+    # Maybe also switch chanmins?
     chanstep *= -1
+
 
 
 ####################

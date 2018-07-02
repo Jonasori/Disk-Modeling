@@ -13,7 +13,7 @@ Script some Miriad commands for easier calling, more specialized usage.
 import subprocess as sp
 import pickle
 import os
-from utils import restfreqs
+from constants import restfreqs
 
 
 def cgdisp(imageName, crop=True, contours=True, rms=6.8e-3):
