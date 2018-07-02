@@ -88,8 +88,6 @@ def add():
     sp.call(['git', 'add', '{}'.format(new_file)])
 
 
-
-
 if __name__ == '__main__':
     main()
 
