@@ -35,7 +35,6 @@ if mol == 'co' or mol == 'cs':
     chanstep *= -1
 
 
-
 ####################
 # USEFUL FUNCTIONS #
 ####################

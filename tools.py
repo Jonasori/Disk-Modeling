@@ -104,7 +104,7 @@ def imstat(modelName, plane_to_check=30):
 
 # Invert/clean/restor: Take in a visibility, put out a convolved clean map.
 # Note that right now the restfreq is HCO+ specific
-def icr(modelName, min_baseline=0, niters=1e6, rms=3.33e-02, mol='hco'):
+def icr(modelName, min_baseline=0, niters=1e4, rms=5.065E-02, mol='hco'):
     """Invert/clean/restor: Turn a vis into a convolved clean map.
 
     Args:
@@ -162,6 +162,8 @@ def icr(modelName, min_baseline=0, niters=1e6, rms=3.33e-02, mol='hco'):
                  'robust=2'],
                 stdout=open(os.devnull, 'wb'))
 
+    # Grab the rms
+    rms = imstat(modelName + str(b))[1]
     sp.call(['clean',
              'map={}.mp'.format(modelName + str(b)),
              'beam={}.bm'.format(modelName + str(b)),

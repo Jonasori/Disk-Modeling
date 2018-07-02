@@ -66,13 +66,8 @@ def get_baseline_rmss(modelName, baselines=baselines, remake_all=False):
 
         # If not, get rms, clean down to it.
         else:
-            print "Starting dirty clean"
-            # do a dirty clean to get the rms value to clean down to.
-            icr(modelName, min_baseline=b, niters=1)
-            mean, rms = imstat(name)
-            print "Dirty rms is", rms
             # Now do a real clean
-            icr(modelName, min_baseline=b, rms=0.5*rms)
+            icr(modelName, min_baseline=b)
             mean, rms = imstat(name)
 
         step_output = {'RMS': rms,
