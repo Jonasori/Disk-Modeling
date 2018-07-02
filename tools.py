@@ -131,8 +131,10 @@ def icr(modelName, min_baseline=0, niters=1e5, rms=3.33e-02, mol='hco'):
         # can't call select=-uvrange(0,0) so just get rid of that line for 0.
         # This way we also don't get files called data-hco0
         b = ''
-        sp.call('rm -rf {}.{{cm, cl, bm, mp}}'.format(modelName), shell=True)
+        for end in ['cm', 'cl', 'bm', 'mp']:
+            sp.call('rm -rf {}.{}'.format(modelName, end), shell=True)
         print "Deleted", modelName, '.[cm, cl, bm, mp]'
+
         sp.call(['invert',
                  'vis={}.vis'.format(modelName),
                  'map={}.mp'.format(modelName),
@@ -143,8 +145,8 @@ def icr(modelName, min_baseline=0, niters=1e5, rms=3.33e-02, mol='hco'):
                  'robust=2'],
                 stdout=open(os.devnull, 'wb'))
     else:
-        sp.call('rm -rf {}.{{cm, cl, bm, mp}}'.format(modelName + str(b)),
-                shell=True)
+        for end in ['cm', 'cl', 'bm', 'mp']:
+            sp.call('rm -rf {}.{}'.format(modelName, end), shell=True)
         print "Deleted", modelName + str(b) + '.[cm, cl, bm, mp]'
 
         sp.call(['invert',
