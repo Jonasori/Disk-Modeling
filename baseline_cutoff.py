@@ -96,7 +96,8 @@ def analysis(df):
     axarr[1].set_title('Mean Noise')
     # axarr[1].set_ylabel('Mean Off-Source Flux (Jy/Beam)')
     axarr[1].set_xlabel('Baseline length (k-lambda)')
-    axarr[1].plot(df['Baseline'], df['Mean'])
+    axarr[1].plot(df['Baseline'], df['Mean'], '-b')
+    axarr[1].plot(df['Baseline'], df['Mean'], 'or')
     plt.savefig('noise_by_baselines.png')
     # plt.show(block=False)
     return [df['Baseline'], df['Mean'], df['RMS']]
