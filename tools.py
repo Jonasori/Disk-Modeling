@@ -84,6 +84,7 @@ def imstat(modelName, plane_to_check=30):
                                   'region=arcsec,box{}'.format(r_offsource)
                                   ])
     imstat_out = imstat_raw.split('\n')
+    # Get column names
     hdr = filter(None, imstat_out[9].split(' '))
 
     # Split the output on spaces and then drop empty elements.
@@ -92,23 +93,14 @@ def imstat(modelName, plane_to_check=30):
     if len(imstat_list) == 7:
         imstat_list.insert(6, imstat_list[5][9:])
         imstat_list[5] = imstat_list[5][:9]
-    # Make a dict out of that stuff. Note that this is really just for fun,
-    # since I'm not actually returning it, but it could be nice to have.
+
     d = {}
     for i in range(len(hdr) - 1):
         d[hdr[i]] = imstat_list[i]
         print hdr[i], ': ', imstat_list[i]
 
     # Return the mean and rms
-    # return float(imstat_list[3]), float(imstat_list[4])
     return float(d['Mean']), float(d['rms'])
-
-
-def imspec(imageName):
-    """Drop a sweet spectrum. Takes in a .im."""
-    sp.call(['imspec',
-             'in={}'.format(imageName),
-             'device=/xs, plot=sum'])
 
 
 # Invert/clean/restor: Take in a visibility, put out a convolved clean map.
@@ -181,6 +173,13 @@ def icr(modelName, min_baseline=0, niters=1e5, rms=3.33e-02, mol='hco'):
              'out={}.cm'.format(modelName + str(b))
              ],
             stdout=open(os.devnull, 'wb'))
+
+
+def imspec(imageName):
+    """Drop a sweet spectrum. Takes in a .im."""
+    sp.call(['imspec',
+             'in={}'.format(imageName),
+             'device=/xs, plot=sum'])
 
 
 def sample_model_in_uvplane(Name):

@@ -23,10 +23,18 @@ def main():
     parser.add_argument('-r', '--run',
                         action='store_true',
                         help='Run the analysis.')
+
+    parser.add_argument('-o', '--run_and_overwrite',
+                        action='store_true',
+                        help='Run the analysis, overwriting preexisting runs.')
+
     args = parser.parse_args()
 
     if args.run:
-        run(dfile)
+        run(dfile, remake_all=False)
+
+    elif args.run_and_overwrite:
+        run(dfile, remake_all=True)
 
 
 def get_baseline_rmss(modelName, baselines=baselines, remake_all=False):
@@ -60,8 +68,8 @@ def get_baseline_rmss(modelName, baselines=baselines, remake_all=False):
             mean, rms = imstat(name)
             print "Dirty rms is", rms
             # Now do a real clean
-            mean, rms = imstat(name)
             icr(modelName, min_baseline=b, rms=0.5*rms)
+            mean, rms = imstat(name)
 
         step_output = {'RMS': rms,
                        'Mean': mean,
@@ -92,9 +100,9 @@ def analysis(df):
     return [df['Baseline'], df['Mean'], df['RMS']]
 
 
-def run(modelName, Baselines=baselines):
+def run(modelName, Baselines=baselines, remake_all=False):
     """Run the above functions."""
-    ds = get_baseline_rmss(modelName, Baselines)
+    ds = get_baseline_rmss(modelName, Baselines, remake_all=False)
     analysis(ds)
 
 
