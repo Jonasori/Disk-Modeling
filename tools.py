@@ -123,6 +123,7 @@ def icr(modelName, min_baseline=0, niters=1e5, rms=3.33e-02, mol='hco'):
         rms (float): the the rms noise, to which we clean down to.
         mol (str): which molecule's restfreq to use.
     """
+    print "\nConvolving image\n"
     # Add a shorthand name (easier to write)
     b = min_baseline
     sp.call('rm -rf {}.cm'.format(modelName + str(b)), shell=True)
