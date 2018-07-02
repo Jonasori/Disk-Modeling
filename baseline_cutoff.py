@@ -45,9 +45,10 @@ def get_baseline_rmss(modelName, baselines=baselines, remake_all=False):
             name = modelName
         else:
             name = modelName + str(b)
+        print name
 
         # Check if we've already icr'ed this one.
-        if name in sp.check_output(['ls']) and remake_all is False:
+        if name + '.cm' in sp.check_output(['ls']) and remake_all is False:
             print "File already exists; going straight to imstat"
             mean, rms = imstat(name)
 
