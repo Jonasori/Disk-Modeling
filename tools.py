@@ -12,6 +12,7 @@ Script some Miriad commands for easier calling, more specialized usage.
 # Packages
 import subprocess as sp
 import pickle
+import os
 
 
 def cgdisp(imageName, crop=True, contours=True, rms=6.8e-3):
@@ -70,7 +71,7 @@ def imstat(modelName, plane_to_check=30):
         corresponds to channel 21 or so.
     """
     r_offsource = '(-5,-5,5,-1)'
-    print '\n\n IMSTATING ', modelName
+    print '\n\nIMSTATING ', modelName
     imstat_raw = sp.check_output(['imstat',
                                   'in={}.cm'.format(modelName),
                                   'region=arcsec,box{}'.format(r_offsource)
@@ -120,7 +121,8 @@ def icr(modelName, min_baseline=0, niters=1e5, rms=3.33e-02):
     # Add restfreq to this vis
     sp.call(['puthd',
              'in={}.vis/restfreq'.format(modelName),
-             'value=356.73422300'])
+             'value=356.73422300'],
+            stdout=open(os.devnull, 'wb'))
 
     # See June 7 notes and baseline_cutoff.py for how 30 klambda was decided
     # in select=-uvrange(0,30)
@@ -135,7 +137,8 @@ def icr(modelName, min_baseline=0, niters=1e5, rms=3.33e-02):
                  'options=systemp',
                  'cell=0.045',
                  'imsize=256',
-                 'robust=2'])
+                 'robust=2'],
+                stdout=open(os.devnull, 'wb'))
     else:
         sp.call(['invert',
                  'vis={}.vis'.format(modelName),
@@ -145,7 +148,8 @@ def icr(modelName, min_baseline=0, niters=1e5, rms=3.33e-02):
                  'select=-uvrange(0,{})'.format(b),
                  'cell=0.045',
                  'imsize=256',
-                 'robust=2'])
+                 'robust=2'],
+                stdout=open(os.devnull, 'wb'))
 
     sp.call(['clean',
              'map={}.mp'.format(modelName + str(b)),
@@ -153,14 +157,16 @@ def icr(modelName, min_baseline=0, niters=1e5, rms=3.33e-02):
              'out={}.cl'.format(modelName + str(b)),
              'niters={}'.format(niters),
              'threshold={}'.format(rms)
-             ])
+             ],
+            stdout=open(os.devnull, 'wb'))
 
     sp.call(['restor',
              'map={}.mp'.format(modelName + str(b)),
              'beam={}.bm'.format(modelName + str(b)),
              'model={}.cl'.format(modelName + str(b)),
              'out={}.cm'.format(modelName + str(b))
-             ])
+             ],
+            stdout=open(os.devnull, 'wb'))
 
 
 def sample_model_in_uvplane(Name):

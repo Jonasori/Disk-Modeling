@@ -34,16 +34,17 @@ def get_baseline_rmss(modelName, baselines=baselines):
     """Iterate through a range of baseline cutoffs and compare the results."""
     data_list = []
     for b in baselines:
-        print '\n\n\n    NEW ITERATION\nBaseline: ', b, '\n\n'
+        print '\n\n\n    NEW ITERATION\nBaseline: ', b, '\n'
         name = modelName + str(b)
-        print "Starting dirty clean"
 
         # Check if we've already icr'ed this one.
         if name in sp.check_output(['ls']):
+            print "File already exists; going straight to imstat"
             mean, rms = imstat(name)
 
         # If not, get rms, clean down to it.
         else:
+            print "Starting dirty clean"
             # do a dirty clean to get the rms value to clean down to.
             icr(modelName, min_baseline=b, niters=1)
             mean, rms = imstat(name)
@@ -57,6 +58,7 @@ def get_baseline_rmss(modelName, baselines=baselines):
                            'Baseline': b}
 
             data_list.append(step_output)
+            print step_output
 
     data_pd = pd.DataFrame(data_list)
     return data_pd
@@ -84,15 +86,6 @@ def run(modelName, Baselines=baselines):
     """Run the above functions."""
     ds = get_baseline_rmss(modelName, Baselines)
     analysis(ds)
-
-
-def sqrt(N, nsteps=5):
-    """Docstring."""
-    x = 0.5 * N
-    for i in range(nsteps):
-        x_new = 0.5 * (x + N/x)
-        x = x_new
-    return x
 
 
 if __name__ == '__main__':
