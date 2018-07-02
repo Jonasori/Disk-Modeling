@@ -173,6 +173,7 @@ def sample_model_in_uvplane(Name):
     data_vis = 'hco_viswvars.vis'
 
     sp.call('rm -rf *{}.im'.format(Name), shell=True)
+
     sp.call(['fits', 'op=xyin',
              'in={}.fits'.format(Name),
              'out={}.im'.format(Name)])
