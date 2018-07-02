@@ -72,6 +72,7 @@ def imstat(modelName, plane_to_check=30):
     data. Look at June 27 notes for justification of it.
     Args:
         modelName (str): name of the input file. Not necessarily a model.
+                         MUST INCLUDE FILE EXTENSION
         plane_to_check (int): Basically which channel to look at, but that
         this includes the ~10 header planes, too, so I think plane 30
         corresponds to channel 21 or so.
@@ -79,7 +80,7 @@ def imstat(modelName, plane_to_check=30):
     r_offsource = '(-5,-5,5,-1)'
     print '\n\nIMSTATING ', modelName
     imstat_raw = sp.check_output(['imstat',
-                                  'in={}.cm'.format(modelName),
+                                  'in={}'.format(modelName),
                                   'region=arcsec,box{}'.format(r_offsource)
                                   ])
     imstat_out = imstat_raw.split('\n')
