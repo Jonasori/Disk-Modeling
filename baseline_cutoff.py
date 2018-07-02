@@ -53,12 +53,12 @@ def get_baseline_rmss(modelName, baselines=baselines):
             mean, rms = imstat(name)
             icr(modelName, min_baseline=b, rms=0.5*rms)
 
-            step_output = {'RMS': rms,
-                           'Mean': mean,
-                           'Baseline': b}
+        step_output = {'RMS': rms,
+                       'Mean': mean,
+                       'Baseline': b}
 
-            data_list.append(step_output)
-            print step_output
+        data_list.append(step_output)
+        print step_output
 
     data_pd = pd.DataFrame(data_list)
     return data_pd
