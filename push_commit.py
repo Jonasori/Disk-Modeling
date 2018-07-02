@@ -46,12 +46,14 @@ def push():
     s = sp.check_output(['git', 'status']).split('\n')
     p = filter(None, s)
 
+    print "Committing these files:"
     files = []
     # list(set(p)) gets rid of duplicates.
     for i in list(set(p)):
         if i[:1] == '\t':
             f = filter(None, i[1:].split(' '))[-1]
             files.append(f)
+            print f
 
     [sp.call(['git', 'stage', '{}'.format(i)]) for i in files]
 
