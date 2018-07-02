@@ -11,7 +11,7 @@ import pandas as pd
 from tools import icr, imstat
 
 # baselines = [i*20 for i in range(1, 5)]
-baselines = np.arange(40, 150, 5)
+baselines = np.arange(0, 150, 5)
 dfile = 'data-hco'
 
 
