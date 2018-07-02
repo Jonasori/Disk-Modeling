@@ -101,7 +101,7 @@ def imstat(modelName, plane_to_check=30):
 
     # Return the mean and rms
     # return float(imstat_list[3]), float(imstat_list[4])
-    return d['Mean'], d['rms']
+    return float(d['Mean']), float(d['rms'])
 
 
 def imspec(imageName):
