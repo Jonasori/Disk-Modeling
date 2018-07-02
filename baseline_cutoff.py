@@ -100,9 +100,9 @@ def analysis(df):
     return [df['Baseline'], df['Mean'], df['RMS']]
 
 
-def run(modelName, Baselines=baselines, remake_all=False):
+def run(modelName, Baselines=baselines, remake_all):
     """Run the above functions."""
-    ds = get_baseline_rmss(modelName, Baselines, remake_all=False)
+    ds = get_baseline_rmss(modelName, Baselines, remake_all)
     analysis(ds)
 
 
