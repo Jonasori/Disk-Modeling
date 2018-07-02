@@ -104,7 +104,7 @@ def imstat(modelName, plane_to_check=30):
 
 # Invert/clean/restor: Take in a visibility, put out a convolved clean map.
 # Note that right now the restfreq is HCO+ specific
-def icr(modelName, min_baseline=0, niters=1e5, rms=3.33e-02, mol='hco'):
+def icr(modelName, min_baseline=0, niters=1e6, rms=3.33e-02, mol='hco'):
     """Invert/clean/restor: Turn a vis into a convolved clean map.
 
     Args:
@@ -131,8 +131,8 @@ def icr(modelName, min_baseline=0, niters=1e5, rms=3.33e-02, mol='hco'):
         # can't call select=-uvrange(0,0) so just get rid of that line for 0.
         # This way we also don't get files called data-hco0
         b = ''
-        for end in ['cm', 'cl', 'bm', 'mp']:
-            sp.call('rm -rf {}.{}'.format(modelName, end), shell=True)
+        for ext in ['cm', 'cl', 'bm', 'mp']:
+            sp.call('rm -rf {}.{}'.format(modelName, ext), shell=True)
         print "Deleted", modelName, '.[cm, cl, bm, mp]'
 
         sp.call(['invert',
@@ -144,9 +144,11 @@ def icr(modelName, min_baseline=0, niters=1e5, rms=3.33e-02, mol='hco'):
                  'imsize=256',
                  'robust=2'],
                 stdout=open(os.devnull, 'wb'))
+
+    # If we're chopping baselines:
     else:
-        for end in ['cm', 'cl', 'bm', 'mp']:
-            sp.call('rm -rf {}.{}'.format(modelName, end), shell=True)
+        for ext in ['cm', 'cl', 'bm', 'mp']:
+            sp.call('rm -rf {}.{}'.format(modelName, ext), shell=True)
         print "Deleted", modelName + str(b) + '.[cm, cl, bm, mp]'
 
         sp.call(['invert',
@@ -165,9 +167,9 @@ def icr(modelName, min_baseline=0, niters=1e5, rms=3.33e-02, mol='hco'):
              'beam={}.bm'.format(modelName + str(b)),
              'out={}.cl'.format(modelName + str(b)),
              'niters={}'.format(niters),
-             'threshold={}'.format(rms)
-             ],
-            stdout=open(os.devnull, 'wb'))
+             'threshold={}'.format(rms)]
+            # stdout=open(os.devnull, 'wb')
+            )
 
     sp.call(['restor',
              'map={}.mp'.format(modelName + str(b)),
