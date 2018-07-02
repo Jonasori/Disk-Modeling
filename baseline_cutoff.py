@@ -41,7 +41,10 @@ def get_baseline_rmss(modelName, baselines=baselines, remake_all=False):
     data_list = []
     for b in baselines:
         print '\n\n\n    NEW ITERATION\nBaseline: ', b, '\n'
-        name = modelName + str(b)
+        if b == 0:
+            name = modelName
+        else:
+            name = modelName + str(b)
 
         # Check if we've already icr'ed this one.
         if name in sp.check_output(['ls']) and remake_all is False:
