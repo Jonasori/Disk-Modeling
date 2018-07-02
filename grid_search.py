@@ -105,13 +105,16 @@ def gridSearch(VariedDiskParams, StaticDiskParams, DI, num_iters, steps_so_far=1
                             incl = Incl[n]
                             params = [ta, tqq, xmol, raout, pa, incl]
 
-                            ### Tell us where we are ###
-                            # Make this print na + counter when fitting B
                             print "\n\n\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
                             print "Currently fitting for: ", outNameVaried
                             print "Beginning model ", str(
                                 counter)+"/"+str(num_iters)
-                            print "ta:", ta, "tqq", tqq, "xmol:", xmol, "raout:", raout, "pa:", pa, "incl:", incl
+                            print "ta:", ta
+                            print "tqq", tqq
+                            print "xmol:", xmol
+                            print "raout:", raout
+                            print "pa:", pa
+                            print "incl:", incl
                             print "Static params: ", StaticDiskParams
 
                             # The model making/data management
@@ -122,8 +125,8 @@ def gridSearch(VariedDiskParams, StaticDiskParams, DI, num_iters, steps_so_far=1
                             X2s = chiSq(outputName)
                             rawX2, redX2 = X2s[0], X2s[1]
 
-                            # It's ok to split these up by disk since disk B's optimized params
-                            # will be independent of where disk A is.
+                            # It's ok to split these up by disk since disk B's
+                            # optimized params will be independent of where disk A is.
                             if DI == 0:
                                 diskARawX2[i, j, k, l, m, n] = rawX2
                                 diskARedX2[i, j, k, l, m, n] = redX2
@@ -151,7 +154,10 @@ def gridSearch(VariedDiskParams, StaticDiskParams, DI, num_iters, steps_so_far=1
                             }
                             df_rows.append(df_row)
 
-                            # A counter to keep track of whether this is the best fit yet or not. Used to choose whether or not to delete this model so that we can always have a current-best-fit model.
+                            # A counter to keep track of whether this is the
+                            # best fit yet or not. Used to choose whether or
+                            # not to delete this model so that we can always
+                            # have a current-best-fit model.
                             bestYet = 0
                             if redX2 > 0 and redX2 < minRedX2:
                                 minRedX2 = redX2
@@ -160,9 +166,13 @@ def gridSearch(VariedDiskParams, StaticDiskParams, DI, num_iters, steps_so_far=1
                                 bestYet = 1
 
                             print "Min. Chi-Squared value so far:", minRedX2
-                            print "which happened at"
-                            print "ta:", minX2Vals[0], "tqq", minX2Vals[1], "xmol:", minX2Vals[
-                                2], "raout:", minX2Vals[3], "pa:", minX2Vals[4], "incl:", minX2Vals[5]
+                            print "which happened at: "
+                            print "ta:", minX2Vals[0]
+                            print "tqq", minX2Vals[1]
+                            print "xmol:", minX2Vals[2]
+                            print "raout:", minX2Vals[3]
+                            print "pa:", minX2Vals[4]
+                            print "incl:", minX2Vals[5]
 
                             # If this is the best fit so far, just change the model's name so that we can hold onto it.
                             if bestYet == 1:
@@ -185,10 +195,13 @@ def gridSearch(VariedDiskParams, StaticDiskParams, DI, num_iters, steps_so_far=1
     return step_log
 
 
-### PERFORM A FULL RUN USING FUNCTIONS ABOVE ###
+# PERFORM A FULL RUN USING FUNCTIONS ABOVE #
 def fullRun(diskAParams, diskBParams):
-    # diskXParams are fed in from full_run.py where the parameter selections are made.
+    """Run it all.
 
+    diskXParams are fed in from full_run.py,
+    where the parameter selections are made.
+    """
     # Calculate the number of steps and consequent runtime
     na = 1
     for a in range(0, len(diskAParams)):
@@ -203,7 +216,6 @@ def fullRun(diskAParams, diskBParams):
     t = dt * n / 60							# hours
 
     # Parameter Check:
-    print "BEFORE STARTING A BIG RUN: Do a short test run and make sure the log file export works\n"
     print "This run will be iteratating through these parameters for Disk A:"
     print diskAParams
     print "\nAnd these values for Disk B:"
@@ -217,11 +229,8 @@ def fullRun(diskAParams, diskBParams):
     else:
         print "Sounds good! Starting run.\n\n"
 
-    ### STARTING THE RUN ###
-
-    # Start by fitting A and holding B constant
-
-    # Make the initial static model (B), just with the first parameter values available
+    # STARTING THE RUN #
+    # Make the initial static model (B), just with the first parameter values
     dBInit = []
     for i in diskBParams:
         dBInit.append(i[0])
@@ -234,7 +243,7 @@ def fullRun(diskAParams, diskBParams):
         df_A_fit['Reduced Chi2'])][0]
     print "Index of Best Fit, A is ", idx_of_BF_A
 
-    # Make a list of those parameters to pass to the next round of grid searching.
+    # Make a list of those parameters to pass the next round of grid searching.
     Ps_A = [df_A_fit['Atms Temp'][idx_of_BF_A],
             df_A_fit['Temp Struct'][idx_of_BF_A],
             df_A_fit['Molecular Abundance'][idx_of_BF_A],

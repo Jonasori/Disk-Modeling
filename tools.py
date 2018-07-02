@@ -13,13 +13,7 @@ Script some Miriad commands for easier calling, more specialized usage.
 import subprocess as sp
 import pickle
 import os
-
-
-restfreqs = {'hco': 356.73422300,
-             'hcn': 354.50547590,
-             'co': 345.79598990,
-             'cs': 342.88285030
-             }
+from utils import restfreqs
 
 
 def cgdisp(imageName, crop=True, contours=True, rms=6.8e-3):
@@ -235,6 +229,22 @@ def depickleLogFile(filename):
            'Best Fit B': best_fit_b
            }
     return out
+
+
+def uvaver(name, min_baseline):
+    """Cut a vis file."""
+    new_name = name + '-short' + str(min_baseline)
+    sp.call(['uvaver',
+             'vis={}.vis'.format(name),
+             'select=-uvrange(0,{})'.format(min_baseline),
+             'out={}.vis'.format(new_name)])
+
+    sp.call(['fits',
+             'op=uvout',
+             'in={}.vis'.format(new_name),
+             'out={}.uvf'.format(new_name)])
+
+
 
 
 # The End

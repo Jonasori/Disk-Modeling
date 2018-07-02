@@ -1,105 +1,53 @@
-"""
-Some nice functions to be used in making models
-"""
+"""Some nice functions to be used in making models."""
 
 
-################
-### PACKAGES ###
-################
+############
+# PACKAGES #
+############
 
-import os
-import sys
-import datetime
-from disk_model.disk import *
+from disk_model.disk import Disk
 import disk_model.raytrace as rt
 from astropy.io import fits
 import numpy as np
 import subprocess as sp
-import astropy.units as u
+from constants import obs_stuff, other_params
 
 
 # DATA FILE NAME
-data_file = 'data-hco'
+mol = 'hco'
+data_file = 'data' + mol
 
 
-##########################
-### CONSTANTS & PARAMS ###
-##########################
+######################
+# CONSTANTS & PARAMS #
+######################
 
 
-# Column density [low, high]
-col_dens = [1.3e21/(1.59e21), 1e30/(1.59e21)]
-# Freeze out temp (K)
-Tfo = 19
-# Midplane temperature (K)
-Tmid = 15
-# Atmospheric temperature (K)
-Tatm = 100
-# Temp structure power law index ( T(r) ~ r^qq )
-Tqq = -0.5
-# Stellar mass, in solar masses [a,b]
-m_star = [3.5, 0.4]
-# Disk mass, in solar masses [a,b]
-m_disk = [0.078, 0.028]
-# Inner disk radius, in AU
-r_in = [1., 1.]
-# Outer disk radius, in AU
-r_out = [500, 300]
-# Formerly [10.55, 10.85]
-sysv = [10.55, 10.85]					# Systemic velocities, in km/s
-rotHand = [-1, -1]					# Handedness of rotation
-
-
-# Offsets seem to be weird: x is negative (x=1 is on the left), and y is normal.
-# Remember that centering_for_olay.cgdisp is the file that actually makes the green crosses!
-# Offsets (from center?), in arcseconds
+# centering_for_olay.cgdisp is the file that actually makes the green crosses!
+# Offsets (from center), in arcseconds
 offsets = [[-0.0298, 0.072], [-1.0456, -0.1879]]
 
+vsys, restfreq, freq0, obsv, chanstep, n_chans, chanmins, jnum = obs_stuff(mol)
+col_dens, Tfo, Tmid, Tatm, Tqq, m_star, m_disk, r_in, r_out, rotHand = other_params
 
-# General constants
-restfreq = 356.73422300					# GHz
-# Lines 217-229 in Kevin's single_model.py are relevant here.
-
-hdr = fits.getheader(data_file + '.uvf')
-#Nchans = hdr['naxis4']
-# Each freq step: arange( nchans + 1 - chanNum) * chanStepFreq + ChanNumFreq * Hz2GHz
-freq = ((np.arange(hdr['naxis4']) + 1 - hdr['crpix4'])
-        * hdr['cdelt4'] + hdr['crval4']) * 1e-9
-# c * (restfreq - freq) / restfreq
-obsv = (restfreq-freq)/restfreq*2.99e5
-# Just change this since it's an actual run parameter
-
-Chanstep = (-1) * np.abs(obsv[1]-obsv[0])
+if mol == 'co' or mol == 'cs':
+    chanstep *= -1
 
 
-# Find the max spread between systemic velocity and observed channel velocity,
-#	divide that by how big each channel step is, and double it
-# Unclear why two of these are needed.
-# np.abs in the denominator to keep nchans positive even when chanstep is negative
-Nchans = [0, 0]
-Nchans[1] = int(2*np.ceil(np.abs(obsv-sysv[1]).max()/np.abs(Chanstep))+1)
-Nchans[0] = int(2*np.ceil(np.abs(obsv-sysv[0]).max()/np.abs(Chanstep))+1)
+####################
+# USEFUL FUNCTIONS #
+####################
 
 
-# Specify each disks's min chan velocity
-Chanmin = [0, 0]
-Chanmin[0] = -(Nchans[0]/2.-.5)*Chanstep
-Chanmin[1] = -(Nchans[1]/2.-.5)*Chanstep
-
-
-########################
-### USEFUL FUNCTIONS ###
-########################
-
-### MAKE A SINGLE MODEL DISK ###
 def makeModel(diskParams, outputName, DI):
+    """Make a single model disk.
+
+    Args:
+        diskParams (list of floats): the physical parameters for the model.
+        outputName (str) Should be consistent with other outputNames?
+        DI (0 or 1): the index of the disk being modeled.
+    Creates:	A model disk, named outputName.
     """
-            Takes:		diskParams: list of floats
-                                    outputName: string. Should be consistent with other outputNames?
-                                    DI: 0 or 1
-            Returns:	Nothing
-            Creates:	A model disk, named outputName.
-            """
     # DI = Disk Index: the index for the tuples below. 0=A, 1=B
 
     print "Entering makeModel()"
@@ -109,7 +57,7 @@ def makeModel(diskParams, outputName, DI):
 
     Tatms = diskParams[0]
     Tqq = diskParams[1]
-    Xmol = diskParams[2]								# Only an index, so must be raised as 10**Xmol
+    Xmol = diskParams[2]
     RAout = diskParams[3]
     PA = diskParams[4]
     Incl = diskParams[5]
@@ -131,37 +79,37 @@ def makeModel(diskParams, outputName, DI):
                      [1., RAout],
                      rotHand[DI]])
 
-    # The data have 51 channels (from the casa split()), so nchans must be 51.
+    # The data have 51 channels (from the casa split()), so n_chans must be 51
     rt.total_model(a, imres=0.1,
-                   nchans=Nchans[DI],
-                   chanmin=Chanmin[DI],
-                   chanstep=Chanstep,
+                   nchans=n_chans[DI],
+                   chanmin=chanmins[DI],
+                   chanstep=chanstep,
                    distance=414,
                    xnpix=128,
-                   vsys=sysv[DI],
+                   vsys=vsys[DI],
                    PA=PA,
                    offs=offsets[DI],
                    modfile=outputName,
                    isgas=True,
                    flipme=False,
                    freq0=restfreq,
-                   Jnum=3,
+                   Jnum=jnum,
                    obsv=obsv)
 
     print "MakeModel() completed"
-    print "using", PA, "as position angle"
 
 
-### SUM TWO MODEL DISKS ###
+# SUM TWO MODEL DISKS #
 def sumDisks(fileNameA, fileNameB, outputName):
-    """
-    Takes:		fileNameA: name of file, not including .fits
-                            fileNameB: as above
-                            outputName: the name of the file to be exported, with no file-type endings.
-    Returns:	None
+    """Sum two model disks.
+
+    Args:
+        fileNameA, fileNameB (str): where to find the model files.
+                                    Don't include the filetype extension.
+        outputName: the name of the file to be exported.
+                    Don't include the filetype extension.
     Creates:	outputName.[fits, im, vis, uvf]
     """
-
     # Now sum them up and make a new fits file
     a = fits.getdata(fileNameA + '.fits')
     b = fits.getdata(fileNameB + '.fits')
@@ -190,25 +138,17 @@ def sumDisks(fileNameA, fileNameB, outputName):
 
     im.header['CRVAL1'] = data_header['CRVAL1']
     im.header['CRVAL2'] = data_header['CRVAL2']
-    #im.header['EPOCH'] = data_header['EPOCH']
+    # im.header['EPOCH'] = data_header['EPOCH']
     im.header['RESTFRQ'] = data_header['RESTFRQ']
 
     # Write it out to a file, overwriting the existing one if need be
     fitsout = outputName + '.fits'
     im.writeto(fitsout, overwrite=True)
 
-    """
-	sp.call
-	puthd in={fitsout.fits}/EPOCH value=2000.0
-	"""
-
     # Clear out the old files to make room for the new
-    sp.call('rm -rf {}.vis'.format(outputName), shell=True)
-    sp.call('rm -rf {}.uvf'.format(outputName), shell=True)
-    sp.call('rm -rf {}.im'.format(outputName), shell=True)
+    sp.call('rm -rf {}.{{vis, uvf, im}}'.format(outputName), shell=True)
 
     # Now convert that file to the visibility domain:
-
     sp.call(['fits', 'op=xyin',
              'in={}.fits'.format(outputName),
              'out={}.im'.format(outputName)])
@@ -220,27 +160,24 @@ def sumDisks(fileNameA, fileNameB, outputName):
              'out={}.vis'.format(outputName)])
 
     # Convert to UVfits
-
     sp.call(['fits', 'op=uvout',
              'in={}.vis'.format(outputName),
              'out={}.uvf'.format(outputName)])
 
 
-### CALCULATE  CHISQ BETWEEN MODEL AND DATA ###
 def chiSq(infile):
-    """Blah blah blah.
+    """Calculate chi-squared metric between model and data.
 
     Takes: 		infile: file name of model to be compared, not including .fits
     Returns:	[Raw X2, Reduced X2]
     Creates: 	None
     """
-
     # GET VISIBILITIES
-	data = fits.open(data_file + '.uvf')
-	data_vis = data[0].data['data'].squeeze()
+    data = fits.open(data_file + '.uvf')
+    data_vis = data[0].data['data'].squeeze()
 
-	model = fits.open(infile + '.uvf')
-	model_vis = model[0].data['data'].squeeze()
+    model = fits.open(infile + '.uvf')
+    model_vis = model[0].data['data'].squeeze()
 
     # PREPARE STUFF FOR CHI SQUARED
 
