@@ -12,7 +12,7 @@ from tools import icr, imstat
 
 # baselines = [i*20 for i in range(1, 5)]
 # baselines = np.arange(0, 130, 10)
-baselines = np.concatenate((np.arange(0, 130, 10), np.arange(65, 105, 10)))
+baselines = np.sort(np.concatenate((np.arange(0, 130, 10), np.arange(65, 105, 10))))
 dfile = 'data-hco'
 
 
