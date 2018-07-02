@@ -1,15 +1,9 @@
 """Run a grid search."""
 
 
-import os
-import sys
 import datetime
-from disk_model.disk import *
-import disk_model.raytrace as rt
-from astropy.io import fits
 import numpy as np
 import subprocess as sp
-import astropy.units as u
 from utils import makeModel, sumDisks, chiSq
 from run_params import diskAParams, diskBParams
 from tools import icr
@@ -47,9 +41,11 @@ diskBRedX2 = np.zeros((len(diskAParams[0]), len(diskBParams[1]), len(
     diskBParams[2]), len(diskBParams[3]), len(diskBParams[4]), len(diskBParams[5])))
 
 
-### GRID SEARCH OVER ONE DISK HOLDING OTHER CONSTANT ###
+# GRID SEARCH OVER ONE DISK HOLDING OTHER CONSTANT
 def gridSearch(VariedDiskParams, StaticDiskParams, DI, num_iters, steps_so_far=1):
     """
+    Run a grid search over parameter space.
+
     Takes: 		VariedDiskParams: list of lists
                             StaticDiskParams: list of floats! Not searching over lists for the static one
                             DI: Disk Index of varied disk (0 or 1). If 0, A is the varied disk and vice versa
@@ -118,7 +114,7 @@ def gridSearch(VariedDiskParams, StaticDiskParams, DI, num_iters, steps_so_far=1
                             print "ta:", ta, "tqq", tqq, "xmol:", xmol, "raout:", raout, "pa:", pa, "incl:", incl
                             print "Static params: ", StaticDiskParams
 
-                            ### The model making/data management ###
+                            # The model making/data management
                             makeModel(params, outNameVaried, DI)
                             sumDisks(outNameVaried, outNameStatic, outputName)
 

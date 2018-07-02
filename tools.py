@@ -15,6 +15,13 @@ import pickle
 import os
 
 
+restfreqs = {'hco': 356.73422300,
+             'hcn': 354.50547590,
+             'co': 345.79598990,
+             'cs': 342.88285030
+             }
+
+
 def cgdisp(imageName, crop=True, contours=True, rms=6.8e-3):
     """Drop some sweet chanmaps.
 
@@ -105,10 +112,16 @@ def imspec(imageName):
 
 # Invert/clean/restor: Take in a visibility, put out a convolved clean map.
 # Note that right now the restfreq is HCO+ specific
-def icr(modelName, min_baseline=0, niters=1e5, rms=3.33e-02):
+def icr(modelName, min_baseline=0, niters=1e5, rms=3.33e-02, mol='hco'):
     """Invert/clean/restor: Turn a vis into a convolved clean map.
 
-    Note that right now the restfreq is HCO+ specific
+    Args:
+        modelName (str): name of the file.
+        min_baseline (int): minimum baseline length to use. Cuts all below.
+        niters (int): how many iterations of cleaning to run. Want this to be
+                      big enough that it never gets triggered.
+        rms (float): the the rms noise, to which we clean down to.
+        mol (str): which molecule's restfreq to use.
     """
     # Add a shorthand name (easier to write)
     b = min_baseline
@@ -121,11 +134,10 @@ def icr(modelName, min_baseline=0, niters=1e5, rms=3.33e-02):
     # Add restfreq to this vis
     sp.call(['puthd',
              'in={}.vis/restfreq'.format(modelName),
-             'value=356.73422300'],
+             'value={}'.format(restfreqs[mol])
+             ],
             stdout=open(os.devnull, 'wb'))
 
-    # See June 7 notes and baseline_cutoff.py for how 30 klambda was decided
-    # in select=-uvrange(0,30)
     if min_baseline == 0:
         # can't call select=-uvrange(0,0) so just get rid of that line for 0.
         # This way we also don't get files called data-hco0

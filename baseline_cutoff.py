@@ -8,8 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import argparse as ap
 import pandas as pd
-from tools import icr
-from tools import imstat
+from tools import icr, imstat
 
 # baselines = [i*20 for i in range(1, 5)]
 baselines = np.arange(40, 150, 5)
@@ -30,15 +29,22 @@ def main():
         run(dfile)
 
 
-def get_baseline_rmss(modelName, baselines=baselines):
-    """Iterate through a range of baseline cutoffs and compare the results."""
+def get_baseline_rmss(modelName, baselines=baselines, remake_all=False):
+    """Iterate through a range of baseline cutoffs and compare the results.
+
+    Args:
+        modelName (str): the name of the core data file that this is pulling.
+        baselines (list of ints): the baselines to check over.
+        remake_all (bool): if True, re-convolve all files, overwriting
+                           pre-existing files if need be.
+    """
     data_list = []
     for b in baselines:
         print '\n\n\n    NEW ITERATION\nBaseline: ', b, '\n'
         name = modelName + str(b)
 
         # Check if we've already icr'ed this one.
-        if name in sp.check_output(['ls']):
+        if name in sp.check_output(['ls']) and remake_all is False:
             print "File already exists; going straight to imstat"
             mean, rms = imstat(name)
 
