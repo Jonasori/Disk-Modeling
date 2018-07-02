@@ -64,7 +64,7 @@ def cgdisp(imageName, crop=True, contours=True, rms=6.8e-3):
                  ])
 
 
-def imstat(modelName, plane_to_check=30):
+def imstat(modelName, ext='.cm', plane_to_check=30):
     """Call imstat to find rms and mean.
 
     Want an offsource region so that we can look at the noise. Decision to look
@@ -80,7 +80,7 @@ def imstat(modelName, plane_to_check=30):
     r_offsource = '(-5,-5,5,-1)'
     print '\n\nIMSTATING ', modelName
     imstat_raw = sp.check_output(['imstat',
-                                  'in={}'.format(modelName),
+                                  'in={}{}'.format(modelName, ext),
                                   'region=arcsec,box{}'.format(r_offsource)
                                   ])
     imstat_out = imstat_raw.split('\n')
@@ -105,7 +105,7 @@ def imstat(modelName, plane_to_check=30):
 
 # Invert/clean/restor: Take in a visibility, put out a convolved clean map.
 # Note that right now the restfreq is HCO+ specific
-def icr(modelName, min_baseline=0, niters=1e4, rms=5.065E-02, mol='hco'):
+def icr(modelName, min_baseline=0, niters=1e4, mol='hco'):
     """Invert/clean/restor: Turn a vis into a convolved clean map.
 
     Args:
@@ -148,8 +148,8 @@ def icr(modelName, min_baseline=0, niters=1e4, rms=5.065E-02, mol='hco'):
 
     # If we're chopping baselines:
     else:
-        for ext in ['cm', 'cl', 'bm', 'mp']:
-            sp.call('rm -rf {}.{}'.format(modelName + str(b), ext), shell=True)
+        for end in ['cm', 'cl', 'bm', 'mp']:
+            sp.call('rm -rf {}.{}'.format(modelName + str(b), end), shell=True)
         print "Deleted", modelName + str(b) + '.[cm, cl, bm, mp]'
 
         sp.call(['invert',
@@ -164,7 +164,7 @@ def icr(modelName, min_baseline=0, niters=1e4, rms=5.065E-02, mol='hco'):
                 stdout=open(os.devnull, 'wb'))
 
     # Grab the rms
-    rms = imstat(modelName + str(b))[1]
+    rms = imstat(modelName + str(b), ext)[1]
     sp.call(['clean',
              'map={}.mp'.format(modelName + str(b)),
              'beam={}.bm'.format(modelName + str(b)),
