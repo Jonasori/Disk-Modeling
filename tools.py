@@ -148,7 +148,7 @@ def icr(modelName, min_baseline=0, niters=1e6, rms=3.33e-02, mol='hco'):
     # If we're chopping baselines:
     else:
         for ext in ['cm', 'cl', 'bm', 'mp']:
-            sp.call('rm -rf {}.{}'.format(modelName, ext), shell=True)
+            sp.call('rm -rf {}.{}'.format(modelName + str(b), ext), shell=True)
         print "Deleted", modelName + str(b) + '.[cm, cl, bm, mp]'
 
         sp.call(['invert',
