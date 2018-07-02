@@ -55,8 +55,12 @@ def get_baseline_rmss(modelName, baselines=baselines, remake_all=False):
             name = modelName + str(b)
         print name
 
+        if b == 0:
+            print "Don't delete the 0-baseline you stoop!"
+            mean, rms = imstat(name)
+
         # Check if we've already icr'ed this one.
-        if name + '.cm' in sp.check_output(['ls']) and remake_all is False:
+        elif name + '.cm' in sp.check_output(['ls']) and remake_all is False:
             print "File already exists; going straight to imstat"
             mean, rms = imstat(name)
 
