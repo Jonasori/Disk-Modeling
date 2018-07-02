@@ -90,14 +90,15 @@ def analysis(df):
     axarr[0].grid(axis='x')
     axarr[0].set_title('RMS Noise')
     # axarr[0].set_ylabel('RMS Off-Source Flux (Jy/Beam)')
-    axarr[0].plot(df['Baseline'], df['RMS'])
+    axarr[0].plot(df['Baseline'], df['RMS'], 'or')
+    axarr[0].plot(df['Baseline'], df['RMS'], '-b')
 
     axarr[1].grid(axis='x')
     axarr[1].set_title('Mean Noise')
     # axarr[1].set_ylabel('Mean Off-Source Flux (Jy/Beam)')
     axarr[1].set_xlabel('Baseline length (k-lambda)')
-    axarr[1].plot(df['Baseline'], df['Mean'], '-b')
     axarr[1].plot(df['Baseline'], df['Mean'], 'or')
+    axarr[1].plot(df['Baseline'], df['Mean'], '-b')
     plt.savefig('noise_by_baselines.png')
     # plt.show(block=False)
     return [df['Baseline'], df['Mean'], df['RMS']]
