@@ -11,6 +11,7 @@ import disk_model.raytrace as rt
 from astropy.io import fits
 from disk_model.disk import Disk
 from constants import obs_stuff, other_params
+from grid_search import mol
 
 
 ######################
@@ -18,11 +19,10 @@ from constants import obs_stuff, other_params
 ######################
 
 # DATA FILE NAME
-mol = 'hco'
-dataPath = 'data/' + mol + '/' + mol + '.'
+dataPath = 'data/' + mol + '/' + mol
 
-# centering_for_olay.cgdisp is the file that actually makes the green crosses!
 # Offsets (from center), in arcseconds
+# centering_for_olay.cgdisp is the file that actually makes the green crosses!
 offsets = [[-0.0298, 0.072], [-1.0456, -0.1879]]
 
 vsys, restfreq, freq0, obsv, chanstep, n_chans, chanmins, jnum = obs_stuff(mol)
@@ -133,7 +133,7 @@ def sumDisks(filePathA, filePathB, outputPath):
     im.header = model_header
 
     # Now swap out some of the values using values from the data file:
-    header_info_from_data = fits.open('../data/hco.fits')
+    header_info_from_data = fits.open(dataPath '.fits')
     data_header = header_info_from_data[0].header
     header_info_from_data.close()
 
@@ -169,7 +169,8 @@ def sumDisks(filePathA, filePathB, outputPath):
 def chiSq(infile):
     """Calculate chi-squared metric between model and data.
 
-    Takes: 		infile: file name of model to be compared, not including .fits
+    Args:
+        infile: file name of model to be compared, not including .fits
     Returns:	[Raw X2, Reduced X2]
     Creates: 	None
     """
@@ -183,7 +184,6 @@ def chiSq(infile):
     # PREPARE STUFF FOR CHI SQUARED
 
     # Turn polarized data to stokes
-
     # data_vis.squeeze(): [visibilities, chans, polarizations?, real/imaginary]
     # Should the 2s be floats?
     data_real = (data_vis[:, :, 0, 0] + data_vis[:, :, 1, 0])/2.
