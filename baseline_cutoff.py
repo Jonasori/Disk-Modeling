@@ -32,10 +32,8 @@ def main():
                         help='Run the analysis, overwriting preexisting runs.')
 
     args = parser.parse_args()
-
     if args.run:
         run(dfile, remake_all=False)
-
     elif args.run_and_overwrite:
         run(dfile, remake_all=True)
 
@@ -58,12 +56,16 @@ def get_baseline_rmss(modelName, baselines=baselines, remake_all=False):
             name = modelName + str(b)
         print name
 
+        # If we want to reconvolve everything, then start by deleting them.
+        if remake_all is True:
+            sp.call(['rm', '-rf', '{}.{{cm, cl, mp, bm}}'.format(name)])
+
         if b == 0:
             print "Don't delete the 0-baseline you stoop!"
             mean, rms = imstat(name)
 
         # Check if we've already icr'ed this one.
-        elif name + '.cm' in sp.check_output(['ls']) and remake_all is False:
+        elif name + '.cm' in sp.check_output(['ls']):
             print "File already exists; going straight to imstat"
             mean, rms = imstat(name)
 
@@ -104,7 +106,7 @@ def analysis(df):
     return [df['Baseline'], df['Mean'], df['RMS']]
 
 
-def run(modelName, Baselines=baselines, remake_all=False):
+def run(modelName, remake_all=False, Baselines=baselines):
     """Run the above functions."""
     ds = get_baseline_rmss(modelName, Baselines, remake_all)
     analysis(ds)
@@ -112,6 +114,29 @@ def run(modelName, Baselines=baselines, remake_all=False):
 
 if __name__ == '__main__':
     main()
+
+
+
+
+scratch_dir='/scratch/cail/{}_model_files'.format(run_name),
+
+except IOError:
+        sp.call(['mkdir', run_name])
+        if scratch_dir is False:
+            sp.call(['mkdir', run_name + '/model_files'])
+        else:
+            # make a 'scratch' directory to hold model files in a user-specified
+            # location, and then create a symbolic link pointing from
+            # run_dir/model_files to scratch_dir.
+            print('creating scratch directory for model files at {}'.format(scratch_dir))
+            sp.call(['mkdir', scratch_dir])
+            print('linking {}/model_files to scratch directory'.format(run_name))
+            sp.call('ln -s {} {}/model_files'.format(scratch_dir, run_name), shell=True)
+
+
+
+ln -s /scratch/jonas/scratch_dir ./test_local
+
 
 
 # The End

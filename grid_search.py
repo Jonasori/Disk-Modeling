@@ -4,16 +4,11 @@
 import datetime
 import numpy as np
 import subprocess as sp
-from utils import makeModel, sumDisks, chiSq
-from run_params import diskAParams, diskBParams
-from tools import icr
 import pandas as pd
 import cPickle as pickle
-
-
-# Velocity axes might be backwards
-# options=3value csize=1,2
-# Write into short log file how many steps were taken
+from tools import icr
+from utils import makeModel, sumDisks, chiSq
+from run_params import diskAParams, diskBParams
 
 
 # Name the output file
@@ -21,24 +16,36 @@ td = datetime.datetime.now()
 months = ['jan', 'feb', 'march', 'april', 'may',
           'june', 'july', 'aug', 'sep', 'oct', 'nov', 'dec']
 today = months[td.month - 1] + str(td.day)
-outputName = 'model_' + today  # + 'df_out_test'
 
+# Not sure this is set up right yet.
+sp.call(['mkdir', 'models/run_{}'.format(today)])
+sp.call(['mkdir', '/scratch/jonas/run_{}'.format(today)])
+run_dir = './models/run_' + today
+scratch_dir = '/scratch/jonas/run_' + today
+sp.call(['ln -s {} {}'.format(scratch_dir, run_dir)])
 
-# Data file name:
-data_file = 'data-hco'
+# outputName = 'model_' + today  # + 'df_out_test'
+outputPath = 'models/run_' + today + '/'
 
+# A little silly, but an easy way to name disks by their disk index (DI)
+dnames = ['A', 'B']
 
 # Prep some storage space for all the chisq vals
+diskARawX2 = np.zeros((len(diskAParams[0]), len(diskAParams[1]),
+                       len(diskAParams[2]), len(diskAParams[3]),
+                       len(diskAParams[4]), len(diskAParams[5])))
 
-diskARawX2 = np.zeros((len(diskAParams[0]), len(diskAParams[1]), len(
-    diskAParams[2]), len(diskAParams[3]), len(diskAParams[4]), len(diskAParams[5])))
-diskBRawX2 = np.zeros((len(diskBParams[0]), len(diskBParams[1]), len(
-    diskBParams[2]), len(diskBParams[3]), len(diskBParams[4]), len(diskBParams[5])))
+diskBRawX2 = np.zeros((len(diskBParams[0]), len(diskBParams[1]),
+                       len(diskBParams[2]), len(diskBParams[3]),
+                       len(diskBParams[4]), len(diskBParams[5])))
 
-diskARedX2 = np.zeros((len(diskAParams[0]), len(diskAParams[1]), len(
-    diskAParams[2]), len(diskAParams[3]), len(diskAParams[4]), len(diskAParams[5])))
-diskBRedX2 = np.zeros((len(diskAParams[0]), len(diskBParams[1]), len(
-    diskBParams[2]), len(diskBParams[3]), len(diskBParams[4]), len(diskBParams[5])))
+diskARedX2 = np.zeros((len(diskAParams[0]), len(diskAParams[1]),
+                       len(diskAParams[2]), len(diskAParams[3]),
+                       len(diskAParams[4]), len(diskAParams[5])))
+
+diskBRedX2 = np.zeros((len(diskAParams[0]), len(diskBParams[1]),
+                       len(diskBParams[2]), len(diskBParams[3]),
+                       len(diskBParams[4]), len(diskBParams[5])))
 
 
 # GRID SEARCH OVER ONE DISK HOLDING OTHER CONSTANT
@@ -46,9 +53,11 @@ def gridSearch(VariedDiskParams, StaticDiskParams, DI, num_iters, steps_so_far=1
     """
     Run a grid search over parameter space.
 
-    Takes: 		VariedDiskParams: list of lists
-                            StaticDiskParams: list of floats! Not searching over lists for the static one
-                            DI: Disk Index of varied disk (0 or 1). If 0, A is the varied disk and vice versa
+    Args:
+        VariedDiskParams (list of lists): lists of param vals to try.
+        StaticDiskParams (list of floats) Single vals for the static model.
+        DI: Disk Index of varied disk (0 or 1).
+            If 0, A is the varied disk and vice versa
     Returns: 	[X2 min value, Coordinates of X2 min]
     Creates:	Best fit two-disk model
     """
@@ -65,31 +74,21 @@ def gridSearch(VariedDiskParams, StaticDiskParams, DI, num_iters, steps_so_far=1
     # Initiate a list to hold the rows of the df
     df_rows = []
 
-    # Get the correct name for the output
-    if DI == 0:
-        outNameVaried = 'model-FittedA'
-        outNameStatic = 'model-DiskB'
-        DIs = 1
-    else:
-        outNameVaried = 'model-FittedB'
-        outNameStatic = 'model-DiskA'
-        DIs = 0
+    # Get the index of the static disk, name the outputs
+    DIs = abs(DI - 1)
+    outNameVaried = outputPath + 'fitted_' + dnames[DI]
+    outNameStatic = outputPath + 'static_' + dnames[DIs]
 
     makeModel(StaticDiskParams, outNameStatic, DIs)
 
-    # Calculate the number of iterations this run will take (iterating over both disks)
-    # num_iters = len(Tatms)*len(Tqq)*len(Xmol)*len(RAout)*len(PA)*len(Incl)
-    # Set up a counter for the print out
     counter = steps_so_far
-    # if DI==1:
-    #	counter += num_steps(disk A)
 
-    # Set up huge initial chi squared values so that later they will be improved upon.
+    # Set up huge initial chi squared values so that they can be improved upon.
     minRedX2 = 10000000000
     minRawX2 = 10000000000
     minX2Vals = [0, 0, 0, 0, 0, 0]
 
-    ### GRIDLIFE ###
+    # GRIDLIFE #
     for i in range(0, len(Tatms)):
         for j in range(0, len(Tqq)):
             for l in range(0, len(RAout)):
@@ -119,14 +118,14 @@ def gridSearch(VariedDiskParams, StaticDiskParams, DI, num_iters, steps_so_far=1
 
                             # The model making/data management
                             makeModel(params, outNameVaried, DI)
-                            sumDisks(outNameVaried, outNameStatic, outputName)
+                            sumDisks(outNameVaried, outNameStatic, outputPath)
 
                             # Careful to put these in the right spot!
-                            X2s = chiSq(outputName)
+                            X2s = chiSq(outputPath)
                             rawX2, redX2 = X2s[0], X2s[1]
 
                             # It's ok to split these up by disk since disk B's
-                            # optimized params will be independent of where disk A is.
+                            # best params are independent of where disk A is.
                             if DI == 0:
                                 diskARawX2[i, j, k, l, m, n] = rawX2
                                 diskARedX2[i, j, k, l, m, n] = redX2
@@ -136,12 +135,10 @@ def gridSearch(VariedDiskParams, StaticDiskParams, DI, num_iters, steps_so_far=1
 
                             counter += 1
 
-                            # PRINTOUT some info
                             print "\n\n"
                             print "Raw Chi-Squared value:	 ", rawX2
                             print "Reduced Chi-Squared value:", redX2
 
-                            # Add this step to the step df
                             df_row = {
                                 'Atms Temp': ta,
                                 'Temp Struct': tqq,
@@ -151,7 +148,7 @@ def gridSearch(VariedDiskParams, StaticDiskParams, DI, num_iters, steps_so_far=1
                                 'Incl.': incl,
                                 'Raw Chi2': rawX2,
                                 'Reduced Chi2': redX2
-                            }
+                                }
                             df_rows.append(df_row)
 
                             # A counter to keep track of whether this is the
@@ -177,14 +174,14 @@ def gridSearch(VariedDiskParams, StaticDiskParams, DI, num_iters, steps_so_far=1
                             # If this is the best fit so far, just change the model's name so that we can hold onto it.
                             if bestYet == 1:
                                 sp.call(
-                                    'mv {}.fits model_{}-bestFit.fits'.format(outputName, today), shell=True)
+                                    'mv {}.fits model_{}-bestFit.fits'.format(outputPath, today), shell=True)
                                 print "Best fit happened; moved files"
                             # Now clear out all the files (im, vis, uvf, fits) made by chiSq()
-                            sp.call('rm -rf {}.*'.format(outputName), shell=True)
+                            sp.call('rm -rf {}.*'.format(outputPath), shell=True)
 
     # Finally, make the best-fit model for this disk
     makeModel(minX2Vals, outNameVaried, DI)
-    print "Best-fit model created: ", outputName
+    print "Best-fit model created: ", outputPath
 
     # Knit the dataframe
     step_log = pd.DataFrame(df_rows)
@@ -218,9 +215,8 @@ def fullRun(diskAParams, diskBParams):
     # Parameter Check:
     print "This run will be iteratating through these parameters for Disk A:"
     print diskAParams
-    print "\nAnd these values for Disk B:"
-    print diskBParams
-    print "\nThis run will take ", n, "steps, spanning about ", t, "hours in the file", outputName, '\n'
+    print "\nAnd these values for Disk B:\n", diskBParams
+    print "\nThis run will take ", n, "steps, spanning about ", t, "hours in the file", outputPath, '\n'
     response = raw_input(
         "Sound good? (press Enter to continue, any other key to stop)")
     if response != "":
@@ -259,6 +255,7 @@ def fullRun(diskAParams, diskBParams):
 
     idx_of_BF_B = df_B_fit.index[df_B_fit['Reduced Chi2'] == np.min(
         df_B_fit['Reduced Chi2'])][0]
+
     Ps_B = [df_B_fit['Atms Temp'][idx_of_BF_B],
             df_B_fit['Temp Struct'][idx_of_BF_B],
             df_B_fit['Molecular Abundance'][idx_of_BF_B],
@@ -269,37 +266,37 @@ def fullRun(diskAParams, diskBParams):
 
     # Create the final best-fit model.
     # Final model names:
-    diskAName, diskBName = 'fitA', 'fitB'
+    diskAName, diskBName = outputPath + 'fitA', outputPath + 'fitB'
 
-    makeModel(fit_A_params, diskAName, 0)
+    makeModel(fit_A_params, outputPath + 'fitA', 0)
     makeModel(fit_B_params, diskBName, 1)
-    sumDisks(diskAName, diskBName, outputName)
+    sumDisks(diskAName, diskBName, outputPath)
 
     # Bind the data frames, output them.
     # This is reiterated in tools.py/depickler(), but we can unwrap these vals with:
     # full_log.loc['A', :] to get all the columns for disk A, or full_log[:, 'Incl.'] to see which inclinations both disks tried.
     full_log = pd.concat([df_A_fit, df_B_fit], keys=['A', 'B'], names=['Disk'])
     # Pickle the step log df.
-    pickle.dump(full_log, open('{}_step-log.pickle'.format(outputName), "wb"))
+    pickle.dump(full_log, open('{}_step-log.pickle'.format(outputPath), "wb"))
     # To read the pickle:
-    # full_log = pickle.load( open( '{}_step-log.pickle'.format(outputName), "rb" ) )
+    # f = pickle.load(open('{}_step-log.pickle'.format(outputPath), "rb"))
 
     # Alternatively, to get a csv:
-    # full_log.to_csv(path_or_buf='{}_step-log.csv'.format(outputName))
+    # full_log.to_csv(path_or_buf='{}_step-log.csv'.format(outputPath))
 
     # Convolve the final model
-    icr(outputName)
-    print "Best-fit model created: ", outputName, ".[fits/some other ones]"
+    icr(outputPath, mol=mol)
+    print "Best-fit model created: ", outputPath, ".cm"
 
-    # Calculate and present the final X2 values. Note that here, outputName is just the infile for chiSq()
-    finalX2s = chiSq(outputName)
+    # Calculate and present the final X2 values. Note that here, outputPath is just the infile for chiSq()
+    finalX2s = chiSq(outputPath)
     print "Final Raw Chi-Squared Value: ", finalX2s[0]
     print "Final Reduced Chi-Squared Value: ", finalX2s[1]
 
     # A short log file with best fit vals, range queried, indices of best vals, best chi-squared.
     # Finally, write out the short file:
     # 	- (maybe figure out how to round these for better readability)
-    f = open(outputName + '-short.log', 'w')
+    f = open(outputPath + '-short.log', 'w')
     s1 = '\nBest Chi-Squared values [raw, reduced]:' + str(finalX2s)
     f.write(s1)
     s2 = '\n\n\nParameter ranges queried:\n' + '\nDisk A:\n' + \
