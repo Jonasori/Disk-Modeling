@@ -134,7 +134,7 @@ def sumDisks(filePathA, filePathB, outputPath):
     im.header = model_header
 
     # Now swap out some of the values using values from the data file:
-    header_info_from_data = fits.open(dataPath '.fits')
+    header_info_from_data = fits.open(dataPath + '.fits')
     data_header = header_info_from_data[0].header
     header_info_from_data.close()
 
