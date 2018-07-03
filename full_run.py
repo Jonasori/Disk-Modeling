@@ -23,11 +23,11 @@ today = months[td.month - 1] + str(td.day)
 if gs:
     # Set up a symlink to the /scratch directory to dump the model files to.
     print "Making new directories and setting up symlink."
-    sp.call(['mkdir', 'models/run_{}'.format(today)])
-    sp.call(['mkdir', '/scratch/jonas/run_{}'.format(today)])
-    run_dir = './models/run_' + today
+    # Watch out: -p is overwrite, so that'll delete everything in the directory
+    # if there's already one there.
     scratch_dir = '/scratch/jonas/run_' + today
-    sp.call(['ln -s {} {}'.format(scratch_dir, run_dir)])
+    sp.call(['mkdir', '-p', scratch_dir])
+    sp.call(['ln -s {} models/'.format(scratch_dir)])
 
     print "Starting fullRun"
     fullRun(diskAParams, diskBParams)
