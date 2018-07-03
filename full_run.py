@@ -27,7 +27,7 @@ if gs:
     # if there's already one there.
     scratch_dir = '/scratch/jonas/run_' + today
     sp.call(['mkdir', '-p', scratch_dir])
-    sp.call(['ln -s {} models/'.format(scratch_dir)])
+    sp.call(['ln', '-s', '{} models/'.format(scratch_dir)])
 
     print "Starting fullRun"
     fullRun(diskAParams, diskBParams)
