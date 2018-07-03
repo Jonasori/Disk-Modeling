@@ -25,6 +25,7 @@ if gs:
     print "Making new directories and setting up symlink."
     # Watch out: -p is overwrite, so that'll delete everything in the directory
     # if there's already one there.
+    sp.call(['rm', '-rf', './models/run_', today])
     scratch_dir = '/scratch/jonas/run_' + today
     sp.call(['mkdir', '-p', scratch_dir])
     sp.call(['ln', '-s', scratch_dir, './models/'])
