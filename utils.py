@@ -11,7 +11,7 @@ import disk_model.raytrace as rt
 from astropy.io import fits
 from disk_model.disk import Disk
 from constants import obs_stuff, other_params
-from full_run import mol
+from grid_search import mol
 
 
 ######################

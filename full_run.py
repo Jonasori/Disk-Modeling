@@ -5,12 +5,11 @@ blah.
 
 import datetime
 import subprocess as sp
-from grid_search import fullRun
+from grid_search import fullRun, mol
 from run_params import diskAParams, diskBParams
 
 
 # Which line are we looking at, and how are we fitting?
-mol = 'hco'
 gs = True
 
 # What day is it? Used to ID files.

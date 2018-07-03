@@ -1,7 +1,6 @@
 """Run a grid search."""
 
 
-import datetime
 import numpy as np
 import subprocess as sp
 import pandas as pd
@@ -9,9 +8,10 @@ import cPickle as pickle
 from tools import icr
 from utils import makeModel, sumDisks, chiSq
 from run_params import diskAParams, diskBParams
-from full_run import today, mol
+from full_run import today
 
 
+mol = 'hco'
 modelPath = './models/run_' + today + '/model'
 
 # A little silly, but an easy way to name disks by their disk index (DI)
