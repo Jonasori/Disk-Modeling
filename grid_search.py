@@ -9,24 +9,8 @@ import cPickle as pickle
 from tools import icr
 from utils import makeModel, sumDisks, chiSq
 from run_params import diskAParams, diskBParams
+from full_run import today, mol
 
-
-# Which line are we looking at?
-mol = 'hco'
-
-
-# Name the output file
-td = datetime.datetime.now()
-months = ['jan', 'feb', 'march', 'april', 'may',
-          'june', 'july', 'aug', 'sep', 'oct', 'nov', 'dec']
-today = months[td.month - 1] + str(td.day)
-
-# Set up a symlink to the /scratch directory to dump the model files to.
-sp.call(['mkdir', 'models/run_{}'.format(today)])
-sp.call(['mkdir', '/scratch/jonas/run_{}'.format(today)])
-run_dir = './models/run_' + today
-scratch_dir = '/scratch/jonas/run_' + today
-sp.call(['ln -s {} {}'.format(scratch_dir, run_dir)])
 
 modelPath = 'models/run_' + today + '/model'
 
