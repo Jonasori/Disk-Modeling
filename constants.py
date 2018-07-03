@@ -5,6 +5,18 @@ FOR GRID SEARCH.
 
 from astropy.io import fits
 import numpy as np
+import datetime
+
+
+mol = 'hco'
+
+
+# What day is it? Used to ID files.
+months = ['jan', 'feb', 'march', 'april', 'may',
+          'june', 'july', 'aug', 'sep', 'oct', 'nov', 'dec']
+td = datetime.datetime.now()
+today = months[td.month - 1] + str(td.day)
+
 
 # Some restfrequencies.
 restfreqs = {'hco': 356.73422300,

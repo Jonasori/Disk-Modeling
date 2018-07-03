@@ -7,18 +7,18 @@
 
 import numpy as np
 import subprocess as sp
-import disk_model.raytrace as rt
 from astropy.io import fits
 from disk_model.disk import Disk
-from constants import obs_stuff, other_params
+import disk_model.raytrace as rt
+
+# Local package files
+from constants import mol, obs_stuff, other_params
 
 
 ######################
 # CONSTANTS & PARAMS #
 ######################
 
-
-mol = 'hco'
 
 # DATA FILE NAME
 dataPath = 'data/' + mol + '/' + mol

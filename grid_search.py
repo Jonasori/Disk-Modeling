@@ -6,12 +6,12 @@ import subprocess as sp
 import pandas as pd
 import cPickle as pickle
 from tools import icr
+
+# Local package files
 from utils import makeModel, sumDisks, chiSq
 from run_params import diskAParams, diskBParams
-from full_run import today
+from constants import mol, today
 
-
-mol = 'hco'
 
 modelPath = './models/run_' + today + '/model'
 

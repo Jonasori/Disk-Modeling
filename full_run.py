@@ -3,22 +3,16 @@
 blah.
 """
 
-import datetime
 import subprocess as sp
+
+# Local package files
 from grid_search import fullRun
 from run_params import diskAParams, diskBParams
+from constants import today
 
 
 # Which line are we looking at, and how are we fitting?
 gs = True
-
-mol = 'hco'
-
-# What day is it? Used to ID files.
-months = ['jan', 'feb', 'march', 'april', 'may',
-          'june', 'july', 'aug', 'sep', 'oct', 'nov', 'dec']
-td = datetime.datetime.now()
-today = months[td.month - 1] + str(td.day)
 
 
 if gs:
