@@ -142,7 +142,8 @@ def sumDisks(filePathA, filePathB, outputPath):
 
     im.header['CRVAL1'] = data_header['CRVAL1']
     im.header['CRVAL2'] = data_header['CRVAL2']
-    im.header['RESTFRQ'] = data_header['RESTFREQ']
+    print "Restfreq: ", data_header['RESTFREQ']
+    im.header['RESTFREQ'] = data_header['RESTFREQ']
     # im.header['EPOCH'] = data_header['EPOCH']
 
     # Write it out to a file, overwriting the existing one if need be
