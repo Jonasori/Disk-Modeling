@@ -11,12 +11,14 @@ import disk_model.raytrace as rt
 from astropy.io import fits
 from disk_model.disk import Disk
 from constants import obs_stuff, other_params
-from grid_search import mol
 
 
 ######################
 # CONSTANTS & PARAMS #
 ######################
+
+
+mol = 'hco'
 
 # DATA FILE NAME
 dataPath = 'data/' + mol + '/' + mol

@@ -5,12 +5,14 @@ blah.
 
 import datetime
 import subprocess as sp
-from grid_search import fullRun, mol
+from grid_search import fullRun
 from run_params import diskAParams, diskBParams
 
 
 # Which line are we looking at, and how are we fitting?
 gs = True
+
+mol = 'hco'
 
 # What day is it? Used to ID files.
 months = ['jan', 'feb', 'march', 'april', 'may',

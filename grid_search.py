@@ -12,6 +12,7 @@ from full_run import today
 
 
 mol = 'hco'
+
 modelPath = './models/run_' + today + '/model'
 
 # A little silly, but an easy way to name disks by their disk index (DI)
