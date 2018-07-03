@@ -129,9 +129,9 @@ def sumDisks(filePathA, filePathB, outputPath):
 
     # Add the header. Kevin's code should populate the header more or less
     # correctly, so pull a header from one of the models.
-    header_info_from_model = fits.open(filePathA + '.fits')
-    model_header = header_info_from_model[0].header
-    header_info_from_model.close()
+    model_file = fits.open(filePathA + '.fits')
+    model_header = model_file[0].header
+    model_file.close()
 
     im.header = model_header
 

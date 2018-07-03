@@ -194,10 +194,10 @@ def sample_model_in_uvplane(Name):
     """Convert a fits file to im, vis, uvf.
 
     .fits -> {.im, .uvf, .vis}
-    Note that this samples from hco_viswvars, so while it's basically
+    Note that this samples from hco.vis, so while it's basically
     general for my uses, it's not actually general.
     """
-    data_vis = 'hco_viswvars.vis'
+    data_vis = 'data/hco/hco.vis'
 
     sp.call('rm -rf *{}.im'.format(Name), shell=True)
 
