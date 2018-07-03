@@ -52,6 +52,7 @@ def makeModel(diskParams, outputPath, DI):
     # DI = Disk Index: the index for the tuples below. 0=A, 1=B
 
     print "Entering makeModel()"
+    print outputPath
 
     # Clear out space
     # sp.call('rm -rf {}.{{fits,vis,uvf,im}}'.format(outputPath), shell=True)
