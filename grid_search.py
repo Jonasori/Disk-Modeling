@@ -146,7 +146,7 @@ def gridSearch(VariedDiskParams, StaticDiskParams, DI, num_iters, steps_so_far=1
                                     'mv {}.fits {}-bestFit.fits'.format(modelPath, modelPath + today), shell=True)
                                 print "Best fit happened; moved files"
                                 # Now clear out all the files (im, vis, uvf, fits) made by chiSq()
-                                sp.call('rm -rf {}.{{bm, mp, cl, cm, im}}'.format(modelPath),
+                                sp.call('rm -rf {}.*'.format(modelPath),
                                         shell=True)
 
                             print "Min. Chi-Squared value so far:", minRedX2
