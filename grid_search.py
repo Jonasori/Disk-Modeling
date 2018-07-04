@@ -13,7 +13,7 @@ from run_params import diskAParams, diskBParams
 from constants import mol, today
 
 
-modelPath = './models/run_' + today + '/model'
+modelPath = './models/run_' + today + '/' + today
 
 # A little silly, but an easy way to name disks by their disk index (DI)
 dnames = ['A', 'B']
@@ -152,7 +152,7 @@ def gridSearch(VariedDiskParams, StaticDiskParams, DI, num_iters, steps_so_far=1
                             print "Min. Chi-Squared value so far:", minRedX2
                             print "which happened at: "
                             print "ta:", minX2Vals[0]
-                            print "tqq", minX2Vals[1]
+                            print "tqq:", minX2Vals[1]
                             print "xmol:", minX2Vals[2]
                             print "raout:", minX2Vals[3]
                             print "pa:", minX2Vals[4]
@@ -271,10 +271,9 @@ def fullRun(diskAParams, diskBParams):
     print "Final Raw Chi-Squared Value: ", finalX2s[0]
     print "Final Reduced Chi-Squared Value: ", finalX2s[1]
 
-    # A short log file with best fit vals, range queried, indices of best vals, best chi-squared.
-    # Finally, write out the short file:
+    # log file with best fit vals, range queried, indices of best vals, best chi2
     # 	- (maybe figure out how to round these for better readability)
-    f = open(outputPath + 'short-log.txt', 'w')
+    f = open('run_' + today + 'summary.log', 'w')
     s1 = '\nBest Chi-Squared values [raw, reduced]:' + str(finalX2s)
     f.write(s1)
     s2 = '\n\n\nParameter ranges queried:\n' + '\nDisk A:\n' + \
