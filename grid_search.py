@@ -127,16 +127,15 @@ def gridSearch(VariedDiskParams, StaticDiskParams, DI, num_iters, steps_so_far=1
                             print "Raw Chi-Squared value:	 ", rawX2
                             print "Reduced Chi-Squared value:", redX2
 
-                            df_row = {
-                                'Atms Temp': ta,
-                                'Temp Struct': tqq,
-                                'Molecular Abundance': xmol,
-                                'Outer Radius': raout,
-                                'Pos. Angle': pa,
-                                'Incl.': incl,
-                                'Raw Chi2': rawX2,
-                                'Reduced Chi2': redX2
-                                }
+                            df_row = {'Atms Temp': ta,
+                                      'Temp Struct': tqq,
+                                      'Molecular Abundance': xmol,
+                                      'Outer Radius': raout,
+                                      'Pos. Angle': pa,
+                                      'Incl.': incl,
+                                      'Raw Chi2': rawX2,
+                                      'Reduced Chi2': redX2
+                                      }
                             df_rows.append(df_row)
 
                             if redX2 > 0 and redX2 < minRedX2:
@@ -144,11 +143,11 @@ def gridSearch(VariedDiskParams, StaticDiskParams, DI, num_iters, steps_so_far=1
                                 minX2Vals = [ta, tqq, xmol, raout, pa, incl]
                                 minX2Location = [i, j, k, l, m, n]
                                 sp.call(
-                                    'mv {}.fits model_{}-bestFit.fits'.format(modelPath, today), shell=True)
+                                    'mv {}.fits {}-bestFit.fits'.format(modelPath, modelPath + today), shell=True)
                                 print "Best fit happened; moved files"
                                 # Now clear out all the files (im, vis, uvf, fits) made by chiSq()
-                                # sp.call('rm -rf {}.{{}}'.format(modelPath),
-                                #          shell=True)
+                                sp.call('rm -rf {}.{{bm, mp, cl, cm, im}}'.format(modelPath),
+                                        shell=True)
 
                             print "Min. Chi-Squared value so far:", minRedX2
                             print "which happened at: "
@@ -275,7 +274,7 @@ def fullRun(diskAParams, diskBParams):
     # A short log file with best fit vals, range queried, indices of best vals, best chi-squared.
     # Finally, write out the short file:
     # 	- (maybe figure out how to round these for better readability)
-    f = open(modelPath + '-short.log', 'w')
+    f = open(outputPath + 'short-log.txt', 'w')
     s1 = '\nBest Chi-Squared values [raw, reduced]:' + str(finalX2s)
     f.write(s1)
     s2 = '\n\n\nParameter ranges queried:\n' + '\nDisk A:\n' + \
