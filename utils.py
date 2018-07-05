@@ -5,6 +5,7 @@
 # PACKAGES #
 ############
 
+import os
 import numpy as np
 import subprocess as sp
 from astropy.io import fits
@@ -155,18 +156,24 @@ def sumDisks(filePathA, filePathB, outputPath):
     # Now convert that file to the visibility domain:
     sp.call(['fits', 'op=xyin',
              'in={}.fits'.format(outputPath),
-             'out={}.im'.format(outputPath)])
+             'out={}.im'.format(outputPath)],
+            stdout=open(os.devnull, 'wb')
+            )
 
     # Sample the model image using the observation uv coverage
     sp.call(['uvmodel', 'options=replace',
              'vis={}.vis'.format(dataPath),
              'model={}.im'.format(outputPath),
-             'out={}.vis'.format(outputPath)])
+             'out={}.vis'.format(outputPath)],
+            stdout=open(os.devnull, 'wb')
+            )
 
     # Convert to UVfits
     sp.call(['fits', 'op=uvout',
              'in={}.vis'.format(outputPath),
-             'out={}.uvf'.format(outputPath)])
+             'out={}.uvf'.format(outputPath)],
+            stdout=open(os.devnull, 'wb')
+            )
 
 
 def chiSq(infile):
