@@ -121,16 +121,14 @@ def icr(modelName, min_baseline=0, niters=1e4, mol='hco'):
     b = min_baseline
 
     # Add restfreq to this vis
-    """
     sp.call(['puthd',
              'in={}.vis/restfreq'.format(modelName),
              'value={}'.format(restfreqs[mol])
              ],
             stdout=open(os.devnull, 'wb'))
-    """
+
     if min_baseline == 0:
         # can't call select=-uvrange(0,0) so just get rid of that line for 0.
-        # This way we also don't get files called data-hco0
         b = ''
         for end in ['cm', 'cl', 'bm', 'mp']:
             sp.call('rm -rf {}.{}'.format(modelName, end), shell=True)
@@ -181,6 +179,12 @@ def icr(modelName, min_baseline=0, niters=1e4, mol='hco'):
              'out={}.cm'.format(modelName + str(b))
              ],
             stdout=open(os.devnull, 'wb'))
+
+    sp.call(['fits',
+             'op=xyout',
+             'in={}.cm'.format(modelName + str(b)),
+             'out={}.fits'.format(modelName + str(b))
+             ])
 
 
 def imspec(imageName):
