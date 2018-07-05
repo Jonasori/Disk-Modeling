@@ -151,7 +151,9 @@ def sumDisks(filePathA, filePathB, outputPath):
     im.writeto(fitsout, overwrite=True)
 
     # Clear out the old files to make room for the new
-    sp.call('rm -rf {}.{{vis, uvf, im}}'.format(outputPath), shell=True)
+    sp.call('rm -rf {}.im'.format(outputPath), shell=True)
+    sp.call('rm -rf {}.uvf'.format(outputPath), shell=True)
+    sp.call('rm -rf {}.vis'.format(outputPath), shell=True)
 
     # Now convert that file to the visibility domain:
     sp.call(['fits', 'op=xyin',
