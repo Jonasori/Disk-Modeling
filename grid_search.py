@@ -6,6 +6,7 @@ import subprocess as sp
 import pandas as pd
 import cPickle as pickle
 from tools import icr
+import time
 
 # Local package files
 from utils import makeModel, sumDisks, chiSq
@@ -178,6 +179,8 @@ def fullRun(diskAParams, diskBParams):
     diskXParams are fed in from full_run.py,
     where the parameter selections are made.
     """
+    t0 = time.time()
+
     # Calculate the number of steps and consequent runtime
     na = 1
     for a in range(0, len(diskAParams)):
@@ -283,6 +286,13 @@ def fullRun(diskAParams, diskBParams):
         '\nDisk A:\n' + str(fit_A_params) + '\nDisk B:\n' + str(fit_B_params)
     f.write(s3)
     f.close()
+
+    t1 = time.time()
+    t_total = (t1 - t0)/60
+    print "\n\nFinal run duration was", t_total/60, 'hours'
+    print 'with each step taking on average', t_total/n, 'minutes'
+
+
 
 
 # The End

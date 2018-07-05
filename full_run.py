@@ -9,13 +9,11 @@ import subprocess as sp
 from grid_search import fullRun
 from run_params import diskAParams, diskBParams
 from constants import today
-import time
 
 
 # Which line are we looking at, and how are we fitting?
 gs = True
 
-t0 = time.time()
 
 if gs:
     # Set up a symlink to the /scratch directory to dump the model files to.
@@ -31,6 +29,7 @@ if gs:
 
     print "Starting fullRun"
     fullRun(diskAParams, diskBParams)
+
 
 else:
     mcmc.fullRun()
