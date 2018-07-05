@@ -10,6 +10,8 @@ import datetime
 
 mol = 'hco'
 
+# DATA FILE NAME
+dataPath = 'data/' + mol + '/' + mol + '_short90'
 
 # What day is it? Used to ID files.
 months = ['jan', 'feb', 'march', 'april', 'may',

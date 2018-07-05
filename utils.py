@@ -12,16 +12,13 @@ from disk_model.disk import Disk
 import disk_model.raytrace as rt
 
 # Local package files
-from constants import mol, obs_stuff, other_params
+from constants import mol, obs_stuff, other_params, dataPath
 
 
 ######################
 # CONSTANTS & PARAMS #
 ######################
 
-
-# DATA FILE NAME
-dataPath = 'data/' + mol + '/' + mol
 
 # Offsets (from center), in arcseconds
 # centering_for_olay.cgdisp is the file that actually makes the green crosses!

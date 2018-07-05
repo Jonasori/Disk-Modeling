@@ -26,7 +26,6 @@ if gs:
 
     sp.call(['mkdir', scratch_dir])
     sp.call(['ln', '-s', scratch_dir, './models/'])
-    sp.call(['touch', 'test.txt'])
 
     print "Starting fullRun"
     fullRun(diskAParams, diskBParams)
