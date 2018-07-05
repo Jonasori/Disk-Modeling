@@ -21,7 +21,8 @@ if gs:
 
     # Maybe a little bit janky
     scratch_dir = '/scratch/jonas/run_' + today
-    sp.call(['rm', '-rf', scratch_dir, './models/run_', today])
+    sp.call(['rm', '-rf', './models/run_{}'.format(today)])
+    sp.call(['rm', '-rf', scratch_dir])
 
     sp.call(['mkdir', scratch_dir])
     sp.call(['ln', '-s', scratch_dir, './models/'])
