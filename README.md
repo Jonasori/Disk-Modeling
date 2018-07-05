@@ -1,7 +1,7 @@
 # Disk-Modeling
 Code from my research working to characterize two protoplanetary disks in the Orion Nebula
 
-##Directory Structure
+## Directory Structure
 
 It is expected that three directories already exist where these python files live: a git clone of Kevin Flaherty's disk_model, a directory called "data" which has subdirectories named for the emission line being observed (i.e. hco or cs), and one named "models" which will hold the files that are created by the runs.
 
