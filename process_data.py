@@ -24,24 +24,27 @@ def pipe(commands):
 
 def process_data(mol, split_range, raw_data_path, final_data_path):
     """Cvel, split, and export as uvf the original cont-sub'ed .ms."""
-    pipe("cvel(",
-         "vis='{}/calibrated-{}.ms.contsub',".format(raw_data_path, mol),
-         "outputvis='{}_cvel.ms',".format(final_data_path),
-         "field=OrionField4',",
-         "restfreq={}GHz',".format(lines[mol]['restfreq']),
-         "outframe='LSRK')")
+    pipe(["cvel(",
+          "vis='{}/calibrated-{}.ms.contsub',".format(raw_data_path, mol),
+          "outputvis='{}_cvel.ms',".format(final_data_path),
+          "field=OrionField4',",
+          "restfreq={}GHz',".format(lines[mol]['restfreq']),
+          "outframe='LSRK')"
+          ])
 
     spw = ':{', split_range[0], '-', split_range[1], '}'
-    pipe("split(",
-         "vis='{}_cvel.ms',".format(final_data_path),
-         "outputvis='{}_split.ms',".format(final_data_path),
-         "spw='{}',".format(spw),
-         "datacolumn='data',",
-         "keepflags=False)")
+    pipe(["split(",
+          "vis='{}_cvel.ms',".format(final_data_path),
+          "outputvis='{}_split.ms',".format(final_data_path),
+          "spw='{}',".format(spw),
+          "datacolumn='data',",
+          "keepflags=False)"
+          ])
 
-    pipe("exportuvfits(",
-         "vis='{}_split.ms',".format(final_data_path),
-         "fitsfile='{}_exportuvfits.uvf')".format(final_data_path))
+    pipe(["exportuvfits(",
+          "vis='{}_split.ms',".format(final_data_path),
+          "fitsfile='{}_exportuvfits.uvf')".format(final_data_path)
+          ])
 
 
 def find_split_cutoffs(mol, other_restfreq=0):
