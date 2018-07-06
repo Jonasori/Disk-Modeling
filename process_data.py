@@ -32,7 +32,7 @@ def process_data(mol, split_range, raw_data_path, final_data_path):
           "outframe='LSRK')"
           ])
 
-    spw = '*:{' + str(split_range[0]) + '-' + str(split_range[1]) + '}'
+    spw = '*:' + str(split_range[0]) + '~' + str(split_range[1])
     pipe(["split(",
           "vis='{}_cvel.ms',".format(final_data_path),
           "outputvis='{}_split.ms',".format(final_data_path),
@@ -96,7 +96,7 @@ def run_full_pipeline(mol):
     """
     # Paths to the data
     raw_data_path = '/Volumes/disks/jonas/raw_data/'
-    final_data_path = '/Volumes/disks/jonas/freshStart/data' + mol + '/' + mol
+    final_data_path = '/Volumes/disks/jonas/freshStart/data/' + mol + '/' + mol
 
     split_range = find_split_cutoffs(mol)
     print "Split range is ", str(split_range[0]), str(split_range[1])
