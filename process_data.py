@@ -159,7 +159,7 @@ def run_full_pipeline(mol):
              'casa*.log'],
             shell=True)
 
-    with open(final_data_path + 'file_log.txt', 'w') as f:
+    with open(final_data_path[:-3] + 'file_log.txt', 'w') as f:
         f.write(log)
 
     print "All done!"
