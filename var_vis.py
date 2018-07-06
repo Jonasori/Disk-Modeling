@@ -1,22 +1,26 @@
+"""Add variances to the vis file.
+
+Calculate the variance in a visibility map at each u,v point and each
+channel. Calculate the variance based on the 70 nearest neighbors
+"""
+
 from astropy.io import fits
 import numpy as np
-from scipy.spatial.distance import pdist, squareform
-import matplotlib.pyplot as plt
 import subprocess
-from glob import glob
 import sys
 import time
 
 
-def var_vis(infile, outfile):
+def var_vis(path_to_source):
     """Add variances to the vis file.
 
     Calculate the variance in a visibility map at each u,v point and each
     channel. Calculate the variance based on the 70 nearest neighbors
     """
-
+    infile = path_to_source + '.uvf'
+    outfile = path_to_source + '_exportuvfits.uvf'
     # read in u,v coordinates and visibilities
-    im = fits.open('{}.uvf'.format(infile))
+    im = fits.open('{}'.format(infile))
 
     # read in u,v coordinates in klam
     freq0 = im[0].header['crval4']
@@ -141,7 +145,7 @@ def var_vis(infile, outfile):
                                                                  0, 0, 0, 1, 2] = total_weight, total_weight
 
     #subprocess.call('rm {}.uvf'.format(outfile), shell=True)
-    im.writeto('{}.uvf'.format(outfile))  # , overwrite=True)
+    im.writeto('{}'.format(outfile))  # , overwrite=True)
     im.close()
 
     print('Elapsed time (min): {}'.format((time.time()-start)/60.))
