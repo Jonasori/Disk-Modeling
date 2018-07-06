@@ -265,8 +265,16 @@ def uvaver(name, min_baseline):
 
 def already_exists(query):
     """Search an ls call to see if query is in it."""
-    l = sp.check_output('ls')
-    if query in l:
+    f = query.split('/')[-1]
+    path = query.split(f)[0]
+
+    print "Path is: ", path
+    print "file is: ", f
+
+    output = sp.check_output('ls', cwd=path).split('\n')
+
+    if f in output:
+        print query + ' alrady exists; skipping\n\n\n'
         return True
     else:
         return False
