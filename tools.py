@@ -277,6 +277,7 @@ def already_exists(query):
         print query + ' alrady exists; skipping\n\n\n'
         return True
     else:
+        print query + ' does not yet exist; executing command\n\n'
         return False
 
 
