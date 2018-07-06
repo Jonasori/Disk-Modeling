@@ -17,8 +17,8 @@ def var_vis(path_to_source):
     Calculate the variance in a visibility map at each u,v point and each
     channel. Calculate the variance based on the 70 nearest neighbors
     """
-    infile = path_to_source + '.uvf'
-    outfile = path_to_source + '_exportuvfits.uvf'
+    infile = path_to_source + '_exportuvfits.uvf'
+    outfile = path_to_source + '.uvf'
     # read in u,v coordinates and visibilities
     im = fits.open('{}'.format(infile))
 

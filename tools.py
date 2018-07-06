@@ -263,6 +263,24 @@ def uvaver(name, min_baseline):
              'out={}.uvf'.format(new_name)])
 
 
+def already_exists(query):
+    """Search an ls call to see if query is in it."""
+    l = sp.check_output('ls')
+    if query in l:
+        return True
+    else:
+        return False
+
+
+
+
+
+
+
+
+
+
+
 
 
 # The End

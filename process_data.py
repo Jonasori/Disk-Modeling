@@ -7,7 +7,7 @@ To be run from /Volumes/disks/jonas/freshStart/modeling
 import subprocess as sp
 from constants import lines
 from var_vis import var_vis
-from tools import icr
+from tools import icr, already_exists
 
 
 def pipe(commands):
@@ -22,29 +22,44 @@ def pipe(commands):
     sp.call('rm -rf *.log', shell=True)
 
 
-def process_data(mol, split_range, raw_data_path, final_data_path):
-    """Cvel, split, and export as uvf the original cont-sub'ed .ms."""
-    pipe(["cvel(",
-          "vis='{}calibrated-{}.ms.contsub',".format(raw_data_path, mol),
-          "outputvis='{}_cvel.ms',".format(final_data_path),
-          "field='OrionField4',",
-          "restfreq='{}GHz',".format(lines[mol]['restfreq']),
-          "outframe='LSRK')"
-          ])
+def process_data(mol, split_range, raw_data_path,
+                 final_data_path, remake_all=False):
+    """Cvel, split, and export as uvf the original cont-sub'ed .ms.
 
-    spw = '*:' + str(split_range[0]) + '~' + str(split_range[1])
-    pipe(["split(",
-          "vis='{}_cvel.ms',".format(final_data_path),
-          "outputvis='{}_split.ms',".format(final_data_path),
-          "spw='{}',".format(spw),
-          "datacolumn='data',",
-          "keepflags=False)"
-          ])
+    Args:
+        - mol:
+        - split_range:
+        - raw_data_path:
+        - final_data_path:
+        - remake_all (bool): if True, remove delete all pre-existing files.
+    """
+    if remake_all is True:
+        sp.call(['rm -rf {}.*'.format(final_data_path)])
 
-    pipe(["exportuvfits(",
-          "vis='{}_split.ms',".format(final_data_path),
-          "fitsfile='{}_exportuvfits.uvf')".format(final_data_path)
-          ])
+    if already_exists(final_data_path + '_cvel.ms') is False:
+        pipe(["cvel(",
+              "vis='{}calibrated-{}.ms.contsub',".format(raw_data_path, mol),
+              "outputvis='{}_cvel.ms',".format(final_data_path),
+              "field='OrionField4',",
+              "restfreq='{}GHz',".format(lines[mol]['restfreq']),
+              "outframe='LSRK')"
+              ])
+
+    if already_exists(final_data_path + '_split.ms') is False:
+        spw = '*:' + str(split_range[0]) + '~' + str(split_range[1])
+        pipe(["split(",
+              "vis='{}_cvel.ms',".format(final_data_path),
+              "outputvis='{}_split.ms',".format(final_data_path),
+              "spw='{}',".format(spw),
+              "datacolumn='data',",
+              "keepflags=False)"
+              ])
+
+    if already_exists(final_data_path + '_exportuvfits.uvf') is False:
+        pipe(["exportuvfits(",
+              "vis='{}_split.ms',".format(final_data_path),
+              "fitsfile='{}_exportuvfits.uvf')".format(final_data_path)
+              ])
 
 
 def find_split_cutoffs(mol, other_restfreq=0):
@@ -102,33 +117,25 @@ def run_full_pipeline(mol):
     split_range = find_split_cutoffs(mol)
     print "Split range is ", str(split_range[0]), str(split_range[1])
     print "Now processing data...."
-
     process_data(mol, split_range, raw_data_path, final_data_path)
     print "Finished process_data()\n\n"
 
     print "Running varvis....\n\n"
-    var_vis(final_data_path)
+    if already_exists(final_data_path + '.uvf') is False:
+        # Note that var_vis just returns mol.uvf
+        var_vis(final_data_path + '_exportuvfits')
 
     print "Finished varvis; renaming and converting uvf to vis now....\n\n"
-    sp.call(['mv',
-             '{}_varvis.uvf'.format(final_data_path),
-             '{}.uvf'.format(final_data_path)
-             ])
-
-    sp.call(['fits',
-             'op=uvin',
-             'in={}.uvf'.format(final_data_path),
-             'out={}.vis'.format(final_data_path)
-             ])
+    if already_exists(final_data_path + '.vis') is False:
+        sp.call(['fits',
+                 'op=uvin',
+                 'in={}.uvf'.format(final_data_path),
+                 'out={}.vis'.format(final_data_path)
+                 ])
 
     print "Convolving data to get image, converting output to .fits\n\n"
-    icr(final_data_path)
-
-    sp.call(['fits',
-             'op=xyout',
-             'in={}.cm'.format(final_data_path),
-             'out={}.fits'.format(final_data_path)
-             ])
+    if already_exists(final_data_path + '.cm') is False:
+        icr(final_data_path)
 
     print "Deleting the junk process files...\n\n"
     # Clear out the bad stuff.
