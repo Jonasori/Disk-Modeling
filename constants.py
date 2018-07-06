@@ -70,8 +70,8 @@ def obs_stuff(mol):
     # Dig some observational params out of the data file.
     hdr = fits.getheader('data/' + mol + '/' + mol + '.uvf')
 
-    hdr_restfreq = hdr['CRVAL4'] * 10**(-9)
-    hdr_chanstep = hdr['CDELT4'] * 10**(-9)
+    hdr_restfreq = hdr['CRVAL4'] * 1e-9
+    hdr_chanstep = hdr['CDELT4'] * 1e-9
     # Each freq step:
     # arange( nchans + 1 - chanNum) * chanStepFreq + ChanNumFreq * Hz2GHz
     # I don't know why the arange is there, but it's making len(freqs)=51
@@ -92,9 +92,8 @@ def obs_stuff(mol):
     n_chans, chanmins = [nchans_a, nchans_b], [chanmin_a, chanmin_b]
 
     # return [vsys, restfreq, freqs, obsv, chanstep, n_chans, chanmins, jnum]
-    print "PRINT THIS"
     print [hdr_chanstep, hdr_restfreq]
-    return [hdr_chanstep, hdr_restfreq]
+    return [freqs, hdr_chanstep, hdr_restfreq]
 
 
 
