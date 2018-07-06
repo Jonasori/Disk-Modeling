@@ -55,10 +55,12 @@ def var_vis(path_to_source):
     baseline = np.median(np.sqrt(u**2 + v**2))
     delta_uv = delta_t * 2*np.pi*baseline
 
-    # uvwidth: area around a particular uv point to consider when searching for the nearest nclose neighbors .
-    #(smaller numbers help make the good run faster,
-    # but could result in many points for which the weight cannot be calculated  and is left at 0)
-    # make sure it's less than 1/10th of the shortest leg of the rectangle defined by the longest u and v baseline
+    # uvwidth: area around a particular uv point to consider when searching
+    # for the nearest nclose neighbors.
+    # (smaller numbers help make the run faster, but could result in many
+    # points for which the weight cannot be calculated  and is left at 0)
+    # make sure it's less than 1/10th of the shortest leg of the
+    # rectangle defined by the longest u and v baseline
     uvwidth = delta_uv*2
     print('uvwidth is {}'.format(uvwidth))
 
@@ -78,7 +80,8 @@ def var_vis(path_to_source):
         real_nclose_arr = np.zeros(len(u))
         imag_weight = np.zeros((nuv, nfreq), dtype=np.float32)
         imag_nclose_arr = np.zeros(len(u))
-        bad_points = []  # list of bad point indices used to calculate acceptance ratio
+        # list of bad point indices used to calculate acceptance ratio
+        bad_points = []
 
         for iuv in range(nuv):
             # Print counter inline
@@ -104,14 +107,14 @@ def var_vis(path_to_source):
             if imag_wf.sum() > nclose:
                 imag_weight[iuv] = 1/np.std(imag[w][s][imag_wf][:nclose])**2
             else:
-                #print iuv,imag_wf.sum(),np.sqrt(u[iuv]**2+v[iuv]**2)
+                # print iuv,imag_wf.sum(),np.sqrt(u[iuv]**2+v[iuv]**2)
                 if bad_points[-1] != iuv:
                     bad_points.append(iuv)
 
         acceptance_ratio = 1. - len(bad_points)/float(nuv)
         print "val: ", len(bad_points)/float(nuv)
         print "len(bad_points): ", len(bad_points)
-        #print "float(nuv): ", float(nuv)
+        # print "float(nuv): ", float(nuv)
         print("acceptance ratio: {}".format(acceptance_ratio))
 
         if acceptance_ratio <= 0.99:
@@ -123,28 +126,27 @@ def var_vis(path_to_source):
             break
 
     # plt.plot(np.sqrt(u**2+v**2),nclose_arr,'.')
-    #plt.scatter(real_weight, imag_weight)
-    #plt.plot(imag_weight, imag_weight)
-    #plt.xlabel("Real Weight")
-    #plt.ylabel("Imaginary Weight")
+    # plt.scatter(real_weight, imag_weight)
+    # plt.plot(imag_weight, imag_weight)
+    # plt.xlabel("Real Weight")
+    # plt.ylabel("Imaginary Weight")
     # plt.savefig("{}_weight_scatter.png".format(infile))
 
     # Calculating total weight from imaginary and real components
     total_weight = np.sqrt(real_weight*imag_weight)
 
-    # Reshape weights to fit in weights column of uv fits file; place the weights into both xx and yy polarization columns.
+    # Reshape weights to fit in weights column of uv fits file;
+    # place the weights into both xx and yy polarization columns.
     if len(im[0].data['data'].shape) == 7:
         total_weight = np.reshape(total_weight, len(
             im[0].data['data'][:, 0, 0, 0, 0, 0, 2]))
-        im[0].data['data'][:, 0, 0, 0, 0, 0, 2], im[0].data['data'][:,
-                                                                    0, 0, 0, 0, 1, 2] = total_weight, total_weight
+        im[0].data['data'][:, 0, 0, 0, 0, 0, 2], im[0].data['data'][:,0, 0, 0, 0, 1, 2] = total_weight, total_weight
     else:
         total_weight = np.reshape(total_weight, len(
             im[0].data['data'][:, 0, 0, 0, 0, 2]))
-        im[0].data['data'][:, 0, 0, 0, 0, 2], im[0].data['data'][:,
-                                                                 0, 0, 0, 1, 2] = total_weight, total_weight
+        im[0].data['data'][:, 0, 0, 0, 0, 2], im[0].data['data'][:,0, 0, 0, 1, 2] = total_weight, total_weight
 
-    #subprocess.call('rm {}.uvf'.format(outfile), shell=True)
+    # subprocess.call('rm {}.uvf'.format(outfile), shell=True)
     im.writeto('{}'.format(outfile))  # , overwrite=True)
     im.close()
 
