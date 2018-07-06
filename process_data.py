@@ -7,7 +7,7 @@ To be run from /Volumes/disks/jonas/freshStart/modeling
 import subprocess as sp
 from constants import lines
 from var_vis import var_vis
-from tools import icr, already_exists
+from tools import icr, already_exists, uvaver
 
 
 def pipe(commands):
@@ -22,7 +22,7 @@ def pipe(commands):
     sp.call('rm -rf *.log', shell=True)
 
 
-def process_data(mol, split_range, raw_data_path,
+def casa_sequence(mol, split_range, raw_data_path,
                  final_data_path, remake_all=False):
     """Cvel, split, and export as uvf the original cont-sub'ed .ms.
 
@@ -99,7 +99,7 @@ def run_full_pipeline(mol):
 
     Not sure if it'll automatically wait for var_vis?
     The Process:
-        - process_data():
+        - casa_sequence():
             - cvel the cont-sub'ed dataset from v2434_original_data to here.
             - split out the 50 channels around restfreq
             - convert that .ms to a .uvf
@@ -114,24 +114,29 @@ def run_full_pipeline(mol):
     raw_data_path = jonas + 'raw_data/'
     final_data_path = jonas + 'freshStart/modeling/data/' + mol + '/' + mol
 
+    b_min = lines[mol]['baseline_cutoff']
     split_range = find_split_cutoffs(mol)
+
     print "Split range is ", str(split_range[0]), str(split_range[1])
     print "Now processing data...."
-    process_data(mol, split_range, raw_data_path, final_data_path)
-    print "Finished process_data()\n\n"
+    casa_sequence(mol, split_range, raw_data_path, final_data_path)
+    print "Finished casa_sequence()\n\n"
 
     print "Running varvis....\n\n"
     if already_exists(final_data_path + '.uvf') is False:
         # Note that var_vis just returns mol.uvf
         var_vis(final_data_path)
 
-    print "Finished varvis; renaming and converting uvf to vis now....\n\n"
+    print "Finished varvis; converting uvf to vis now....\n\n"
     if already_exists(final_data_path + '.vis') is False:
         sp.call(['fits',
                  'op=uvin',
                  'in={}.uvf'.format(final_data_path),
                  'out={}.vis'.format(final_data_path)
                  ])
+
+    print "Cutting out baselines below", b_min
+    uvaver(final_data_path)
 
     print "Convolving data to get image, converting output to .fits\n\n"
     if already_exists(final_data_path + '.cm') is False:
@@ -140,11 +145,17 @@ def run_full_pipeline(mol):
     print "Deleting the junk process files...\n\n"
     # Clear out the bad stuff.
     sp.call(['rm -rf',
-             '{}.{{bm, cl, mp}}'.format(final_data_path),
-             '{}_{{split, cvel, exportuvfits}}*'.format(final_data_path),
+             '{}.bm'.format(final_data_path),
+             '{}.cl'.format(final_data_path),
+             '{}.mp'.format(final_data_path),
+             '{}_cvel.*'.format(final_data_path),
+             '{}_split.*'.format(final_data_path),
+             '{}_exportuvfits.*'.format(final_data_path),
              'casa*.log'],
             shell=True)
 
+    with open('README.txt', 'w') as f:
+        readme = 'These visibilities were cut at' + b_min
     print "All done!"
 
 
