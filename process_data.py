@@ -95,8 +95,9 @@ def run_full_pipeline(mol):
         - delete the clutter files: _split, _cvel, _exportuvfits, bm, cl, mp
     """
     # Paths to the data
-    raw_data_path = '/Volumes/disks/jonas/raw_data/'
-    final_data_path = '/Volumes/disks/jonas/freshStart/data/' + mol + '/' + mol
+    jonas = '/Volumes/disks/jonas/'
+    raw_data_path = jonas + 'raw_data/'
+    final_data_path = jonas + 'freshStart/modeling/data/' + mol + '/' + mol
 
     split_range = find_split_cutoffs(mol)
     print "Split range is ", str(split_range[0]), str(split_range[1])
