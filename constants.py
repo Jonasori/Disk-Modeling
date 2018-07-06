@@ -27,10 +27,34 @@ restfreqs = {'hco': 356.73422300,
              'cs': 342.88285030
              }
 
-lines = {'hco': {'restfreq': 356.73422300, 'jnum': 3, 'rms': 1},
-         'hcn': {'restfreq': 354.50547590, 'jnum': 3, 'rms': 1},
-         'co': {'restfreq': 345.79598990, 'jnum': 2, 'rms': 1},
-         'cs': {'restfreq': 342.88285030, 'jnum': 6, 'rms': 1},
+# These frequencies come from Splatalogue and are different than those
+# embedded in, for example, the uvf file imported as hdr below
+# which gives restfreq(hco) = 356.72278845870005
+
+lines = {'hco': {'restfreq': 356.73422300,
+                 'jnum': 3,
+                 'rms': 1,
+                 'chan_dir': 1,
+                 'baseline_cutoff': 90,
+                 'chan0': 355.791034},
+         'hcn': {'restfreq': 354.50547590,
+                 'jnum': 3,
+                 'rms': 1,
+                 'chan_dir': 1,
+                 'baseline_cutoff': 90,
+                 'chan0': 354.2837},
+         'co': {'restfreq': 345.79598990,
+                'jnum': 2,
+                'rms': 1,
+                'chan_dir': -1,
+                'baseline_cutoff': 90,
+                'chan0': 346.114523},
+         'cs': {'restfreq': 342.88285030,
+                'jnum': 6,
+                'rms': 1,
+                'chan_dir': -1,
+                'baseline_cutoff': 90,
+                'chan0': 344.237292},
          }
 
 # Column density [low, high]
@@ -65,13 +89,13 @@ def obs_stuff(mol):
     jnum = lines[mol]['jnum']
     # vsys isn't a function of molecule, but is needed here, so just keeping it
     vsys = [10.55, 10.85]
-    restfreq = lines[mol]['restfreq']
 
     # Dig some observational params out of the data file.
     hdr = fits.getheader('data/' + mol + '/' + mol + '.uvf')
 
-    hdr_restfreq = hdr['CRVAL4'] * 1e-9
-    hdr_chanstep = hdr['CDELT4'] * 1e-9
+    # restfreq = lines[mol]['restfreq']
+    restfreq = hdr['CRVAL4'] * 1e-9
+
     # Each freq step:
     # arange( nchans + 1 - chanNum) * chanStepFreq + ChanNumFreq * Hz2GHz
     # I don't know why the arange is there, but it's making len(freqs)=51
@@ -79,11 +103,10 @@ def obs_stuff(mol):
     freqs = ((np.arange(hdr['naxis4']) + 1 - hdr['crpix4']) * hdr['cdelt4'] + hdr['crval4']) * 1e-9
     # freqs = ((hdr['naxis4'] + 1 - hdr['crpix4']) * hdr['cdelt4'] + hdr['crval4']) * 1e-9
 
-    # len(obsv) = 51; it's each channel's velocities
-    # c * (restfreq - freq) / restfreq
+    # len(obsv) = 51; it's the velocity of each channel
     obsv = (restfreq-freqs)/restfreq * 2.99e5
 
-    chanstep = (-1) * np.abs(obsv[1]-obsv[0])
+    chanstep = lines[mol]['chan_dir'] * np.abs(obsv[1]-obsv[0])
 
     nchans_a = int(2*np.ceil(np.abs(obsv-vsys[0]).max()/np.abs(chanstep))+1)
     nchans_b = int(2*np.ceil(np.abs(obsv-vsys[1]).max()/np.abs(chanstep))+1)
@@ -91,9 +114,11 @@ def obs_stuff(mol):
     chanmin_b = -(nchans_b/2.-.5)*chanstep
     n_chans, chanmins = [nchans_a, nchans_b], [chanmin_a, chanmin_b]
 
-    # return [vsys, restfreq, freqs, obsv, chanstep, n_chans, chanmins, jnum]
-    print [hdr_chanstep, hdr_restfreq]
-    return [freqs, hdr_chanstep, hdr_restfreq]
+    return [vsys, restfreq, freqs, obsv, chanstep, n_chans, chanmins, jnum]
+
+
+
+
 
 
 
