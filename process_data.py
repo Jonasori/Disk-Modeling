@@ -162,6 +162,7 @@ def run_full_pipeline(mol):
     print "Log to be printed: ", log
     with open('file_log.txt', 'w') as f:
         f.write(log)
+        f.close()
 
     print "All done!"
 
