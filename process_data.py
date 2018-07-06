@@ -23,7 +23,7 @@ def pipe(commands):
 
 
 def process_data(mol, split_range, raw_data_path, final_data_path):
-    """Call cvel and split."""
+    """Cvel, split, and export as uvf the original cont-sub'ed .ms."""
     pipe("cvel(",
          "vis=‘{}/calibrated-{}.ms.contsub',".format(raw_data_path, mol),
          "outputvis=‘{}_cvel.ms’,".format(final_data_path),
@@ -48,7 +48,8 @@ def process_data(mol, split_range, raw_data_path, final_data_path):
 def find_split_cutoffs(mol, other_restfreq=0):
     """Find the indices of the 50 channels around the restfreq.
 
-    Grab observation info from listobs(vis='mol.ms', field='OrionField4')
+    chan_dir, chan0, nchans, chanstep from
+    listobs(vis='mol.ms', field='OrionField4')
     """
     chan_dir = lines[mol]['chan_dir']
     chan0 = lines[mol]['chan0']
@@ -96,21 +97,28 @@ def run_full_pipeline(mol):
     final_data_path = './data/', mol, '/', mol
 
     split_range = find_split_cutoffs(mol)
+    print "Split range is ", str(split_range[0]), str(split_range[1])
+    print "Now processing data...."
 
     process_data(mol, split_range, raw_data_path, final_data_path)
+    print "Finished process_data()\n\n"
 
+    print "Running varvis....\n\n"
     var_vis()
 
-    sp.call(['cp',
-             '{}_varvis.uvf'.format(mol),
+    print "Finished varvis; renaming and converting uvf to vis now....\n\n"
+    sp.call(['mv',
+             '{}_varvis.uvf'.format(final_data_path),
              '{}.uvf'.format(final_data_path)
              ])
+
     sp.call(['fits',
              'op=uvin',
              'in={}.uvf'.format(final_data_path),
              'out={}.vis'.format(final_data_path)
              ])
 
+    print "Convolving data to get image, converting output to .fits\n\n"
     icr(final_data_path)
 
     sp.call(['fits',
@@ -119,12 +127,15 @@ def run_full_pipeline(mol):
              'out={}.fits'.format(final_data_path)
              ])
 
+    print "Deleting the junk process files...\n\n"
     # Clear out the bad stuff.
     sp.call(['rm -rf',
              '{}.{{bm, cl, mp}}'.format(final_data_path),
-             '{}_{{split, cvel, exportuvfits, varvis}}*'.format(final_data_path),
+             '{}_{{split, cvel, exportuvfits}}*'.format(final_data_path),
              'casa*.log'],
             shell=True)
+
+    print "All done!"
 
 
 # if __name__ == "__main__":
