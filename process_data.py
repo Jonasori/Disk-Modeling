@@ -33,16 +33,15 @@ def process_data(mol, split_range, raw_data_path, final_data_path):
 
     spw = ':{', split_range[0], '-', split_range[1], '}'
     pipe("split(",
-         "vis=‘{}_cvel.ms',".format(mol),
-         "outputvis=‘{}_split.ms',".format(mol),
+         "vis='{}_cvel.ms',".format(final_data_path),
+         "outputvis='{}_split.ms',".format(final_data_path),
          "spw='{}',".format(spw),
-         "datacolumn='data’,"
+         "datacolumn='data',",
          "keepflags=False)")
 
     pipe("exportuvfits(",
-         "vis='{}_split.ms’,".format(mol),
-         "fitsfile=‘{}_exportuvfits.uvf’".format(mol),
-         ")")
+         "vis='{}_split.ms',".format(final_data_path),
+         "fitsfile='{}_exportuvfits.uvf')".format(final_data_path))
 
 
 def find_split_cutoffs(mol, other_restfreq=0):
