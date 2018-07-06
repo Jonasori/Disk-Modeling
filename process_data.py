@@ -32,7 +32,7 @@ def process_data(mol, split_range, raw_data_path, final_data_path):
           "outframe='LSRK')"
           ])
 
-    spw = ':{', split_range[0], '-', split_range[1], '}'
+    spw = '*:{' + str(split_range[0]) + '-' + str(split_range[1]) + '}'
     pipe(["split(",
           "vis='{}_cvel.ms',".format(final_data_path),
           "outputvis='{}_split.ms',".format(final_data_path),
@@ -106,7 +106,7 @@ def run_full_pipeline(mol):
     print "Finished process_data()\n\n"
 
     print "Running varvis....\n\n"
-    var_vis()
+    var_vis(final_data_path)
 
     print "Finished varvis; renaming and converting uvf to vis now....\n\n"
     sp.call(['mv',
