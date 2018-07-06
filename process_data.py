@@ -140,7 +140,7 @@ def run_full_pipeline(mol):
 
     if b_min != 0:
         print "Cutting out baselines below", b_min
-        uvaver(final_data_path)
+        uvaver(final_data_path, b_min)
         log += 'These visibilities were cut at' + b_min + '\n'
 
     print "Convolving data to get image, converting output to .fits\n\n"
