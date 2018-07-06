@@ -251,8 +251,7 @@ def depickleLogFile(filename):
 
 def uvaver(name, min_baseline):
     """Cut a vis file."""
-    # new_name = name + '-short' + str(min_baseline)
-    new_name = name
+    new_name = name + '-short' + str(min_baseline)
     sp.call(['uvaver',
              'vis={}.vis'.format(name),
              'select=-uvrange(0,{})'.format(min_baseline),

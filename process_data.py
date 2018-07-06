@@ -5,7 +5,7 @@ To be run from /Volumes/disks/jonas/freshStart/modeling
 
 
 import subprocess as sp
-from constants import lines
+from constants import lines, today
 from var_vis import var_vis
 from tools import icr, already_exists, uvaver
 
@@ -114,12 +114,15 @@ def run_full_pipeline(mol):
     raw_data_path = jonas + 'raw_data/'
     final_data_path = jonas + 'freshStart/modeling/data/' + mol + '/' + mol
 
+    # Establish a string for the log file to be made at the end
+    log = 'Files created on ' + today + '\n\n'
     b_min = lines[mol]['baseline_cutoff']
     split_range = find_split_cutoffs(mol)
 
     print "Split range is ", str(split_range[0]), str(split_range[1])
     print "Now processing data...."
     casa_sequence(mol, split_range, raw_data_path, final_data_path)
+    log = log + 'Split range used: ' + str(split_range) + '\n'
     print "Finished casa_sequence()\n\n"
 
     print "Running varvis....\n\n"
@@ -135,8 +138,10 @@ def run_full_pipeline(mol):
                  'out={}.vis'.format(final_data_path)
                  ])
 
-    print "Cutting out baselines below", b_min
-    uvaver(final_data_path)
+    if b_min != 0:
+        print "Cutting out baselines below", b_min
+        uvaver(final_data_path)
+        log += 'These visibilities were cut at' + b_min + '\n'
 
     print "Convolving data to get image, converting output to .fits\n\n"
     if already_exists(final_data_path + '.cm') is False:
@@ -154,8 +159,8 @@ def run_full_pipeline(mol):
              'casa*.log'],
             shell=True)
 
-    with open('README.txt', 'w') as f:
-        readme = 'These visibilities were cut at' + b_min
+    with open('file_log.txt', 'w') as f:
+        f.write(log)
     print "All done!"
 
 
