@@ -58,7 +58,7 @@ other_params = [col_dens, Tfo, Tmid, Tatm, Tqq, m_star, m_disk, r_in, r_out, rot
 
 
 def obs_stuff(mol):
-    """Get freq0, restfreq, obsv, chanstep, both n_chans, and both chanmins.
+    """Get freqs, restfreq, obsv, chanstep, both n_chans, and both chanmins.
 
     Just making this a function because it's ugly and line-dependent.
     """
@@ -70,18 +70,19 @@ def obs_stuff(mol):
     # Dig some observational params out of the data file.
     hdr = fits.getheader('data/' + mol + '/' + mol + '.uvf')
 
+    hdr_restfreq = hdr['CRVAL4'] * 10**(-9)
+    hdr_chanstep = hdr['CDELT4'] * 10**(-9)
     # Each freq step:
     # arange( nchans + 1 - chanNum) * chanStepFreq + ChanNumFreq * Hz2GHz
-    # I don't know why the arange is there, but it's making len(freq0)=51
+    # I don't know why the arange is there, but it's making len(freqs)=51
     # That's not good, so I'm pulling it for now.
-    freq0 = ((np.arange(hdr['naxis4']) + 1 - hdr['crpix4']) * hdr['cdelt4'] + hdr['crval4']) * 1e-9
-    # freq0 = ((hdr['naxis4'] + 1 - hdr['crpix4']) * hdr['cdelt4'] + hdr['crval4']) * 1e-9
+    freqs = ((np.arange(hdr['naxis4']) + 1 - hdr['crpix4']) * hdr['cdelt4'] + hdr['crval4']) * 1e-9
+    # freqs = ((hdr['naxis4'] + 1 - hdr['crpix4']) * hdr['cdelt4'] + hdr['crval4']) * 1e-9
 
-    # What is len(obsv)?
+    # len(obsv) = 51; it's each channel's velocities
     # c * (restfreq - freq) / restfreq
-    obsv = (restfreq-freq0)/restfreq * 2.99e5
+    obsv = (restfreq-freqs)/restfreq * 2.99e5
 
-    # Define some channel characteristics
     chanstep = (-1) * np.abs(obsv[1]-obsv[0])
 
     nchans_a = int(2*np.ceil(np.abs(obsv-vsys[0]).max()/np.abs(chanstep))+1)
@@ -90,4 +91,12 @@ def obs_stuff(mol):
     chanmin_b = -(nchans_b/2.-.5)*chanstep
     n_chans, chanmins = [nchans_a, nchans_b], [chanmin_a, chanmin_b]
 
-    return [vsys, restfreq, freq0, obsv, chanstep, n_chans, chanmins, jnum]
+    # return [vsys, restfreq, freqs, obsv, chanstep, n_chans, chanmins, jnum]
+    print "PRINT THIS"
+    print [hdr_chanstep, hdr_restfreq]
+    return [hdr_chanstep, hdr_restfreq]
+
+
+
+
+# The end
