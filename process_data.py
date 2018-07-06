@@ -26,10 +26,10 @@ def process_data(mol, split_range, raw_data_path, final_data_path):
     """Cvel, split, and export as uvf the original cont-sub'ed .ms."""
     pipe("cvel(",
          "vis='{}/calibrated-{}.ms.contsub',".format(raw_data_path, mol),
-         "outputvis=‘{}_cvel.ms’,".format(final_data_path),
-         "field=‘OrionField4’,",
-         "restfreq=‘{}GHz,’".format(lines[mol]['restfreq']),
-         "outframe=‘LSRK’)")
+         "outputvis='{}_cvel.ms',".format(final_data_path),
+         "field=OrionField4',",
+         "restfreq={}GHz',".format(lines[mol]['restfreq']),
+         "outframe='LSRK')")
 
     spw = ':{', split_range[0], '-', split_range[1], '}'
     pipe("split(",
