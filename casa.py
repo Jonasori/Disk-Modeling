@@ -1,7 +1,13 @@
-"""CASA commands from Astrocail."""
+"""Data processing pipeline.
+
+To be run from /Volumes/disks/jonas/freshStart/modeling
+"""
 
 
 import subprocess as sp
+from constants import lines
+from var_vis import var_vis
+from tools import icr
 
 
 def pipe(commands):
@@ -16,141 +22,109 @@ def pipe(commands):
     sp.call('rm -rf *.log', shell=True)
 
 
-def concat(infiles, outfile):
-    """Concat some vis files."""
-    sp.call("rm -rf {}".format(outfile), shell=True)
-    pipe(("concat(",
-          "vis={},".format(infiles),
-          "concatvis='{}', dirtol='2arcsec')".format(outfile)))
+def process_data(mol, split_range, raw_data_path, final_data_path):
+    """Call cvel and split."""
+    pipe("cvel(",
+         "vis=‘{}/calibrated-{}.ms.contsub',".format(raw_data_path, mol),
+         "outputvis=‘{}_cvel.ms’,".format(final_data_path),
+         "field=‘OrionField4’,",
+         "restfreq=‘{}GHz,’".format(lines[mol]['restfreq']),
+         "outframe=‘LSRK’)")
+
+    spw = ':{', split_range[0], '-', split_range[1], '}'
+    pipe("split(",
+         "vis=‘{}_cvel.ms',".format(mol),
+         "outputvis=‘{}_split.ms',".format(mol),
+         "spw='{}',".format(spw),
+         "datacolumn='data’,"
+         "keepflags=False)")
+
+    pipe("exportuvfits(",
+         "vis='{}_split.ms’,".format(mol),
+         "fitsfile=‘{}_exportuvfits.uvf’".format(mol),
+         ")")
 
 
-def obs_clean(filename, rms, mask, input_dir='', output_dir='',
-              extension='.ms', datacolumn='corrected', weighting='natural',
-              uvtaper=None, clean_up=True):
-    """Clean an observation."""
-    suffix = uvtaper[0] if uvtaper is not None else weighting
-    dirty_filename = filename + '.' + suffix + '_dirty'
-    clean_filename = filename + '.' + suffix + '_clean'
+def find_split_cutoffs(mol, other_restfreq=0):
+    """Find the indices of the 50 channels around the restfreq.
 
-    commands = ()
-    # get rms from region if necessary
-    if type(rms) is str:
-        commands += \
-        ("tclean(",
-            "vis        = '{}',".format(input_dir + filename + extension),
-            "datacolumn = '{}',".format(datacolumn),
-            "imagename  = '{}',".format(output_dir + dirty_filename),
-            "imsize     = 512,",
-            "cell       = '0.03arcsec',",
-            "weighting  = '{}',".format(weighting),
-            "uvtaper    = {},".format(uvtaper),
-            "niter      = 0)"),
-        commands += \
-        ("rms = imstat("
-            "imagename = '{}.image',".format(output_dir + dirty_filename),
-            "region='{}', listit=False)['rms'][0]".format(rms))
-        commands += ("print('Dirty rms is {}'.format(rms))"),
-    else:
-        commands += ("rms = {}".format(rms),)
+    Grab observation info from listobs(vis='mol.ms', field='OrionField4')
+    """
+    chan_dir = lines[mol]['chan_dir']
+    chan0 = lines[mol]['chan0']
+    restfreq = lines[mol]['restfreq']
 
-    # actually call tclean
-    commands += \
-    ("tclean(",
-        "vis        = '{}',".format(input_dir + filename + extension),
-        "datacolumn = '{}',".format(datacolumn),
-        "imagename  = '{}',".format(output_dir + clean_filename),
-        "imsize     = 512,",
-        "cell       = '0.03arcsec',",
-        "weighting  = '{}',".format(weighting),
-        "uvtaper    = {},".format(uvtaper),
-        "niter      = 100000000,",
-        "threshold  = rms/2.,",
-        "mask       = '{}')".format(mask)),
+    # ALl in GHz
+    nchans = 3840
+    chanstep = chan_dir * 0.000488281
+    freqs = [chan0 + chanstep*i for i in range(nchans)]
 
-    # report clean rms if necessary
-    if type(rms) is str:
-        commands += \
-        ("clean_rms    = imstat(",
-            "imagename = '{}.image',".format(output_dir + clean_filename),
-            "region    = '{}', listit=False)['rms'][0]".format(rms)),
-        commands += \
-        ("print('Clean rms is {}'.format(clean_rms))"),
+    # Using these two different restfreqs yields locs of 1908 vs 1932. Weird.
+    if other_restfreq != 0:
+        restfreq = other_restfreq
 
-    # export to fits
-    commands += \
-    ("exportfits(",
-        "imagename = '{}.image',".format(output_dir + clean_filename),
-        "fitsimage = '{}.fits')".format(output_dir + clean_filename))
+    # Find the index of the restfreq channel
+    loc = 0
+    min_diff = 1
+    for i in range(len(freqs)):
+        diff = abs(freqs[i] - restfreq)
+        if diff < min_diff:
+            min_diff = diff
+            loc = i
+
+    split_range = [loc - 25, loc + 25]
+    return split_range
 
 
-    sp.call('rm -rf {}*{{.fits,.image,.mask,.model,.pb,.psf,.residual,.sumwt}}'.format(output_dir + filename + '.' + suffix), shell=True)
-    print('')
-    print('=========================================================')
-    print('=========================================================')
-    print('Making {}...'.format(clean_filename))
-    print('=========================================================')
-    print('=========================================================')
-    print('')
-    pipe(commands)
+def run_full_pipeline(mol):
+    """Run the whole thing.
 
-    # Clean up dirty files (hehe)
-    if clean_up:
-        sp.call('rm -rf {}*{{dirty.image,.mask,.model,.pb,.psf,.residual,.sumwt}}'.format(output_dir + filename + '.' + suffix), shell=True)
+    Not sure if it'll automatically wait for var_vis?
+    The Process:
+        - process_data():
+            - cvel the cont-sub'ed dataset from v2434_original_data to here.
+            - split out the 50 channels around restfreq
+            - convert that .ms to a .uvf
+        - var_vis(): pull in that .uvf, add variances, resulting in another uvf
+        - convert that to a vis
+        - icr that vis to get a cm
+        - cm to fits; now we have mol.{{uvf, vis, fits, cm}}
+        - delete the clutter files: _split, _cvel, _exportuvfits, bm, cl, mp
+    """
+    # Paths to the data
+    raw_data_path = 'Volumes/disks/jonas/raw_data/'
+    final_data_path = './data/', mol, '/', mol
 
-    # if view:
-    #     #Show dirty image, then clean up and delete all dirty clean files
-    #     print 'dirty natural: {}'.format(dirty_natural_rms)
-    #     viewer(infile=image + '.residual', displaytype='contour')
-    #     raw_input('mask ready? ')
+    split_range = find_split_cutoffs(mol)
 
-    # # if view: viewer(infile=image + '.image')
-    #
-    # sp.call("rm -rf {}.*".format(dirty_path), shell=True)
-    # return clean_rms
+    process_data(mol, split_range, raw_data_path, final_data_path)
 
+    var_vis()
 
-def model_clean(path, rms, mask):
-    """Clean a model."""
-    dirty_path = path + '.dirty'
-    clean_path = path + '.clean'
-    sp.call('rm -rf {}*{{.image,.mask,.model,.pb,.psf,.residual,.sumwt}}'.format(path), shell=True)
+    sp.call(['cp',
+             '{}_varvis.uvf'.format(mol),
+             '{}.uvf'.format(final_data_path)
+             ])
+    sp.call(['fits',
+             'op=uvin',
+             'in={}.uvf'.format(final_data_path),
+             'out={}.vis'.format(final_data_path)
+             ])
 
-    print('Cleaning...')
-    pipe(
-        ("tclean(",
-            "vis='{}.ms',".format(path),
-            "imagename='{}',".format(clean_path),
-            "imsize=512,",
-            "cell='0.03arcsec',",
-            "weighting='natural',",
-            "niter=100000000,",
-            "threshold={}/2.,".format(rms),
-            "mask='{}')".format(mask)),
-        ("exportfits(",
-            "imagename='{}.image',".format(clean_path),
-            "fitsimage='{}.fits')".format(clean_path)))
-    # Clean up dirty files (hehe)
-    sp.call("rm -rf {}.*".format(dirty_path), shell=True)
+    icr(final_data_path)
 
+    sp.call(['fits',
+             'op=xyout',
+             'in={}.cm'.format(final_data_path),
+             'out={}.fits'.format(final_data_path)
+             ])
 
-def to_fits(path):
-    """Convert a .image to a .fits."""
-    sp.call('rm -rf {}.fits'.format(path), shell=True)
-    pipe("exportfits(",
-         "imagename='{}.clean.image',".format(path),
-         "fitsimage='{}.fits')".format(path))
-
-
-def to_ms(paths):
-    """Convert a .uvf to a .ms."""
-    if type(paths) is str:
-        paths = [paths]
-    for path in paths:
-        sp.call('rm -rf {}.ms'.format(path), shell=True)
-
-    pipe("for path in {}:".format(paths),
-         ("    importuvfits(fitsfile = path+'.uvf', vis = path+'.ms')"))
-
+    # Clear out the bad stuff.
+    sp.call(['rm -rf',
+             '{}.{{bm, cl, mp}}'.format(final_data_path),
+             '{}_{{split, cvel, exportuvfits, varvis}}*'.format(final_data_path),
+             'casa*.log'],
+            shell=True)
 
 
 # if __name__ == "__main__":
