@@ -16,7 +16,7 @@ baselines = np.sort(np.concatenate((np.arange(0, 130, 10),
                                     np.arange(55, 125, 10)
                                     )))
 
-baselines = np.arange(10, 130, 15)
+baselines = np.arange(10, 130, 40)
 
 
 def main():
@@ -55,6 +55,7 @@ def get_baseline_rmss(mol, niters=1e4, baselines=baselines, remake_all=False):
     run_dir = 'baselines/baseline_' + mol + str(int(niters)) + '/'
     scratch_dir = '/scratch/jonas/' + run_dir
     orig_vis = './data/' + mol + '/' + mol
+    new_vis = run_dir + mol
 
     sp.call(['rm -rf {}'.format(scratch_dir)], shell=True)
     sp.call(['rm -rf ./baselines/{}'.format(run_dir[:-1])], shell=True)
@@ -64,7 +65,6 @@ def get_baseline_rmss(mol, niters=1e4, baselines=baselines, remake_all=False):
 
     sp.call(['cp', '-r', '{}.vis'.format(orig_vis),
              '{}/'.format(run_dir)])
-    new_vis = run_dir + mol
 
     print "Made symlinked directory, copied core .vis over.\n\n"
 
@@ -106,7 +106,7 @@ def get_baseline_rmss(mol, niters=1e4, baselines=baselines, remake_all=False):
     return data_pd
 
 
-def analysis(df):
+def analysis(df, mol, niters):
     """Read the df from find_baseline_cutoff and do cool shit with it."""
     f, axarr = plt.subplots(2, sharex=True)
     axarr[0].grid(axis='x')
@@ -121,16 +121,16 @@ def analysis(df):
     # axarr[1].set_ylabel('Mean Off-Source Flux (Jy/Beam)')
     # axarr[1].plot(df['Baseline'], df['Mean'], 'or')
     axarr[1].plot(df['Baseline'], df['Mean'], '-b')
-    plt.savefig('noise_by_baselines.png')
+    im_name = 'imnoise_' + mol + niters + '.png'
+    plt.savefig(im_name)
     # plt.show(block=False)
     return [df['Baseline'], df['Mean'], df['RMS']]
 
 
 def run(remake_all=True, baselines=baselines, niters=1e4, mol='hco'):
     """Run the above functions."""
-
     ds = get_baseline_rmss(mol, niters, baselines, remake_all)
-    analysis(ds)
+    analysis(ds, mol, niters)
 
 
 if __name__ == '__main__':
