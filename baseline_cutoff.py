@@ -53,8 +53,8 @@ def get_baseline_rmss(vis, baselines=baselines, remake_all=False,
                            pre-existing files if need be.
     """
     # Set up the symlink
-    run = 'baselines_' + mol + str(niters)
-    scratch_dir = '/scratch/jonas/' + run
+    run = 'baselines_' + mol + str(int(niters))
+    scratch_dir = '/scratch/jonas/baselines' + run
 
     # If we're remaking everything, just wipe it out.
     if remake_all is True:
@@ -67,7 +67,7 @@ def get_baseline_rmss(vis, baselines=baselines, remake_all=False,
         sp.call(['mkdir', scratch_dir])
         sp.call(['ln', '-s', scratch_dir, './baselines/'])
 
-    sp.call(['cp {}'.format(vis), './baselines/{}'.format(run)])
+    sp.call(['cp -r {}'.format(vis), './baselines/{}'.format(run)])
 
     data_list = []
     for b in baselines:
@@ -131,7 +131,7 @@ def analysis(df):
 def run(remake_all=False, Baselines=baselines,
         niters=1e4, mol='hco'):
     """Run the above functions."""
-    vis = 'data/' + mol + '/' + mol
+    vis = 'data/' + mol + '/' + mol '.vis'
 
     ds = get_baseline_rmss(vis, Baselines, remake_all, niters, mol)
     analysis(ds)
