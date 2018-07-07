@@ -56,14 +56,13 @@ def get_baseline_rmss(vis, baselines=baselines, remake_all=False,
     run_dir = 'baseline_' + mol + str(int(niters)) + '/'
     scratch_dir = '/scratch/jonas/baselines/' + run_dir
 
-    # Right now just assume we remake everything when called.
     sp.call(['rm', '-rf', './baselines/{}'.format(run_dir)])
     sp.call(['rm', '-rf', scratch_dir])
 
     sp.call(['mkdir', scratch_dir])
     sp.call(['ln', '-s', scratch_dir, './baselines/'])
 
-    sp.call(['cp', '-r', vis, './baselines/{}/'.format(run_dir)])
+    sp.call(['cp', '-r', '{}.vis'.format(vis), './baselines/{}/'.format(run_dir)])
 
     data_list = []
     for b in baselines:
@@ -127,7 +126,7 @@ def analysis(df):
 def run(remake_all=True, Baselines=baselines,
         niters=1e4, mol='hco'):
     """Run the above functions."""
-    vis = 'data/' + mol + '/' + mol + '.vis'
+    vis = 'data/' + mol + '/' + mol
 
     ds = get_baseline_rmss(vis, Baselines, remake_all, niters, mol)
     analysis(ds)
