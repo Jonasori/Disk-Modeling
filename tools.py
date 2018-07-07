@@ -141,7 +141,10 @@ def icr(modelName, min_baseline=0, niters=1e4, mol='hco'):
     print "\nConvolving image\n"
 
     # Add a shorthand name (easier to write)
+    # Rename the outfile if we're cutting baselines and add the cut call.
     b = min_baseline
+    if min_baseline != 0:
+        modelName += str(b)
 
     # Add restfreq to this vis
     sp.call(['puthd',
@@ -159,10 +162,10 @@ def icr(modelName, min_baseline=0, niters=1e4, mol='hco'):
                   'imsize=256',
                   'robust=2']
 
-    # Rename the outfile if we're cutting baselines and add the cut call.
+    # Should find a way to join this and the same conditional above.
     if min_baseline != 0:
         invert_str.append('select=-uvrange(0,{})'.format(b))
-        modelName += str(b)
+
 
     for end in ['cm', 'cl', 'bm', 'mp']:
         sp.call('rm -rf {}.{}'.format(modelName, end), shell=True)
