@@ -16,7 +16,7 @@ baselines = np.sort(np.concatenate((np.arange(0, 130, 10),
                                     np.arange(55, 125, 10)
                                     )))
 
-baselines = np.arange(10, 130, 40)
+baselines = np.arange(10, 130, 5)
 
 
 def main():
@@ -58,7 +58,8 @@ def get_baseline_rmss(mol, niters=1e4, baselines=baselines, remake_all=False):
     new_vis = run_dir + mol
 
     sp.call(['rm -rf {}'.format(scratch_dir)], shell=True)
-    sp.call(['rm -rf ./baselines/{}'.format(run_dir[:-1])], shell=True)
+    # :-1 because a symlink with a deleted root isn't a directory anymore
+    sp.call(['rm -rf {}'.format(run_dir[:-1])], shell=True)
 
     sp.call(['mkdir {}'.format(scratch_dir)], shell=True)
     sp.call(['ln', '-s', scratch_dir, './baselines/'])
