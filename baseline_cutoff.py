@@ -16,7 +16,7 @@ baselines = np.sort(np.concatenate((np.arange(0, 130, 10),
                                     np.arange(55, 125, 10)
                                     )))
 
-baselines = np.arange(10, 130, 5)
+baselines = np.arange(10, 130, 15)
 
 
 def main():
@@ -53,6 +53,7 @@ def get_baseline_rmss(vis, baselines=baselines, remake_all=False,
                            pre-existing files if need be.
     """
     # Set up the symlink
+    orig_vis = 'data/' + mol + '/' + mol
     run_dir = 'baseline_' + mol + str(int(niters)) + '/'
     scratch_dir = '/scratch/jonas/baselines/' + run_dir
 
@@ -60,7 +61,7 @@ def get_baseline_rmss(vis, baselines=baselines, remake_all=False,
     sp.call(['rm -rf ./baselines/{}'.format(run_dir[:-1])], shell=True)
     sp.call(['mkdir {}'.format(scratch_dir)], shell=True)
     sp.call(['ln', '-s', scratch_dir, './baselines/'])
-    sp.call(['cp', '-r', '{}.vis'.format(vis),
+    sp.call(['cp', '-r', '{}.vis'.format(orig_vis),
              './baselines/{}/'.format(run_dir)])
     print "Made symlinked directory, copied core .vis over.\n\n"
 
@@ -68,9 +69,9 @@ def get_baseline_rmss(vis, baselines=baselines, remake_all=False,
     for b in baselines:
         print '\n\n\n    NEW ITERATION\nBaseline: ', b, '\n'
         if b == 0:
-            name = vis
+            name = run_dir + mol
         else:
-            name = vis + str(b)
+            name = run_dir + mol + str(b)
         print name
 
         # If we want to reconvolve everything, then start by deleting them.
