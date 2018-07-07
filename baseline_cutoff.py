@@ -58,12 +58,11 @@ def get_baseline_rmss(vis, baselines=baselines, remake_all=False,
 
     sp.call(['rm -rf {}'.format(scratch_dir)], shell=True)
     sp.call(['rm -rf ./baselines/{}'.format(run_dir[:-1])], shell=True)
-
     sp.call(['mkdir {}'.format(scratch_dir)], shell=True)
     sp.call(['ln', '-s', scratch_dir, './baselines/'])
-
     sp.call(['cp', '-r', '{}.vis'.format(vis),
              './baselines/{}/'.format(run_dir)])
+    print "Made symlinked directory, copied core .vis over.\n\n"
 
     data_list = []
     for b in baselines:
