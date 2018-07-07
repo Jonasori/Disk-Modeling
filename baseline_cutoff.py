@@ -34,9 +34,12 @@ def main():
 
     args = parser.parse_args()
     if args.run:
-        run(dfile, remake_all=False)
+        run(remake_all=False, Baselines=baselines,
+            niters=1e4, mol='hco')
+
     elif args.run_and_overwrite:
-        run(dfile, remake_all=True)
+        run(remake_all=False, Baselines=baselines,
+            niters=1e4, mol='hco')
 
 
 def get_baseline_rmss(vis, baselines=baselines, remake_all=False,
@@ -125,7 +128,7 @@ def analysis(df):
     return [df['Baseline'], df['Mean'], df['RMS']]
 
 
-def run(vis, remake_all=False, Baselines=baselines,
+def run(remake_all=False, Baselines=baselines,
         niters=1e4, mol='hco'):
     """Run the above functions."""
     vis = 'data/' + mol + '/' + mol
