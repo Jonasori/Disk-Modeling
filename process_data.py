@@ -16,49 +16,47 @@ def pipe(commands):
 
     print('Piping the following commands to CASA:\n')
     print(call_string)
-    sp.call(['casa', '-c', call_string])
+    sp.Popen(['casa', '-c', call_string])
 
     # clean up .log files that casa poops out
-    sp.call('rm -rf *.log', shell=True)
+    sp.Popen('rm -rf *.log', shell=True)
 
 
 def casa_sequence(mol, split_range, raw_data_path,
-                 final_data_path, remake_all=False):
+                  output_path, remake_all=False):
     """Cvel, split, and export as uvf the original cont-sub'ed .ms.
 
     Args:
         - mol:
         - split_range:
         - raw_data_path:
-        - final_data_path:
+        - output_path: path, with name included
         - remake_all (bool): if True, remove delete all pre-existing files.
     """
-    if remake_all is True:
-        sp.call(['rm -rf {}.*'.format(final_data_path)])
 
-    if already_exists(final_data_path + '_cvel.ms') is False:
+    if already_exists(output_path + '_cvel.ms') is False:
         pipe(["cvel(",
               "vis='{}calibrated-{}.ms.contsub',".format(raw_data_path, mol),
-              "outputvis='{}_cvel.ms',".format(final_data_path),
+              "outputvis='{}_cvel.ms',".format(output_path),
               "field='OrionField4',",
               "restfreq='{}GHz',".format(lines[mol]['restfreq']),
               "outframe='LSRK')"
               ])
 
-    if already_exists(final_data_path + '_split.ms') is False:
+    if already_exists(output_path + '_split.ms') is False:
         spw = '*:' + str(split_range[0]) + '~' + str(split_range[1])
         pipe(["split(",
-              "vis='{}_cvel.ms',".format(final_data_path),
-              "outputvis='{}_split.ms',".format(final_data_path),
+              "vis='{}_cvel.ms',".format(output_path),
+              "outputvis='{}_split.ms',".format(output_path),
               "spw='{}',".format(spw),
               "datacolumn='data',",
               "keepflags=False)"
               ])
 
-    if already_exists(final_data_path + '_exportuvfits.uvf') is False:
+    if already_exists(output_path + '_exportuvfits.uvf') is False:
         pipe(["exportuvfits(",
-              "vis='{}_split.ms',".format(final_data_path),
-              "fitsfile='{}_exportuvfits.uvf')".format(final_data_path)
+              "vis='{}_split.ms',".format(output_path),
+              "fitsfile='{}_exportuvfits.uvf')".format(output_path)
               ])
 
 
@@ -94,7 +92,7 @@ def find_split_cutoffs(mol, other_restfreq=0):
     return split_range
 
 
-def run_full_pipeline(mol):
+def run_full_pipeline(mol, remake_all=False):
     """Run the whole thing.
 
     Not sure if it'll automatically wait for var_vis?
@@ -112,31 +110,40 @@ def run_full_pipeline(mol):
     # Paths to the data
     jonas = '/Volumes/disks/jonas/'
     raw_data_path = jonas + 'raw_data/'
-    final_data_path = jonas + 'freshStart/modeling/data/' + mol + '/' + mol
+    final_data_path = jonas + 'freshStart/modeling/data/' + mol + '/'
+    name = mol
 
     # Establish a string for the log file to be made at the end
     log = 'Files created on ' + today + '\n\n'
+
+    if remake_all is True:
+        sp.Popen(['rm -rf {}*'.format(final_data_path)], shell=True)
+        log += "Full remake occured; all files are fresh.\n\n"
+    else:
+        log += "Some files already existed and so were not remade.\n"
+        log += "Careful for inconsistencies.\n\n"
+
     b_min = lines[mol]['baseline_cutoff']
     split_range = find_split_cutoffs(mol)
 
     print "Split range is ", str(split_range[0]), str(split_range[1])
     print "Now processing data...."
-    casa_sequence(mol, split_range, raw_data_path, final_data_path)
+    casa_sequence(mol, split_range, raw_data_path, final_data_path + name)
     log = log + 'Split range used: ' + str(split_range) + '\n'
     print "Finished casa_sequence()\n\n"
 
     print "Running varvis....\n\n"
-    if already_exists(final_data_path + '.uvf') is False:
+    if already_exists(final_data_path + name + '.uvf') is False:
         # Note that var_vis just returns mol.uvf
-        var_vis(final_data_path)
+        var_vis(final_data_path + name)
 
     print "Finished varvis; converting uvf to vis now....\n\n"
-    if already_exists(final_data_path + '.vis') is False:
-        sp.call(['fits',
-                 'op=uvin',
-                 'in={}.uvf'.format(final_data_path),
-                 'out={}.vis'.format(final_data_path)
-                 ])
+    if already_exists(final_data_path + name + '.vis') is False:
+        sp.Popen(['fits',
+                  'op=uvin',
+                  'in={}.uvf'.format(name),
+                  'out={}.vis'.format(name)],
+                 cwd=final_data_path)
 
     if b_min != 0:
         print "Cutting out baselines below", b_min
@@ -144,22 +151,23 @@ def run_full_pipeline(mol):
         log += 'These visibilities were cut at' + str(b_min) + '\n'
 
     print "Convolving data to get image, converting output to .fits\n\n"
-    if already_exists(final_data_path + '.cm') is False:
-        icr(final_data_path)
+    if already_exists(final_data_path + name + '.cm') is False:
+        icr(final_data_path + name)
 
     print "Deleting the junk process files...\n\n"
     # Clear out the bad stuff.
-    sp.call(['rm -rf',
-             '{}.bm'.format(final_data_path),
-             '{}.cl'.format(final_data_path),
-             '{}.mp'.format(final_data_path),
-             '{}_cvel.*'.format(final_data_path),
-             '{}_split.*'.format(final_data_path),
-             '{}_exportuvfits.*'.format(final_data_path),
-             'casa*.log'],
-            shell=True)
+    sp.Popen(['rm -rf',
+              '{}.bm'.format(name),
+              '{}.cl'.format(name),
+              '{}.mp'.format(name),
+              '{}_cvel.*'.format(name),
+              '{}_split.*'.format(name),
+              '{}_exportuvfits.*'.format(name),
+              'casa*.log'],
+             shell=True,
+             cwd=final_data_path)
 
-    with open(final_data_path[:-3] + 'file_log.txt', 'w') as f:
+    with open(final_data_path + 'file_log.txt', 'w') as f:
         f.write(log)
 
     print "All done!"

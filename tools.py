@@ -249,18 +249,30 @@ def depickleLogFile(filename):
     return out
 
 
-def uvaver(name, min_baseline):
-    """Cut a vis file."""
-    new_name = name + '-short' + str(min_baseline)
-    sp.call(['uvaver',
-             'vis={}.vis'.format(name),
-             'select=-uvrange(0,{})'.format(min_baseline),
-             'out={}.vis'.format(new_name)])
+def uvaver(filepath, min_baseline):
+    """Cut a vis file.
+
+    This one uses Popen and cwd (change working directory) because the path was
+    getting to be longer than buffer's 64-character limit. Could be translated
+    to other funcs as well, but would just take some work.
+
+    This also relies on the filename being the last three characters of the
+    path, or could be changed to require that path and name be given
+    separately. Neither seems great.
+    """
+    new_name = filepath[-3:] + '-short' + str(min_baseline)
+    path = filepath[:-3]
+    sp.Popen(['uvaver',
+              'vis={}.vis'.format(filepath),
+              'select=-uvrange(0,{})'.format(min_baseline),
+              'out={}.vis'.format(new_name)],
+             cwd=path)
 
     sp.call(['fits',
              'op=uvout',
              'in={}.vis'.format(new_name),
-             'out={}.uvf'.format(new_name)])
+             'out={}.uvf'.format(new_name)],
+            cwd=path)
 
 
 def already_exists(query):
