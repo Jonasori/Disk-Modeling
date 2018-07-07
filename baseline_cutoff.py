@@ -8,15 +8,19 @@ import numpy as np
 import matplotlib.pyplot as plt
 import argparse as ap
 import pandas as pd
-from tools import icr, imstat
+from tools import icr, imstat, already_exists
 
 # baselines = [i*20 for i in range(1, 5)]
 # baselines = np.arange(0, 130, 10)
 baselines = np.sort(np.concatenate((np.arange(0, 130, 10),
                                     np.arange(55, 125, 10)
                                     )))
-dfile = 'data-hco'
 
+baselines = np.arange(10, 130, 5)
+
+mol = 'hco'
+dfile = 'data/' + mol + '/' + mol
+niters = 1e4
 
 def main():
     """Run it."""
@@ -47,6 +51,24 @@ def get_baseline_rmss(modelName, baselines=baselines, remake_all=False):
         remake_all (bool): if True, re-convolve all files, overwriting
                            pre-existing files if need be.
     """
+
+    # Set up the symlink
+    run = 'baselines_' + mol + str(niters)
+    scratch_dir = '/scratch/jonas/' + run
+
+    # If we're remaking everything, just wipe it out.
+    if remake_all is True:
+        sp.call(['rm -rf {}'.format(scratch_dir)])
+        sp.call(['rm -rf ./baselines/{}'.format(run)])
+
+    # If we're not remaking everything, then check if it's already there.
+    # If not, make a new symlink
+    if already_exists(scratch_dir) is False:
+        sp.call(['mkdir', scratch_dir])
+        sp.call(['ln', '-s', scratch_dir, './baselines/'])
+
+    sp.call(['cp {}'.format(dfile), './baselines/{}'.format(run)])
+
     data_list = []
     for b in baselines:
         print '\n\n\n    NEW ITERATION\nBaseline: ', b, '\n'
@@ -72,7 +94,7 @@ def get_baseline_rmss(modelName, baselines=baselines, remake_all=False):
         # If not, get rms, clean down to it.
         else:
             # Now do a real clean
-            icr(modelName, min_baseline=b)
+            icr(modelName, min_baseline=b, niters=niters)
             mean, rms = imstat(name)
 
         step_output = {'RMS': rms,
@@ -115,23 +137,6 @@ def run(modelName, remake_all=False, Baselines=baselines):
 if __name__ == '__main__':
     main()
 
-
-
-
-scratch_dir='/scratch/cail/{}_model_files'.format(run_name),
-
-except IOError:
-        sp.call(['mkdir', run_name])
-        if scratch_dir is False:
-            sp.call(['mkdir', run_name + '/model_files'])
-        else:
-            # make a 'scratch' directory to hold model files in a user-specified
-            # location, and then create a symbolic link pointing from
-            # run_dir/model_files to scratch_dir.
-            print('creating scratch directory for model files at {}'.format(scratch_dir))
-            sp.call(['mkdir', scratch_dir])
-            print('linking {}/model_files to scratch directory'.format(run_name))
-            sp.call('ln -s {} {}/model_files'.format(scratch_dir, run_name), shell=True)
 
 
 
