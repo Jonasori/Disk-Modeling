@@ -134,7 +134,7 @@ def run_full_pipeline(mol, remake_all=False):
 
     print "Running varvis....\n\n"
     if already_exists(final_data_path + name + '.uvf') is False:
-        # Note that var_vis just returns mol.uvf
+        # Note that var_vis takes in mol_exportuvfits, returns mol.uvf
         var_vis(final_data_path + name)
 
     print "Finished varvis; converting uvf to vis now....\n\n"

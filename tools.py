@@ -117,6 +117,7 @@ def icr(modelName, min_baseline=0, niters=1e4, mol='hco'):
         mol (str): which molecule's restfreq to use.
     """
     print "\nConvolving image\n"
+
     # Add a shorthand name (easier to write)
     b = min_baseline
 
@@ -261,6 +262,9 @@ def uvaver(filepath, name, min_baseline):
     separately. Neither seems great.
     """
     new_name = name + '-short' + str(min_baseline)
+
+    if already_exists(filepath + new_name + '.vis') is True:
+        return "This vis cut already exists; aborting."
 
     sp.Popen(['uvaver',
               'vis={}.vis'.format(name),
