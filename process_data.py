@@ -158,17 +158,23 @@ def run_full_pipeline(mol, remake_all=False):
         icr(final_data_path + name)
 
     print "Deleting the junk process files...\n\n"
-    # Clear out the bad stuff.
-    sp.Popen(['rm -rf',
-              '{}.bm'.format(name),
-              '{}.cl'.format(name),
-              '{}.mp'.format(name),
-              '{}_cvel.*'.format(name),
-              '{}_split.*'.format(name),
-              '{}_exportuvfits.*'.format(name),
-              'casa*.log'],
-             shell=True,
-             cwd=final_data_path)
+    # Clear out the bad stuff. There's gotta be a better way of doing this.
+    sp.Popen(['rm -rf {}.bm'.format(name)],
+             shell=True, cwd=final_data_path)
+    sp.Popen(['rm -rf {}.cl'.format(name)],
+             shell=True, cwd=final_data_path)
+    sp.Popen(['rm -rf {}.cm'.format(name)],
+             shell=True, cwd=final_data_path)
+    sp.Popen(['rm -rf {}.cl'.format(name)],
+             shell=True, cwd=final_data_path)
+
+    sp.Popen(['rm -rf {}_cvel.*'.format(name)],
+             shell=True, cwd=final_data_path)
+    sp.Popen(['rm -rf {}_split.*'.format(name)],
+             shell=True, cwd=final_data_path)
+    sp.Popen(['rm -rf {}_exportuvfits.*'.format(name)],
+             shell=True, cwd=final_data_path)
+    sp.Popen(['rm -rf casa*.log'], shell=True, cwd=final_data_path)
 
     with open(final_data_path + 'file_log.txt', 'w') as f:
         f.write(log)
