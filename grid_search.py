@@ -274,21 +274,25 @@ def fullRun(diskAParams, diskBParams):
     print "Final Raw Chi-Squared Value: ", finalX2s[0]
     print "Final Reduced Chi-Squared Value: ", finalX2s[1]
 
-    # log file with best fit vals, range queried, indices of best vals, best chi2
-    # 	- (maybe figure out how to round these for better readability)
-    f = open('run_' + today + 'summary.log', 'w')
-    s1 = '\nBest Chi-Squared values [raw, reduced]:' + str(finalX2s)
-    f.write(s1)
-    s2 = '\n\n\nParameter ranges queried:\n' + '\nDisk A:\n' + \
-        str(diskAParams) + '\n\nDisk B:\n' + str(diskBParams)
-    f.write(s2)
-    s3 = '\n\n\nBest-fit values (Tatm, Tqq, Xmol, outerR, PA, Incl):' + \
-        '\nDisk A:\n' + str(fit_A_params) + '\nDisk B:\n' + str(fit_B_params)
-    f.write(s3)
-    f.close()
-
     t1 = time.time()
     t_total = (t1 - t0)/60
+
+    # log file with best fit vals, range queried, indices of best vals, best chi2
+    # 	- (maybe figure out how to round these for better readability)
+    with open('run_' + today + 'summary.log', 'w') as f:
+        s1 = '\nBest Chi-Squared values [raw, reduced]:' + str(finalX2s)
+        s2 = '\n\n\nParameter ranges queried:\n' + '\nDisk A:\n' + \
+            str(diskAParams) + '\n\nDisk B:\n' + str(diskBParams)
+        s3 = '\n\n\nBest-fit values (Tatm, Tqq, Xmol, outerR, PA, Incl):' + \
+            '\nDisk A:\n' + str(fit_A_params) + '\nDisk B:\n' + str(fit_B_params)
+        s4 = "\n\nFinal run duration was", t_total/60, 'hours'
+        s5 = '\nwith each step taking on average', t_total/n, 'minutes'
+        f.write(s1)
+        f.write(s2)
+        f.write(s3)
+        f.write(s4)
+        f.write(s5)
+
     print "\n\nFinal run duration was", t_total/60, 'hours'
     print 'with each step taking on average', t_total/n, 'minutes'
 
