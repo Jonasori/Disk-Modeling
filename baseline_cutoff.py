@@ -131,7 +131,7 @@ def analysis(df):
 def run(remake_all=False, Baselines=baselines,
         niters=1e4, mol='hco'):
     """Run the above functions."""
-    vis = 'data/' + mol + '/' + mol '.vis'
+    vis = 'data/' + mol + '/' + mol + '.vis'
 
     ds = get_baseline_rmss(vis, Baselines, remake_all, niters, mol)
     analysis(ds)
