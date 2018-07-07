@@ -85,6 +85,7 @@ def cgdisp(imageName, crop=True, contours=True, rms=6.8e-3):
                  ])
     """
 
+
 def imstat(modelName, ext='.cm', plane_to_check=30):
     """Call imstat to find rms and mean.
 
@@ -149,63 +150,50 @@ def icr(modelName, min_baseline=0, niters=1e4, mol='hco'):
              ],
             stdout=open(os.devnull, 'wb'))
 
-    if min_baseline == 0:
-        # can't call select=-uvrange(0,0) so just get rid of that line for 0.
-        b = ''
-        for end in ['cm', 'cl', 'bm', 'mp']:
-            sp.call('rm -rf {}.{}'.format(modelName, end), shell=True)
-        print "Deleted", modelName, '.[cm, cl, bm, mp]'
+    invert_str = ['invert',
+                  'vis={}.vis'.format(modelName),
+                  'map={}.mp'.format(modelName),
+                  'beam={}.bm'.format(modelName),
+                  'options=systemp',
+                  'cell=0.045',
+                  'imsize=256',
+                  'robust=2']
 
-        sp.call(['invert',
-                 'vis={}.vis'.format(modelName),
-                 'map={}.mp'.format(modelName),
-                 'beam={}.bm'.format(modelName),
-                 'options=systemp',
-                 'cell=0.045',
-                 'imsize=256',
-                 'robust=2'],
-                stdout=open(os.devnull, 'wb'))
+    # Rename the outfile if we're cutting baselines and add the cut call.
+    if min_baseline != 0:
+        invert_str.append('select=-uvrange(0,{})'.format(b))
+        modelName += str(b)
 
-    # If we're chopping baselines:
-    else:
-        for end in ['cm', 'cl', 'bm', 'mp']:
-            sp.call('rm -rf {}.{}'.format(modelName + str(b), end), shell=True)
-        print "Deleted", modelName + str(b) + '.[cm, cl, bm, mp]'
+    for end in ['cm', 'cl', 'bm', 'mp']:
+        sp.call('rm -rf {}.{}'.format(modelName, end), shell=True)
+    print "Deleted", modelName + '.[cm, cl, bm, mp]'
 
-        sp.call(['invert',
-                 'vis={}.vis'.format(modelName),
-                 'map={}.mp'.format(modelName + str(b)),
-                 'beam={}.bm'.format(modelName + str(b)),
-                 'options=systemp',
-                 'select=-uvrange(0,{})'.format(b),
-                 'cell=0.045',
-                 'imsize=256',
-                 'robust=2'],
-                stdout=open(os.devnull, 'wb'))
+    # Run invert
+    sp.call(invert_str, stdout=open(os.devnull, 'wb'))
 
     # Grab the rms
-    rms = imstat(modelName + str(b), '.mp')[1]
+    rms = imstat(modelName, '.mp')[1]
     sp.call(['clean',
-             'map={}.mp'.format(modelName + str(b)),
-             'beam={}.bm'.format(modelName + str(b)),
-             'out={}.cl'.format(modelName + str(b)),
+             'map={}.mp'.format(modelName),
+             'beam={}.bm'.format(modelName),
+             'out={}.cl'.format(modelName),
              'niters={}'.format(niters),
              'threshold={}'.format(rms)]
             # stdout=open(os.devnull, 'wb')
             )
 
     sp.call(['restor',
-             'map={}.mp'.format(modelName + str(b)),
-             'beam={}.bm'.format(modelName + str(b)),
-             'model={}.cl'.format(modelName + str(b)),
-             'out={}.cm'.format(modelName + str(b))
+             'map={}.mp'.format(modelName),
+             'beam={}.bm'.format(modelName),
+             'model={}.cl'.format(modelName),
+             'out={}.cm'.format(modelName)
              ],
             stdout=open(os.devnull, 'wb'))
 
     sp.call(['fits',
              'op=xyout',
-             'in={}.cm'.format(modelName + str(b)),
-             'out={}.fits'.format(modelName + str(b))
+             'in={}.cm'.format(modelName),
+             'out={}.fits'.format(modelName)
              ])
 
 
