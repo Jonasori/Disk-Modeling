@@ -31,6 +31,27 @@ def cgdisp(imageName, crop=True, contours=True, rms=6.8e-3):
         r = '(-2,-2,2,2)'
     else:
         r = '(-5,-5,5,5)'
+
+    call_str = ['cgdisp',
+                'in={}'.format(imageName),
+                'device=/xs',
+                'region=arcsec,box{}'.format(r),
+                'olay={}'.format('centering_for_olay.cgdisp'),
+                'beamtyp=b,l,3',
+                'labtyp=arcsec,arcsec,abskms',
+                'options=3value',
+                'csize=0,0.7,0,0'
+                ]
+
+    if contours:
+        call_str[1] = 'in={},{}'.format(imageName, imageName)
+        call_str.append('type=pix,con')
+        call_str.append('slev=a,{}'.format(rms))
+        call_str.append('levs1=3,6,9')
+        call_str.append('options=3value,mirror,beambl')
+
+    sp.call(call_str)
+    """
     if contours:
         sp.call(['cgdisp',
                  'in={},{}'.format(imageName, imageName),
@@ -62,7 +83,7 @@ def cgdisp(imageName, crop=True, contours=True, rms=6.8e-3):
                  'cols2=7',
                  'cols3=5'
                  ])
-
+    """
 
 def imstat(modelName, ext='.cm', plane_to_check=30):
     """Call imstat to find rms and mean.
