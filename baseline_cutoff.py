@@ -58,8 +58,8 @@ def get_baseline_rmss(vis, baselines=baselines, remake_all=False,
 
     # If we're remaking everything, just wipe it out.
     if remake_all is True:
-        sp.call(['rm -rf {}'.format(scratch_dir)])
-        sp.call(['rm -rf ./baselines/{}'.format(run_dir)])
+        sp.call(['rm', '-rf', scratch_dir])
+        sp.call(['rm', '-rf', './baselines/{}'.format(run_dir)])
 
     # If we're not remaking everything, then check if it's already there.
     # If not, make a new symlink
