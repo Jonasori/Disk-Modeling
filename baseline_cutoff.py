@@ -18,9 +18,6 @@ baselines = np.sort(np.concatenate((np.arange(0, 130, 10),
 
 baselines = np.arange(10, 130, 5)
 
-mol = 'hco'
-dfile = 'data/' + mol + '/' + mol
-niters = 1e4
 
 def main():
     """Run it."""
@@ -42,16 +39,16 @@ def main():
         run(dfile, remake_all=True)
 
 
-def get_baseline_rmss(modelName, baselines=baselines, remake_all=False):
+def get_baseline_rmss(vis, baselines=baselines, remake_all=False,
+                      niters=1e4, mol='hco'):
     """Iterate through a range of baseline cutoffs and compare the results.
 
     Args:
-        modelName (str): the name of the core data file that this is pulling.
+        vis (str): the name of the core data file that this is pulling.
         baselines (list of ints): the baselines to check over.
         remake_all (bool): if True, re-convolve all files, overwriting
                            pre-existing files if need be.
     """
-
     # Set up the symlink
     run = 'baselines_' + mol + str(niters)
     scratch_dir = '/scratch/jonas/' + run
@@ -67,15 +64,15 @@ def get_baseline_rmss(modelName, baselines=baselines, remake_all=False):
         sp.call(['mkdir', scratch_dir])
         sp.call(['ln', '-s', scratch_dir, './baselines/'])
 
-    sp.call(['cp {}'.format(dfile), './baselines/{}'.format(run)])
+    sp.call(['cp {}'.format(vis), './baselines/{}'.format(run)])
 
     data_list = []
     for b in baselines:
         print '\n\n\n    NEW ITERATION\nBaseline: ', b, '\n'
         if b == 0:
-            name = modelName
+            name = vis
         else:
-            name = modelName + str(b)
+            name = vis + str(b)
         print name
 
         # If we want to reconvolve everything, then start by deleting them.
@@ -94,7 +91,7 @@ def get_baseline_rmss(modelName, baselines=baselines, remake_all=False):
         # If not, get rms, clean down to it.
         else:
             # Now do a real clean
-            icr(modelName, min_baseline=b, niters=niters)
+            icr(vis, min_baseline=b, niters=niters)
             mean, rms = imstat(name)
 
         step_output = {'RMS': rms,
@@ -128,9 +125,12 @@ def analysis(df):
     return [df['Baseline'], df['Mean'], df['RMS']]
 
 
-def run(modelName, remake_all=False, Baselines=baselines):
+def run(vis, remake_all=False, Baselines=baselines,
+        niters=1e4, mol='hco'):
     """Run the above functions."""
-    ds = get_baseline_rmss(modelName, Baselines, remake_all)
+    vis = 'data/' + mol + '/' + mol
+
+    ds = get_baseline_rmss(vis, Baselines, remake_all, niters, mol)
     analysis(ds)
 
 
