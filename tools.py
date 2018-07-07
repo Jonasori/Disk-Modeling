@@ -272,7 +272,7 @@ def uvaver(filepath, name, min_baseline):
              'op=uvout',
              'in={}.vis'.format(new_name),
              'out={}.uvf'.format(new_name)],
-            cwd=pafilepathth)
+            cwd=filepath)
 
 
 def already_exists(query):
