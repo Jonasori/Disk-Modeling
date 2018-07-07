@@ -249,7 +249,7 @@ def depickleLogFile(filename):
     return out
 
 
-def uvaver(filepath, min_baseline):
+def uvaver(filepath, name, min_baseline):
     """Cut a vis file.
 
     This one uses Popen and cwd (change working directory) because the path was
@@ -260,19 +260,19 @@ def uvaver(filepath, min_baseline):
     path, or could be changed to require that path and name be given
     separately. Neither seems great.
     """
-    new_name = filepath[-3:] + '-short' + str(min_baseline)
-    path = filepath[:-3]
+    new_name = name + '-short' + str(min_baseline)
+
     sp.Popen(['uvaver',
-              'vis={}.vis'.format(filepath),
+              'vis={}.vis'.format(name),
               'select=-uvrange(0,{})'.format(min_baseline),
               'out={}.vis'.format(new_name)],
-             cwd=path)
+             cwd=filepath)
 
     sp.call(['fits',
              'op=uvout',
              'in={}.vis'.format(new_name),
              'out={}.uvf'.format(new_name)],
-            cwd=path)
+            cwd=pafilepathth)
 
 
 def already_exists(query):
