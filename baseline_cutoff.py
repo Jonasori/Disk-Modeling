@@ -55,7 +55,7 @@ def get_baseline_rmss(mol, niters=1e4, baselines=baselines, remake_all=False):
     run_dir = 'baseline_' + mol + str(int(niters)) + '/'
     scratch_dir = '/scratch/jonas/baselines/' + run_dir
     orig_vis = './data/' + mol + '/' + mol
-    new_vis = run_dir + mol
+    new_vis = './baselines/' + run_dir + mol
 
     sp.call(['rm -rf {}'.format(scratch_dir)], shell=True)
     sp.call(['rm -rf ./baselines/{}'.format(run_dir[:-1])], shell=True)
