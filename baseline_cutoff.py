@@ -52,10 +52,9 @@ def get_baseline_rmss(mol, niters=1e4, baselines=baselines, remake_all=False):
                            pre-existing files if need be.
     """
     # Set up the symlink
-    run_dir = 'baseline_' + mol + str(int(niters)) + '/'
-    scratch_dir = '/scratch/jonas/baselines/' + run_dir
+    run_dir = 'baselines/baseline_' + mol + str(int(niters)) + '/'
+    scratch_dir = '/scratch/jonas/' + run_dir
     orig_vis = './data/' + mol + '/' + mol
-    new_vis = './baselines/' + run_dir + mol
 
     sp.call(['rm -rf {}'.format(scratch_dir)], shell=True)
     sp.call(['rm -rf ./baselines/{}'.format(run_dir[:-1])], shell=True)
@@ -65,6 +64,8 @@ def get_baseline_rmss(mol, niters=1e4, baselines=baselines, remake_all=False):
 
     sp.call(['cp', '-r', '{}.vis'.format(orig_vis),
              './baselines/{}/'.format(run_dir)])
+    new_vis = run_dir + mol
+
     print "Made symlinked directory, copied core .vis over.\n\n"
 
     data_list = []
