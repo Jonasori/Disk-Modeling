@@ -1,6 +1,9 @@
 """Data processing pipeline.
 
 To be run from /Volumes/disks/jonas/freshStart/modeling
+sp.Popen vs sp.call: Popen lets you change working directory for the call with
+                     cwd arg, call blocks further action until its action is
+                     complete, although Popen can be made to block with .wait()
 """
 
 
@@ -16,10 +19,11 @@ def pipe(commands):
 
     print('Piping the following commands to CASA:\n')
     print(call_string)
-    sp.Popen(['casa', '-c', call_string])
+    # sp.call(['casa', '-c', call_string])
+    sp.Popen(['casa', '-c', call_string]).wait()
 
     # clean up .log files that casa poops out
-    sp.Popen('rm -rf *.log', shell=True)
+    sp.Popen('rm -rf *.log', shell=True).wait()
 
 
 def casa_sequence(mol, split_range, raw_data_path,
@@ -33,7 +37,6 @@ def casa_sequence(mol, split_range, raw_data_path,
         - output_path: path, with name included
         - remake_all (bool): if True, remove delete all pre-existing files.
     """
-
     if already_exists(output_path + '_cvel.ms') is False:
         pipe(["cvel(",
               "vis='{}calibrated-{}.ms.contsub',".format(raw_data_path, mol),
@@ -117,7 +120,7 @@ def run_full_pipeline(mol, remake_all=False):
     log = 'Files created on ' + today + '\n\n'
 
     if remake_all is True:
-        sp.Popen(['rm -rf {}*'.format(final_data_path)], shell=True)
+        sp.call(['rm -rf', '{}*'.format(final_data_path)], shell=True)
         log += "Full remake occured; all files are fresh.\n\n"
     else:
         log += "Some files already existed and so were not remade.\n"
@@ -143,7 +146,7 @@ def run_full_pipeline(mol, remake_all=False):
                   'op=uvin',
                   'in={}.uvf'.format(name),
                   'out={}.vis'.format(name)],
-                 cwd=final_data_path)
+                 cwd=final_data_path).wait()
 
     if b_min != 0:
         print "Cutting out baselines below", b_min
