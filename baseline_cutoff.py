@@ -63,7 +63,7 @@ def get_baseline_rmss(mol, niters=1e4, baselines=baselines, remake_all=False):
     sp.call(['ln', '-s', scratch_dir, './baselines/'])
 
     sp.call(['cp', '-r', '{}.vis'.format(orig_vis),
-             './baselines/{}/'.format(run_dir)])
+             '{}/'.format(run_dir)])
     new_vis = run_dir + mol
 
     print "Made symlinked directory, copied core .vis over.\n\n"
