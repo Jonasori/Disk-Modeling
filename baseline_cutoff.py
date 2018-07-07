@@ -42,8 +42,7 @@ def main():
             niters=1e4, mol='hco')
 
 
-def get_baseline_rmss(vis, baselines=baselines, remake_all=False,
-                      niters=1e4, mol='hco'):
+def get_baseline_rmss(mol, niters=1e4, baselines=baselines, remake_all=False):
     """Iterate through a range of baseline cutoffs and compare the results.
 
     Args:
@@ -53,9 +52,10 @@ def get_baseline_rmss(vis, baselines=baselines, remake_all=False,
                            pre-existing files if need be.
     """
     # Set up the symlink
-    orig_vis = 'data/' + mol + '/' + mol
     run_dir = 'baseline_' + mol + str(int(niters)) + '/'
     scratch_dir = '/scratch/jonas/baselines/' + run_dir
+    orig_vis = 'data/' + mol + '/' + mol
+    new_vis = run_dir + mol
 
     sp.call(['rm -rf {}'.format(scratch_dir)], shell=True)
     sp.call(['rm -rf ./baselines/{}'.format(run_dir[:-1])], shell=True)
@@ -89,8 +89,7 @@ def get_baseline_rmss(vis, baselines=baselines, remake_all=False,
 
         # If not, get rms, clean down to it.
         else:
-            # Now do a real clean
-            icr(vis, min_baseline=b, niters=niters)
+            icr(new_vis, min_baseline=b, niters=niters)
             mean, rms = imstat(name)
 
         step_output = {'RMS': rms,
@@ -124,12 +123,10 @@ def analysis(df):
     return [df['Baseline'], df['Mean'], df['RMS']]
 
 
-def run(remake_all=True, Baselines=baselines,
-        niters=1e4, mol='hco'):
+def run(remake_all=True, baselines=baselines, niters=1e4, mol='hco'):
     """Run the above functions."""
-    vis = 'data/' + mol + '/' + mol
 
-    ds = get_baseline_rmss(vis, Baselines, remake_all, niters, mol)
+    ds = get_baseline_rmss(mol, niters, baselines, remake_all)
     analysis(ds)
 
 
