@@ -53,13 +53,13 @@ def get_baseline_rmss(vis, baselines=baselines, remake_all=False,
                            pre-existing files if need be.
     """
     # Set up the symlink
-    run = 'baselines_' + mol + str(int(niters))
-    scratch_dir = '/scratch/jonas/baselines' + run
+    run_dir = 'baselines_' + mol + str(int(niters))
+    scratch_dir = '/scratch/jonas/baselines/' + run_dir
 
     # If we're remaking everything, just wipe it out.
     if remake_all is True:
         sp.call(['rm -rf {}'.format(scratch_dir)])
-        sp.call(['rm -rf ./baselines/{}'.format(run)])
+        sp.call(['rm -rf ./baselines/{}'.format(run_dir)])
 
     # If we're not remaking everything, then check if it's already there.
     # If not, make a new symlink
@@ -67,7 +67,8 @@ def get_baseline_rmss(vis, baselines=baselines, remake_all=False,
         sp.call(['mkdir', scratch_dir])
         sp.call(['ln', '-s', scratch_dir, './baselines/'])
 
-    sp.call(['cp -r {}'.format(vis), './baselines/{}'.format(run)])
+    sp.call(['cp -r {}'.format(vis), './baselines/{}'.format(run_dir)])
+    sp.Popen(['cp', '-r', '{}'.format(vis), './'])
 
     data_list = []
     for b in baselines:
