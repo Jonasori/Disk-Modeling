@@ -140,8 +140,4 @@ if __name__ == '__main__':
 
 
 
-ln -s /scratch/jonas/scratch_dir ./test_local
-
-
-
 # The End
