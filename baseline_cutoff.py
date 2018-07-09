@@ -16,7 +16,7 @@ baselines = np.sort(np.concatenate((np.arange(0, 130, 10),
                                     np.arange(55, 125, 10)
                                     )))
 
-baselines = np.arange(10, 130, 5)
+baselines = np.arange(0, 130, 5)
 
 
 def main():
