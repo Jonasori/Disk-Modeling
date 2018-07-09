@@ -84,17 +84,17 @@ def get_baseline_rmss(mol, niters=1e4, baselines=baselines, remake_all=False):
 
         if b == 0:
             print "Don't delete the 0-baseline you stoop!"
-            mean, rms = imstat(name)
+            mean, rms = imstat(name + '.vis')
 
         # Check if we've already icr'ed this one.
         elif name + '.cm' in sp.check_output(['ls']):
             print "File already exists; going straight to imstat"
-            mean, rms = imstat(name)
+            mean, rms = imstat(name + '.vis')
 
         # If not, get rms, clean down to it.
         else:
-            icr(new_vis, min_baseline=b, niters=niters)
-            mean, rms = imstat(name)
+            icr(name, min_baseline=b, niters=niters)
+            mean, rms = imstat(name + '.vis')
 
         step_output = {'RMS': rms,
                        'Mean': mean,
