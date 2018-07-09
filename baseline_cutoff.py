@@ -52,7 +52,7 @@ def get_baseline_rmss(mol, niters=1e4, baselines=baselines, remake_all=False):
                            pre-existing files if need be.
     """
     # Set up the symlink
-    run_dir = 'baselines/baseline_' + mol + str(int(niters)) + '/'
+    run_dir = './baselines/baseline_' + mol + str(int(niters)) + '/'
     scratch_dir = '/scratch/jonas/' + run_dir
     orig_vis = './data/' + mol + '/' + mol
     new_vis = run_dir + mol
@@ -93,7 +93,7 @@ def get_baseline_rmss(mol, niters=1e4, baselines=baselines, remake_all=False):
 
         # If not, get rms, clean down to it.
         else:
-            icr(name, min_baseline=b, niters=niters)
+            icr(new_vis, min_baseline=b, niters=niters)
             mean, rms = imstat(name + '.vis')
 
         step_output = {'RMS': rms,
