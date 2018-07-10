@@ -95,7 +95,7 @@ def find_split_cutoffs(mol, other_restfreq=0):
     return split_range
 
 
-def run_full_pipeline(mol, remake_all=False):
+def run_full_pipeline(mol, remake_all=True):
     """Run the whole thing.
 
     Not sure if it'll automatically wait for var_vis?
@@ -148,10 +148,12 @@ def run_full_pipeline(mol, remake_all=False):
                   'out={}.vis'.format(name)],
                  cwd=final_data_path).wait()
 
+    """
     if b_min != 0:
         print "Cutting out baselines below", b_min
         uvaver(final_data_path, name, b_min)
         log += 'These visibilities were cut at' + str(b_min) + '\n'
+    """
 
     print "Convolving data to get image, converting output to .fits\n\n"
     if already_exists(final_data_path + name + '.cm') is False:
