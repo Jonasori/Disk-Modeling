@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import argparse as ap
 import pandas as pd
 from tools import icr, imstat, already_exists
+from constants import today
 
 
 baselines = np.arange(0, 130, 5)
@@ -79,17 +80,17 @@ def get_baseline_rmss(mol, niters=1e4, baselines=baselines, remake_all=False):
 
         if b == 0:
             print "Don't delete the 0-baseline you stoop!"
-            mean, rms = imstat(name + '.vis')
+            mean, rms = imstat(name)
 
         # Check if we've already icr'ed this one.
         elif name + '.cm' in sp.check_output(['ls']):
             print "File already exists; going straight to imstat"
-            mean, rms = imstat(name + '.vis')
+            mean, rms = imstat(name)
 
         # If not, get rms, clean down to it.
         else:
             icr(new_vis, min_baseline=b, niters=niters)
-            mean, rms = imstat(name + '.vis')
+            mean, rms = imstat(name)
 
         step_output = {'RMS': rms,
                        'Mean': mean,
