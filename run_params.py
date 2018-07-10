@@ -1,6 +1,8 @@
+"""
+Some sets of parameters to be grid searching over.
 
-# Parameters for the run
-
+Only fit atmsT, Xmol, RA
+"""
 
 import numpy as np
 
@@ -24,9 +26,8 @@ PAB = np.array([135])
 InclB = np.array([45])
 """
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 # Short test run values
-
 
 # Parameters for Disk A
 """
@@ -46,22 +47,24 @@ PAB = np.array([135])
 InclB = np.array([30, 60])
 """
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 # Medium-length test run values
 
 # Parameters for Disk B
-TatmsA = np.array([100, 300, 500])
-TqqA = -1 * np.array([-0.5, -0.7, -1.])
-XmolA = -1 * np.array([6., 7.5, 9.])
-RAoutA = np.array([200, 400, 600])
+TatmsA = np.array([10, 75, 150, 300])
+# TqqA = -1 * np.array([-0.5, -0.7, -1.])
+TqqA = np.array([-0.7])
+XmolA = -1 * np.array([4., 6., 8., 10.])
+RAoutA = np.array([50, 200, 400, 600])
 PAA = np.array([250])
 InclA = np.array([65])
 
 # Parameters for Disk B
-TatmsB = np.array([200, 400])
-TqqB = -1 * np.array([-0.6, -0.9])
-XmolB = -1 * np.array([7., 9.])
-RAoutB = np.array([200, 400])
+TatmsB = np.array([10, 75, 150, 300])
+# TqqB = -1 * np.array([-0.6, -0.9])
+TqqB = np.array([-0.7])
+XmolB = -1 * np.array([4., 6., 8., 10.])
+RAoutB = np.array([50, 200, 400, 600])
 PAB = np.array([135])
 InclB = np.array([30])
 
