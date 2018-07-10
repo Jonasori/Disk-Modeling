@@ -44,8 +44,10 @@ def get_baseline_rmss(mol, niters=1e4, baselines=baselines):
     data_list = []
     for b in baselines:
         print '\n\n\n    NEW ITERATION\nBaseline: ', b, '\n'
-        name = run_dir + mol + str(b)
-
+        if b != 0:
+            name = run_dir + mol + str(b)
+        else:
+            name = run_dir + mol
         # Check if we've already icr'ed this one.
         if name + '.cm' in sp.check_output(['ls']):
             print "File already exists; going straight to imstat"

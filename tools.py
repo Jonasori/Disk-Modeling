@@ -132,7 +132,7 @@ def icr(visName, mol, min_baseline=0, niters=1e4):
     """Invert/clean/restor: Turn a vis into a convolved clean map.
 
     Args:
-        modelName (str): name of the file. Do not include extension.
+        modelName (str): path to and name of the file. Do not include extension
         min_baseline (int): minimum baseline length to use. Cuts all below.
         niters (int): how many iterations of cleaning to run. Want this to be
                       big enough that it never gets triggered.
@@ -312,6 +312,7 @@ def already_exists(query):
 
 
 def delete_files(name, extensions_to_delete=['bm', 'mp', 'cl']):
+    """Delete some files without the ugliness of batch deletes."""
     for ext in extensions_to_delete:
         sp.Popen(['rm -rf {}.{}'.format(name, ext)], shell=True)
 
