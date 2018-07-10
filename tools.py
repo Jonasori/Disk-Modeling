@@ -140,17 +140,18 @@ def icr(modelName, min_baseline=0, niters=1e4, mol='hco'):
     """
     print "\nConvolving image\n"
 
-    # Add a shorthand name (easier to write)
-    # Rename the outfile if we're cutting baselines and add the cut call.
-    b = min_baseline
-    if min_baseline != 0:
-        modelName += str(b)
 
     # Add restfreq to this vis
     sp.call(['puthd',
              'in={}.vis/restfreq'.format(modelName),
              'value={}'.format(restfreqs[mol])],
             stdout=open(os.devnull, 'wb'))
+
+    # Add a shorthand name (easier to write)
+    # Rename the outfile if we're cutting baselines and add the cut call.
+    b = min_baseline
+    if min_baseline != 0:
+        modelName += str(b)
 
     invert_str = ['invert',
                   'vis={}.vis'.format(modelName),
