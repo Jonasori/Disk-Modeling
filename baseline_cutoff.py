@@ -47,6 +47,13 @@ def get_baseline_rmss(mol, niters=1e4, baselines=baselines, remake_all=False):
         remake_all (bool): if True, re-convolve all files, overwriting
                            pre-existing files if need be.
     """
+
+    """
+    # If we want to reconvolve everything, then start by deleting them.
+    if remake_all is True:
+        sp.call(['rm', '-rf', '{}.{{cm, cl, mp, bm}}'.format(name)])
+    """
+
     # Set up the symlink
     run_dir = './baselines/baseline_' + mol + str(int(niters)) + '/'
     scratch_dir = '/scratch/jonas/' + run_dir
@@ -74,12 +81,8 @@ def get_baseline_rmss(mol, niters=1e4, baselines=baselines, remake_all=False):
             name = run_dir + mol + str(b)
         print name
 
-        # If we want to reconvolve everything, then start by deleting them.
-        if remake_all is True:
-            sp.call(['rm', '-rf', '{}.{{cm, cl, mp, bm}}'.format(name)])
-
         # Check if we've already icr'ed this one.
-        elif name + '.cm' in sp.check_output(['ls']):
+        if name + '.cm' in sp.check_output(['ls']):
             print "File already exists; going straight to imstat"
             mean, rms = imstat(name, ext='.cm')
 

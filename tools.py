@@ -99,8 +99,9 @@ def imstat(modelName, ext='.cm', plane_to_check=30):
         this includes the ~10 header planes, too, so I think plane 30
         corresponds to channel 21 or so.
     """
+    print '\nIMSTATING ', modelName, '\n'
+
     r_offsource = '(-5,-5,5,-1)'
-    print '\n\nIMSTATING ', modelName
     imstat_raw = sp.check_output(['imstat',
                                   'in={}{}'.format(modelName, ext),
                                   'region=arcsec,box{}'.format(r_offsource)
