@@ -247,12 +247,6 @@ def fullRun(diskAParams, diskBParams):
             df_B_fit['Incl.'][idx_of_BF_B]]
     fit_B_params = np.array(Ps_B)
 
-    # Create the final best-fit model.
-    diskAName, diskBName = modelPath + 'fitA', modelPath + 'fitB'
-
-    makeModel(fit_A_params, modelPath + 'fitA', 0)
-    makeModel(fit_B_params, diskBName, 1)
-    sumDisks(diskAName, diskBName, modelPath)
 
     # Bind the data frames, output them.
     # Reiterated in tools.py/depickler(), but we can unwrap these vals with:
@@ -265,10 +259,6 @@ def fullRun(diskAParams, diskBParams):
     # f = pickle.load(open('{}_step-log.pickle'.format(modelPath), "rb"))
     # Alternatively, to get a csv:
     # full_log.to_csv(path_or_buf='{}_step-log.csv'.format(modelPath))
-
-    # Convolve the final model
-    icr(modelPath, mol=mol)
-    print "Best-fit model created: ", modelPath, ".cm"
 
     # Calculate and present the final X2 values. Note that here, modelPath is just the infile for chiSq()
     finalX2s = chiSq(modelPath)
@@ -297,6 +287,16 @@ def fullRun(diskAParams, diskBParams):
     print "\n\nFinal run duration was", t_total/60, 'hours'
     print 'with each step taking on average', t_total/n, 'minutes'
 
+    # Finally, Create the final best-fit model.
+    diskAName, diskBName = modelPath + 'fitA', modelPath + 'fitB'
+
+    makeModel(fit_A_params, modelPath + 'fitA', 0)
+    makeModel(fit_B_params, diskBName, 1)
+    sumDisks(diskAName, diskBName, modelPath)
+
+    # Convolve the final model
+    icr(modelPath, mol=mol)
+    print "Best-fit model created: ", modelPath, ".cm"
 
 
 
