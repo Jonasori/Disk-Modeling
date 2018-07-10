@@ -6,36 +6,14 @@ Testing a change.
 import subprocess as sp
 import numpy as np
 import matplotlib.pyplot as plt
-import argparse as ap
 import pandas as pd
+import argparse as ap
 from tools import icr, imstat, already_exists
 from constants import today
 
 
 baselines = np.arange(0, 130, 5)
 default_mol = 'hco'
-
-def main():
-    """Run it."""
-    parser = ap.ArgumentParser(formatter_class=ap.RawTextHelpFormatter,
-                               description='''Make a run happen.''')
-
-    parser.add_argument('-r', '--run',
-                        action='store_true',
-                        help='Run the analysis.')
-
-    parser.add_argument('-o', '--run_and_overwrite',
-                        action='store_true',
-                        help='Run the analysis, overwriting preexisting runs.')
-
-    args = parser.parse_args()
-    if args.run:
-        run_noise_analysis(default_mol, Baselines=baselines,
-                           niters=1e4)
-
-    elif args.run_and_overwrite:
-        run_noise_analysis(default_mol, Baselines=baselines,
-                           niters=1e4)
 
 
 def get_baseline_rmss(mol, niters=1e4, baselines=baselines):
@@ -75,7 +53,7 @@ def get_baseline_rmss(mol, niters=1e4, baselines=baselines):
 
         # If not, get rms, clean down to it.
         else:
-            icr(new_vis, min_baseline=b, niters=niters)
+            icr(new_vis, mol=mol, min_baseline=b, niters=niters)
             mean, rms = imstat(name, ext='.cm')
 
         step_output = {'RMS': rms,
@@ -119,10 +97,36 @@ def run_noise_analysis(mol, baselines=baselines,
     analysis(ds, mol, niters)
 
 
+
+"""
+
+def main():
+    parser = ap.ArgumentParser(formatter_class=ap.RawTextHelpFormatter,
+                               description='''Make a run happen.''')
+
+    parser.add_argument('-r', '--run',
+                        action='store_true',
+                        help='Run the analysis.')
+
+    parser.add_argument('-o', '--run_and_overwrite',
+                        action='store_true',
+                        help='Run the analysis, overwriting preexisting runs.')
+
+    args = parser.parse_args()
+    if args.run:
+        run_noise_analysis(default_mol, Baselines=baselines,
+                           niters=1e4)
+
+    elif args.run_and_overwrite:
+        run_noise_analysis(default_mol, Baselines=baselines,
+                           niters=1e4)
+
+
+
 if __name__ == '__main__':
     main()
 
-
+"""
 
 
 # The End
