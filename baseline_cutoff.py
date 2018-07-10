@@ -13,7 +13,7 @@ from constants import today
 
 
 baselines = np.arange(0, 130, 5)
-
+default_mol = 'hco'
 
 def main():
     """Run it."""
@@ -30,22 +30,20 @@ def main():
 
     args = parser.parse_args()
     if args.run:
-        run_noise_analysis(remake_all=False, Baselines=baselines,
-                           niters=1e4, mol='hco')
+        run_noise_analysis(default_mol, Baselines=baselines,
+                           niters=1e4)
 
     elif args.run_and_overwrite:
-        run_noise_analysis(remake_all=False, Baselines=baselines,
-                           niters=1e4, mol='hco')
+        run_noise_analysis(default_mol, Baselines=baselines,
+                           niters=1e4)
 
 
-def get_baseline_rmss(mol, niters=1e4, baselines=baselines, remake_all=False):
+def get_baseline_rmss(mol, niters=1e4, baselines=baselines):
     """Iterate through a range of baseline cutoffs and compare the results.
 
     Args:
         vis (str): the name of the core data file that this is pulling.
         baselines (list of ints): the baselines to check over.
-        remake_all (bool): if True, re-convolve all files, overwriting
-                           pre-existing files if need be.
     """
     # Set up the symlink
     run_dir = './baselines/baseline_' + mol + str(int(niters)) + '/'
@@ -112,12 +110,12 @@ def analysis(df, mol, niters):
     return [df['Baseline'], df['Mean'], df['RMS']]
 
 
-def run_noise_analysis(remake_all=True, baselines=baselines,
-                       niters=1e4, mol='hco'):
+def run_noise_analysis(mol, baselines=baselines,
+                       niters=1e4):
     """Run the above functions."""
     print "Baseline range to check: ", baselines[0], baselines[-1]
     print "Don't forget that plots will be saved to /modeling, not here.\n\n"
-    ds = get_baseline_rmss(mol, niters, baselines, remake_all)
+    ds = get_baseline_rmss(mol, niters, baselines)
     analysis(ds, mol, niters)
 
 
