@@ -127,7 +127,7 @@ def imstat(modelName, ext='.cm', plane_to_check=30):
 
 # Invert/clean/restor: Take in a visibility, put out a convolved clean map.
 # Note that right now the restfreq is HCO+ specific
-def icr(modelName, min_baseline=0, niters=1e4, mol='hco'):
+def icr(visName, min_baseline=0, niters=1e4, mol='hco'):
     """Invert/clean/restor: Turn a vis into a convolved clean map.
 
     Args:
@@ -141,22 +141,21 @@ def icr(modelName, min_baseline=0, niters=1e4, mol='hco'):
     print "\nConvolving image\n"
 
 
-    # Add restfreq to this vis
-    sp.call(['puthd',
-             'in={}.vis/restfreq'.format(modelName),
-             'value={}'.format(restfreqs[mol])],
-            stdout=open(os.devnull, 'wb'))
-
     # Add a shorthand name (easier to write)
     # Rename the outfile if we're cutting baselines and add the cut call.
     b = min_baseline
-    if min_baseline != 0:
-        modelName += str(b)
+    outName = visName + str(b)
+
+    # Add restfreq to this vis
+    sp.call(['puthd',
+             'in={}.vis/restfreq'.format(visName),
+             'value={}'.format(restfreqs[mol])],
+            stdout=open(os.devnull, 'wb'))
 
     invert_str = ['invert',
-                  'vis={}.vis'.format(modelName),
-                  'map={}.mp'.format(modelName),
-                  'beam={}.bm'.format(modelName),
+                  'vis={}.vis'.format(visName),
+                  'map={}.mp'.format(outName),
+                  'beam={}.bm'.format(outName),
                   'options=systemp',
                   'cell=0.045',
                   'imsize=256',
@@ -166,35 +165,35 @@ def icr(modelName, min_baseline=0, niters=1e4, mol='hco'):
         invert_str.append('select=-uvrange(0,{})'.format(b))
 
     for end in ['cm', 'cl', 'bm', 'mp']:
-        sp.call('rm -rf {}.{}'.format(modelName, end), shell=True)
-    print "Deleted", modelName + '.[cm, cl, bm, mp]'
+        sp.call('rm -rf {}.{}'.format(outName, end), shell=True)
+    print "Deleted", outName + '.[cm, cl, bm, mp]'
 
     # Run invert
     sp.call(invert_str, stdout=open(os.devnull, 'wb'))
 
     # Grab the rms
-    rms = imstat(modelName, '.mp')[1]
+    rms = imstat(outName, '.mp')[1]
     sp.call(['clean',
-             'map={}.mp'.format(modelName),
-             'beam={}.bm'.format(modelName),
-             'out={}.cl'.format(modelName),
+             'map={}.mp'.format(outName),
+             'beam={}.bm'.format(outName),
+             'out={}.cl'.format(outName),
              'niters={}'.format(niters),
              'threshold={}'.format(rms)]
             # stdout=open(os.devnull, 'wb')
             )
 
     sp.call(['restor',
-             'map={}.mp'.format(modelName),
-             'beam={}.bm'.format(modelName),
-             'model={}.cl'.format(modelName),
-             'out={}.cm'.format(modelName)
+             'map={}.mp'.format(outName),
+             'beam={}.bm'.format(outName),
+             'model={}.cl'.format(outName),
+             'out={}.cm'.format(outName)
              ],
             stdout=open(os.devnull, 'wb'))
 
     sp.call(['fits',
              'op=xyout',
-             'in={}.cm'.format(modelName),
-             'out={}.fits'.format(modelName)
+             'in={}.cm'.format(outName),
+             'out={}.fits'.format(outName)
              ])
 
 
