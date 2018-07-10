@@ -141,7 +141,6 @@ def icr(visName, min_baseline=0, niters=1e4, mol='hco'):
     """
     print "\nConvolving image\n"
 
-
     # Add a shorthand name (easier to write)
     # Rename the outfile if we're cutting baselines and add the cut call.
     b = min_baseline

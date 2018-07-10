@@ -155,7 +155,7 @@ def run_full_pipeline(mol, remake_all=False):
 
     print "Convolving data to get image, converting output to .fits\n\n"
     if already_exists(final_data_path + name + '.cm') is False:
-        icr(final_data_path + name)
+        icr(final_data_path + name, mol=mol)
 
     print "Deleting the junk process files...\n\n"
     # Clear out the bad stuff. There's gotta be a better way of doing this.
