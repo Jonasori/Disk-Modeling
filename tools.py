@@ -120,7 +120,7 @@ def imstat(modelName, ext='.cm', plane_to_check=30):
         sometimes with a '-' out front. Therefore, each the length of each
         positive element is <= 9 and <= 10 for the negative ones.
         """
-    for i in range(len(imstat_list)):
+    for i in range(len(imstat_list)-1):
         if len(imstat_list[i]) > 11:
             if imstat_list[i][0] == '-':
                 cut = 10
@@ -286,18 +286,21 @@ def uvaver(filepath, name, mol, min_baseline):
     if already_exists(filepath + new_name + '.vis') is True:
         return "This vis cut already exists; aborting."
 
+    print "Starting uvaver on ", new_name
     sp.Popen(['uvaver',
               'vis={}.vis'.format(name),
               'select=-uvrange(0,{})'.format(min_baseline),
               'out={}.vis'.format(new_name)],
              cwd=filepath)
 
+    print "Completed uvaver; starting fits uvout"
     sp.call(['fits',
              'op=uvout',
              'in={}.vis'.format(new_name),
              'out={}.uvf'.format(new_name)],
             cwd=filepath)
 
+    print "Completed fits uvout; starting ICR\n"
     icr(filepath + new_name, mol)
 
     sp.Popen(['rm -rf {}.bm'.format(new_name)], shell=True)
