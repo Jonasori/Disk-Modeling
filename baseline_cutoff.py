@@ -47,13 +47,6 @@ def get_baseline_rmss(mol, niters=1e4, baselines=baselines, remake_all=False):
         remake_all (bool): if True, re-convolve all files, overwriting
                            pre-existing files if need be.
     """
-
-    """
-    # If we want to reconvolve everything, then start by deleting them.
-    if remake_all is True:
-        sp.call(['rm', '-rf', '{}.{{cm, cl, mp, bm}}'.format(name)])
-    """
-
     # Set up the symlink
     run_dir = './baselines/baseline_' + mol + str(int(niters)) + '/'
     scratch_dir = '/scratch/jonas/' + run_dir
@@ -122,6 +115,8 @@ def analysis(df, mol, niters):
 def run_noise_analysis(remake_all=True, baselines=baselines,
                        niters=1e4, mol='hco'):
     """Run the above functions."""
+    print "Baseline range to check: ", baselines[0], baselines[-1]
+    print "Don't forget that plots will be saved to /modeling, not here.\n\n"
     ds = get_baseline_rmss(mol, niters, baselines, remake_all)
     analysis(ds, mol, niters)
 
