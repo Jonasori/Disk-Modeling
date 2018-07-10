@@ -138,6 +138,7 @@ def gridSearch(VariedDiskParams, StaticDiskParams, DI, num_iters, steps_so_far=1
                                       'Reduced Chi2': redX2
                                       }
                             df_rows.append(df_row)
+                            # Maybe want to re-export the df every time here?
 
                             if redX2 > 0 and redX2 < minRedX2:
                                 minRedX2 = redX2

@@ -149,8 +149,7 @@ def icr(modelName, min_baseline=0, niters=1e4, mol='hco'):
     # Add restfreq to this vis
     sp.call(['puthd',
              'in={}.vis/restfreq'.format(modelName),
-             'value={}'.format(restfreqs[mol])
-             ],
+             'value={}'.format(restfreqs[mol])],
             stdout=open(os.devnull, 'wb'))
 
     invert_str = ['invert',
@@ -162,10 +161,8 @@ def icr(modelName, min_baseline=0, niters=1e4, mol='hco'):
                   'imsize=256',
                   'robust=2']
 
-    # Should find a way to join this and the same conditional above.
     if min_baseline != 0:
         invert_str.append('select=-uvrange(0,{})'.format(b))
-
 
     for end in ['cm', 'cl', 'bm', 'mp']:
         sp.call('rm -rf {}.{}'.format(modelName, end), shell=True)
