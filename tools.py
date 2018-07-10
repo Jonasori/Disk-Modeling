@@ -283,8 +283,8 @@ def uvaver(filepath, name, mol, min_baseline):
     """
     new_name = name + '-short' + str(min_baseline)
 
-    if already_exists(filepath + new_name + '.vis') is True:
-        return "This vis cut already exists; aborting."
+    if already_exists(filepath + new_name + '.cm') is True:
+        return "This vis is already fully cut; aborting."
 
     print "Starting uvaver on ", new_name
     sp.Popen(['uvaver',

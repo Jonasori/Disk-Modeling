@@ -16,7 +16,7 @@ baselines = np.arange(0, 130, 5)
 default_mol = 'hco'
 
 
-def get_baseline_rmss(mol, niters=1e4, baselines=baselines):
+def get_baseline_rmss(mol, niters=1e4, baselines=baselines, remake_all=False):
     """Iterate through a range of baseline cutoffs and compare the results.
 
     Args:
@@ -29,17 +29,18 @@ def get_baseline_rmss(mol, niters=1e4, baselines=baselines):
     orig_vis = './data/' + mol + '/' + mol
     new_vis = run_dir + mol
 
-    sp.call(['rm -rf {}'.format(scratch_dir)], shell=True)
-    # :-1 because a symlink with a deleted root isn't a directory anymore
-    sp.call(['rm -rf {}'.format(run_dir[:-1])], shell=True)
+    if remake_all is True or already_exists(new_vis) is False:
+        sp.call(['rm -rf {}'.format(scratch_dir)], shell=True)
+        # :-1 because a symlink with a deleted root isn't a directory anymore
+        sp.call(['rm -rf {}'.format(run_dir[:-1])], shell=True)
 
-    sp.call(['mkdir {}'.format(scratch_dir)], shell=True)
-    sp.call(['ln', '-s', scratch_dir, './baselines/'])
+        sp.call(['mkdir {}'.format(scratch_dir)], shell=True)
+        sp.call(['ln', '-s', scratch_dir, './baselines/'])
 
-    sp.call(['cp', '-r', '{}.vis'.format(orig_vis),
-             '{}/'.format(run_dir)])
+        sp.call(['cp', '-r', '{}.vis'.format(orig_vis),
+                 '{}/'.format(run_dir)])
 
-    print "Made symlinked directory, copied core .vis over.\n\n"
+        print "Made symlinked directory, copied core .vis over.\n\n"
 
     data_list = []
     for b in baselines:
@@ -49,7 +50,7 @@ def get_baseline_rmss(mol, niters=1e4, baselines=baselines):
         else:
             name = run_dir + mol
         # Check if we've already icr'ed this one.
-        if name + '.cm' in sp.check_output(['ls']):
+        if already_exists(name + '.cm') is True:
             print "File already exists; going straight to imstat"
             mean, rms = imstat(name, ext='.cm')
 
