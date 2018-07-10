@@ -29,12 +29,12 @@ def main():
 
     args = parser.parse_args()
     if args.run:
-        run(remake_all=False, Baselines=baselines,
-            niters=1e4, mol='hco')
+        run_noise_analysis(remake_all=False, Baselines=baselines,
+                           niters=1e4, mol='hco')
 
     elif args.run_and_overwrite:
-        run(remake_all=False, Baselines=baselines,
-            niters=1e4, mol='hco')
+        run_noise_analysis(remake_all=False, Baselines=baselines,
+                           niters=1e4, mol='hco')
 
 
 def get_baseline_rmss(mol, niters=1e4, baselines=baselines, remake_all=False):
@@ -123,7 +123,8 @@ def analysis(df, mol, niters):
     return [df['Baseline'], df['Mean'], df['RMS']]
 
 
-def run(remake_all=True, baselines=baselines, niters=1e4, mol='hco'):
+def run_noise_analysis(remake_all=True, baselines=baselines,
+                       niters=1e4, mol='hco'):
     """Run the above functions."""
     ds = get_baseline_rmss(mol, niters, baselines, remake_all)
     analysis(ds, mol, niters)
