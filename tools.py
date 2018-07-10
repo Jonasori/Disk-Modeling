@@ -128,7 +128,7 @@ def imstat(modelName, ext='.cm', plane_to_check=30):
 
 # Invert/clean/restor: Take in a visibility, put out a convolved clean map.
 # Note that right now the restfreq is HCO+ specific
-def icr(visName, min_baseline=0, niters=1e4, mol='hco'):
+def icr(visName, mol, min_baseline=0, niters=1e4):
     """Invert/clean/restor: Turn a vis into a convolved clean map.
 
     Args:
@@ -143,7 +143,10 @@ def icr(visName, min_baseline=0, niters=1e4, mol='hco'):
 
     # Add a shorthand name (easier to write)
     # Rename the outfile if we're cutting baselines and add the cut call.
-    b = min_baseline
+    if min_baseline == 0:
+        b = ''
+    else:
+        b = min_baseline
     outName = visName + str(b)
 
     # Add restfreq to this vis
@@ -259,16 +262,12 @@ def depickleLogFile(filename):
     return out
 
 
-def uvaver(filepath, name, min_baseline):
+def uvaver(filepath, name, mol, min_baseline):
     """Cut a vis file.
 
     This one uses Popen and cwd (change working directory) because the path was
     getting to be longer than buffer's 64-character limit. Could be translated
     to other funcs as well, but would just take some work.
-
-    This also relies on the filename being the last three characters of the
-    path, or could be changed to require that path and name be given
-    separately. Neither seems great.
     """
     new_name = name + '-short' + str(min_baseline)
 
@@ -286,6 +285,13 @@ def uvaver(filepath, name, min_baseline):
              'in={}.vis'.format(new_name),
              'out={}.uvf'.format(new_name)],
             cwd=filepath)
+
+    # Don't need to worry about cutting baselines here (already gone)
+    icr(new_name, mol)
+
+    sp.Popen(['rm -rf {}.bm'.format(new_name)], shell=True)
+    sp.Popen(['rm -rf {}.cl'.format(new_name)], shell=True)
+    sp.Popen(['rm -rf {}.mp'.format(new_name)], shell=True)
 
 
 def already_exists(query):

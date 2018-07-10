@@ -120,6 +120,7 @@ def run_full_pipeline(mol, remake_all=True):
     log = 'Files created on ' + today + '\n\n'
 
     if remake_all is True:
+        print "Remaking everything; emptied line dir and remaking."
         sp.call(['rm -rf', '{}*'.format(final_data_path)], shell=True)
         log += "Full remake occured; all files are fresh.\n\n"
     else:
@@ -165,9 +166,7 @@ def run_full_pipeline(mol, remake_all=True):
              shell=True, cwd=final_data_path)
     sp.Popen(['rm -rf {}.cl'.format(name)],
              shell=True, cwd=final_data_path)
-    sp.Popen(['rm -rf {}.cm'.format(name)],
-             shell=True, cwd=final_data_path)
-    sp.Popen(['rm -rf {}.cl'.format(name)],
+    sp.Popen(['rm -rf {}.mp'.format(name)],
              shell=True, cwd=final_data_path)
 
     sp.Popen(['rm -rf {}_cvel.*'.format(name)],
