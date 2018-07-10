@@ -75,11 +75,7 @@ def get_baseline_rmss(mol, niters=1e4, baselines=baselines, remake_all=False):
     data_list = []
     for b in baselines:
         print '\n\n\n    NEW ITERATION\nBaseline: ', b, '\n'
-        if b == 0:
-            name = run_dir + mol
-        else:
-            name = run_dir + mol + str(b)
-        print name
+        name = run_dir + mol + str(b)
 
         # Check if we've already icr'ed this one.
         if name + '.cm' in sp.check_output(['ls']):
