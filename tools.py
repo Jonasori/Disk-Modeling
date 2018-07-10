@@ -172,7 +172,7 @@ def icr(visName, mol, min_baseline=0, niters=1e4):
     print "Deleted", outName + '.[cm, cl, bm, mp]'
 
     # Run invert
-    sp.call(invert_str, stdout=open(os.devnull, 'wb'))
+    sp.call(invert_str, stdout=open(os.devnull, 'wb')) # , cwd=filepath)
 
     # Grab the rms
     rms = imstat(outName, '.mp')[1]
@@ -286,8 +286,7 @@ def uvaver(filepath, name, mol, min_baseline):
              'out={}.uvf'.format(new_name)],
             cwd=filepath)
 
-    # Don't need to worry about cutting baselines here (already gone)
-    icr(new_name, mol)
+    icr(filepath + new_name, mol)
 
     sp.Popen(['rm -rf {}.bm'.format(new_name)], shell=True)
     sp.Popen(['rm -rf {}.cl'.format(new_name)], shell=True)
@@ -311,6 +310,10 @@ def already_exists(query):
         print query + ' does not yet exist; executing command\n\n'
         return False
 
+
+def delete_files(name, extensions_to_delete=['bm', 'mp', 'cl']):
+    for ext in extensions_to_delete:
+        sp.Popen(['rm -rf {}.{}'.format(name, ext)], shell=True)
 
 
 
