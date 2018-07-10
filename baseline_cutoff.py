@@ -53,7 +53,6 @@ def get_baseline_rmss(mol, niters=1e4, baselines=baselines):
             print "File already exists; going straight to imstat"
             mean, rms = imstat(name, ext='.cm')
 
-        # If not, get rms, clean down to it.
         else:
             icr(new_vis, mol=mol, min_baseline=b, niters=niters)
             mean, rms = imstat(name, ext='.cm')

@@ -112,10 +112,22 @@ def imstat(modelName, ext='.cm', plane_to_check=30):
 
     # Split the output on spaces and then drop empty elements.
     imstat_list = filter(None, imstat_out[plane_to_check].split(' '))
-    # A space gets crunched out between RMS and mean, so fix that:
-    if len(imstat_list) == 7:
-        imstat_list.insert(6, imstat_list[5][9:])
-        imstat_list[5] = imstat_list[5][:9]
+
+    """Sometimes the formatting gets weird and two elements get squished
+        together. Fix this with the split loop below.
+
+        Note that the form of the elements of an imstat is 1.234E-05,
+        sometimes with a '-' out front. Therefore, each the length of each
+        positive element is <= 9 and <= 10 for the negative ones.
+        """
+    for i in range(len(imstat_list)):
+        if len(imstat_list[i]) > 11:
+            if imstat_list[i][0] == '-':
+                cut = 10
+            else:
+                cut = 9
+            imstat_list.insert(i+1, imstat_list[i][cut:])
+            imstat_list[i] = imstat_list[i][:cut]
 
     d = {}
     for i in range(len(hdr) - 1):
@@ -172,7 +184,7 @@ def icr(visName, mol, min_baseline=0, niters=1e4):
     print "Deleted", outName + '.[cm, cl, bm, mp]'
 
     # Run invert
-    sp.call(invert_str, stdout=open(os.devnull, 'wb')) # , cwd=filepath)
+    sp.call(invert_str, stdout=open(os.devnull, 'wb'))  # , cwd=filepath)
 
     # Grab the rms
     rms = imstat(outName, '.mp')[1]
