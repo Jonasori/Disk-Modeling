@@ -260,15 +260,27 @@ def fullRun(diskAParams, diskBParams):
     # Alternatively, to get a csv:
     # full_log.to_csv(path_or_buf='{}_step-log.csv'.format(modelPath))
 
-    # Calculate and present the final X2 values. Note that here, modelPath is just the infile for chiSq()
+    # Calculate and present the final X2 values.
     finalX2s = chiSq(modelPath)
     print "Final Raw Chi-Squared Value: ", finalX2s[0]
     print "Final Reduced Chi-Squared Value: ", finalX2s[1]
 
+    # Finally, Create the final best-fit model.
+    diskAName, diskBName = modelPath + 'fitA', modelPath + 'fitB'
+    makeModel(fit_A_params, modelPath + 'fitA', 0)
+    makeModel(fit_B_params, diskBName, 1)
+    sumDisks(diskAName, diskBName, modelPath)
+    icr(modelPath, mol=mol)
+    print "Best-fit model created: ", modelPath, ".cm"
+
+    # Clock out
     t1 = time.time()
     t_total = (t1 - t0)/60
 
-    # log file with best fit vals, range queried, indices of best vals, best chi2
+    print "\n\nFinal run duration was", t_total/60, 'hours'
+    print 'with each step taking on average', t_total/n, 'minutes'
+
+    # log file w/ best fit vals, range queried, indices of best vals, best chi2
     # 	- (maybe figure out how to round these for better readability)
     with open('run_' + today + 'summary.log', 'w') as f:
         s1 = '\nBest Chi-Squared values [raw, reduced]:' + str(finalX2s)
@@ -276,27 +288,13 @@ def fullRun(diskAParams, diskBParams):
             str(diskAParams) + '\n\nDisk B:\n' + str(diskBParams)
         s3 = '\n\n\nBest-fit values (Tatm, Tqq, Xmol, outerR, PA, Incl):' + \
             '\nDisk A:\n' + str(fit_A_params) + '\nDisk B:\n' + str(fit_B_params)
-        s4 = "\n\nFinal run duration was", t_total/60, 'hours'
-        s5 = '\nwith each step taking on average', t_total/n, 'minutes'
+        s4 = '\n\nFinal run duration was', str(t_total/60), 'hours'
+        s5 = '\nwith each step taking on average', str(t_total/n), 'minutes'
         f.write(s1)
         f.write(s2)
         f.write(s3)
         f.write(s4)
         f.write(s5)
-
-    print "\n\nFinal run duration was", t_total/60, 'hours'
-    print 'with each step taking on average', t_total/n, 'minutes'
-
-    # Finally, Create the final best-fit model.
-    diskAName, diskBName = modelPath + 'fitA', modelPath + 'fitB'
-
-    makeModel(fit_A_params, modelPath + 'fitA', 0)
-    makeModel(fit_B_params, diskBName, 1)
-    sumDisks(diskAName, diskBName, modelPath)
-
-    # Convolve the final model
-    icr(modelPath, mol=mol)
-    print "Best-fit model created: ", modelPath, ".cm"
 
 
 
