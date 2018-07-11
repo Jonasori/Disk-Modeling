@@ -114,7 +114,7 @@ def uvaver(mol):
     else:
         sp.Popen(['rm -rf ./*'], shell=True, cwd=filepath).wait()
     """
-    
+
     print "\nStarting uvaver on ", new_name, '\n'
     sp.Popen(['uvaver',
               'vis={}.vis'.format(name),
