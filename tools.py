@@ -13,7 +13,7 @@ Script some Miriad commands for easier calling, more specialized usage.
 import subprocess as sp
 import pickle
 import os
-from constants import restfreqs
+from constants import lines
 
 
 def cgdisp(imageName, crop=True, contours=True, rms=6.8e-3):
@@ -162,9 +162,10 @@ def icr(visName, mol, min_baseline=0, niters=1e4):
     outName = visName + str(b)
 
     # Add restfreq to this vis
+    rf = lines[mol]['restfreq']
     sp.call(['puthd',
              'in={}.vis/restfreq'.format(visName),
-             'value={}'.format(restfreqs[mol])],
+             'value={}'.format(rf)],
             stdout=open(os.devnull, 'wb'))
 
     invert_str = ['invert',
@@ -273,43 +274,6 @@ def depickleLogFile(filename):
            'Best Fit B': best_fit_b
            }
     return out
-
-
-def uvaver(filepath, name, mol, min_baseline):
-    """Cut a vis file.
-
-    This one uses Popen and cwd (change working directory) because the path was
-    getting to be longer than buffer's 64-character limit. Could be translated
-    to other funcs as well, but would just take some work.
-    """
-    new_name = name + '-short' + str(min_baseline)
-
-    if already_exists(filepath + new_name + '.cm') is True:
-        return "This vis is already fully cut; aborting."
-    else:
-        sp.Popen(['rm -rf ./*'], shell=True, cwd=filepath).wait()
-
-    print "\nStarting uvaver on ", new_name, '\n'
-    sp.Popen(['uvaver',
-              'vis={}.vis'.format(name),
-              'select=-uvrange(0,{})'.format(min_baseline),
-              'out={}.vis'.format(new_name)],
-             cwd=filepath).wait()
-
-    print "\nCompleted uvaver; starting fits uvout\n"
-    sp.call(['fits',
-             'op=uvout',
-             'in={}.vis'.format(new_name),
-             'out={}.uvf'.format(new_name)],
-            cwd=filepath)
-
-    print "\nCompleted fits uvout; starting ICR\n\n"
-    icr(filepath + new_name, mol)
-
-    # For some reason icr is returning and so it never deletes these. Fix later
-    sp.Popen(['rm -rf {}.bm'.format(new_name)], shell=True)
-    sp.Popen(['rm -rf {}.cl'.format(new_name)], shell=True)
-    sp.Popen(['rm -rf {}.mp'.format(new_name)], shell=True)
 
 
 def already_exists(query):

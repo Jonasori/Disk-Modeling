@@ -10,7 +10,7 @@ sp.Popen vs sp.call: Popen lets you change working directory for the call with
 import subprocess as sp
 from constants import lines, today
 from var_vis import var_vis
-from tools import icr, already_exists, uvaver
+from tools import icr, already_exists
 
 
 def pipe(commands):
@@ -95,13 +95,52 @@ def find_split_cutoffs(mol, other_restfreq=0):
     return split_range
 
 
+def uvaver(mol):
+    """Cut a vis file.
+
+    This one uses Popen and cwd (change working directory) because the path was
+    getting to be longer than buffer's 64-character limit. Could be translated
+    to other funcs as well, but would just take some work.
+    """
+    filepath = './data/' + mol + '/'
+    min_baseline = lines[mol]['baseline_cutoff']
+    name = mol
+    new_name = name + '-short' + str(min_baseline)
+
+    if already_exists(filepath + new_name + '.cm') is True:
+        return "This vis is already fully cut; aborting."
+    else:
+        sp.Popen(['rm -rf ./*'], shell=True, cwd=filepath).wait()
+
+    print "\nStarting uvaver on ", new_name, '\n'
+    sp.Popen(['uvaver',
+              'vis={}.vis'.format(name),
+              'select=-uvrange(0,{})'.format(min_baseline),
+              'out={}.vis'.format(new_name)],
+             cwd=filepath).wait()
+
+    print "\nCompleted uvaver; starting fits uvout\n"
+    sp.call(['fits',
+             'op=uvout',
+             'in={}.vis'.format(new_name),
+             'out={}.uvf'.format(new_name)],
+            cwd=filepath)
+
+    print "\nCompleted fits uvout; starting ICR\n\n"
+    icr(filepath + new_name, mol)
+
+    # For some reason icr is returning and so it never deletes these. Fix later
+    sp.Popen(['rm -rf {}.bm'.format(new_name)], shell=True)
+    sp.Popen(['rm -rf {}.cl'.format(new_name)], shell=True)
+    sp.Popen(['rm -rf {}.mp'.format(new_name)], shell=True)
+
+
 def run_full_pipeline(mol, remake_all=True):
     """Run the whole thing.
 
-    Not sure if it'll automatically wait for var_vis?
     The Process:
         - casa_sequence():
-            - cvel the cont-sub'ed dataset from v2434_original_data to here.
+            - cvel the cont-sub'ed dataset from jonas/raw_data to here.
             - split out the 50 channels around restfreq
             - convert that .ms to a .uvf
         - var_vis(): pull in that .uvf, add variances, resulting in another uvf
@@ -149,12 +188,10 @@ def run_full_pipeline(mol, remake_all=True):
                   'out={}.vis'.format(name)],
                  cwd=final_data_path).wait()
 
-    """
     if b_min != 0:
         print "Cutting out baselines below", b_min
         uvaver(final_data_path, name, b_min)
         log += 'These visibilities were cut at' + str(b_min) + '\n'
-    """
 
     print "Convolving data to get image, converting output to .fits\n\n"
     if already_exists(final_data_path + name + '.cm') is False:

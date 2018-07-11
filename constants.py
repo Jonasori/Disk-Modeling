@@ -19,14 +19,6 @@ months = ['jan', 'feb', 'march', 'april', 'may',
 td = datetime.datetime.now()
 today = months[td.month - 1] + str(td.day)
 
-
-# Some restfrequencies.
-restfreqs = {'hco': 356.73422300,
-             'hcn': 354.50547590,
-             'co': 345.79598990,
-             'cs': 342.88285030
-             }
-
 # These frequencies come from Splatalogue and are different than those
 # embedded in, for example, the uvf file imported as hdr below
 # which gives restfreq(hco) = 356.72278845870005
@@ -56,6 +48,14 @@ lines = {'hco': {'restfreq': 356.73422300,
                 'baseline_cutoff': 25,
                 'chan0': 344.237292},
          }
+
+
+# Just the rest frequencies. I don't think these are used anywhere anymore.
+restfreqs = {'hco': 356.73422300,
+             'hcn': 354.50547590,
+             'co': 345.79598990,
+             'cs': 342.88285030
+             }
 
 # Column density [low, high]
 col_dens = [1.3e21/(1.59e21), 1e30/(1.59e21)]
