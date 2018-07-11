@@ -286,21 +286,21 @@ def uvaver(filepath, name, mol, min_baseline):
     if already_exists(filepath + new_name + '.cm') is True:
         return "This vis is already fully cut; aborting."
 
-    print "Starting uvaver on ", new_name
+    print "\nStarting uvaver on ", new_name, '\n'
     sp.Popen(['uvaver',
               'vis={}.vis'.format(name),
               'select=-uvrange(0,{})'.format(min_baseline),
               'out={}.vis'.format(new_name)],
-             cwd=filepath)
+             cwd=filepath).wait()
 
-    print "Completed uvaver; starting fits uvout"
+    print "\nCompleted uvaver; starting fits uvout\n"
     sp.call(['fits',
              'op=uvout',
              'in={}.vis'.format(new_name),
              'out={}.uvf'.format(new_name)],
-            cwd=filepath)
+            cwd=filepath).wait()
 
-    print "Completed fits uvout; starting ICR\n"
+    print "\nCompleted fits uvout; starting ICR\n\n"
     icr(filepath + new_name, mol)
 
     sp.Popen(['rm -rf {}.bm'.format(new_name)], shell=True)
