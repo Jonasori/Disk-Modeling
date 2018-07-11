@@ -1,5 +1,6 @@
 """Data processing pipeline.
 
+A small change
 To be run from /Volumes/disks/jonas/freshStart/modeling
 sp.Popen vs sp.call: Popen lets you change working directory for the call with
                      cwd arg, call blocks further action until its action is
@@ -190,7 +191,7 @@ def run_full_pipeline(mol, remake_all=True):
 
     if b_min != 0:
         print "Cutting out baselines below", b_min
-        uvaver(final_data_path, name, b_min)
+        uvaver(mol)
         log += 'These visibilities were cut at' + str(b_min) + '\n'
 
     print "Convolving data to get image, converting output to .fits\n\n"
