@@ -298,7 +298,7 @@ def uvaver(filepath, name, mol, min_baseline):
              'op=uvout',
              'in={}.vis'.format(new_name),
              'out={}.uvf'.format(new_name)],
-            cwd=filepath).wait()
+            cwd=filepath)
 
     print "\nCompleted fits uvout; starting ICR\n\n"
     icr(filepath + new_name, mol)
