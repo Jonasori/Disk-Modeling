@@ -188,6 +188,7 @@ def icr(visName, mol, min_baseline=0, niters=1e4):
 
     # Grab the rms
     rms = imstat(outName, '.mp')[1]
+
     sp.call(['clean',
              'map={}.mp'.format(outName),
              'beam={}.bm'.format(outName),
@@ -285,6 +286,8 @@ def uvaver(filepath, name, mol, min_baseline):
 
     if already_exists(filepath + new_name + '.cm') is True:
         return "This vis is already fully cut; aborting."
+    else:
+        sp.Popen(['rm -rf ./*'], shell=True, cwd=filepath).wait()
 
     print "\nStarting uvaver on ", new_name, '\n'
     sp.Popen(['uvaver',
@@ -303,6 +306,7 @@ def uvaver(filepath, name, mol, min_baseline):
     print "\nCompleted fits uvout; starting ICR\n\n"
     icr(filepath + new_name, mol)
 
+    # For some reason icr is returning and so it never deletes these. Fix later
     sp.Popen(['rm -rf {}.bm'.format(new_name)], shell=True)
     sp.Popen(['rm -rf {}.cl'.format(new_name)], shell=True)
     sp.Popen(['rm -rf {}.mp'.format(new_name)], shell=True)
