@@ -279,7 +279,8 @@ def depickleLogFile(filename):
 def already_exists(query):
     """Search an ls call to see if query is in it."""
     f = query.split('/')[-1]
-    path = query.split(f)[0]
+    # path = query.split(f)[0]
+    path = query[:-len(f)]
 
     print "Path is: ", path
     print "file is: ", f
