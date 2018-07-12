@@ -7,6 +7,7 @@ import pandas as pd
 import cPickle as pickle
 from tools import icr
 import time
+import csv
 
 # Local package files
 from utils import makeModel, sumDisks, chiSq
@@ -36,9 +37,13 @@ diskBRedX2 = np.zeros((len(diskAParams[0]), len(diskBParams[1]),
                        len(diskBParams[2]), len(diskBParams[3]),
                        len(diskBParams[4]), len(diskBParams[5])))
 
+# Set up a list to keep track of how long each iteration takes.
+times = [['step', 'duration']]
+
 
 # GRID SEARCH OVER ONE DISK HOLDING OTHER CONSTANT
-def gridSearch(VariedDiskParams, StaticDiskParams, DI, num_iters, steps_so_far=1):
+def gridSearch(VariedDiskParams, StaticDiskParams, DI,
+               num_iters, steps_so_far=1):
     """
     Run a grid search over parameter space.
 
@@ -85,6 +90,7 @@ def gridSearch(VariedDiskParams, StaticDiskParams, DI, num_iters, steps_so_far=1
                     for m in range(0, len(PA)):
                         for n in range(0, len(Incl)):
                             # Create a list of floats to feed makeModel()
+                            begin = time.time()
                             ta = Tatms[i]
                             tqq = Tqq[j]
                             xmol = Xmol[k]
@@ -160,6 +166,9 @@ def gridSearch(VariedDiskParams, StaticDiskParams, DI, num_iters, steps_so_far=1
                             print "pa:", minX2Vals[4]
                             print "incl:", minX2Vals[5]
 
+                            finish = time.time()
+                            times.append([counter, finish - begin])
+
     # Finally, make the best-fit model for this disk
     makeModel(minX2Vals, outNameVaried, DI)
     print "Best-fit model created: ", modelPath
@@ -192,7 +201,7 @@ def fullRun(diskAParams, diskBParams):
         nb *= len(diskBParams[b])
 
     n = na + nb
-    dt = 1.5
+    dt = 2.5
     t = dt * n / 60
 
     # Parameter Check:
@@ -247,7 +256,6 @@ def fullRun(diskAParams, diskBParams):
             df_B_fit['Incl.'][idx_of_BF_B]]
     fit_B_params = np.array(Ps_B)
 
-
     # Bind the data frames, output them.
     # Reiterated in tools.py/depickler(), but we can unwrap these vals with:
     # full_log.loc['A', :] to get all the columns for disk A, or
@@ -277,6 +285,10 @@ def fullRun(diskAParams, diskBParams):
     t1 = time.time()
     t_total = (t1 - t0)/60
 
+    with open('run_' + today + '_stepDurations.csv', 'w') as f:
+        wr = csv.write(f)
+        wr.writerows(times)
+
     print "\n\nFinal run duration was", t_total/60, 'hours'
     print 'with each step taking on average', t_total/n, 'minutes'
 
@@ -288,8 +300,8 @@ def fullRun(diskAParams, diskBParams):
             str(diskAParams) + '\n\nDisk B:\n' + str(diskBParams)
         s3 = '\n\n\nBest-fit values (Tatm, Tqq, Xmol, outerR, PA, Incl):' + \
             '\nDisk A:\n' + str(fit_A_params) + '\nDisk B:\n' + str(fit_B_params)
-        s4 = '\n\nFinal run duration was', str(t_total/60), 'hours'
-        s5 = '\nwith each step taking on average', str(t_total/n), 'minutes'
+        s4 = '\n\nFinal run duration was' + str(t_total/60) + 'hours'
+        s5 = '\nwith each step taking on average' + str(t_total/n) + 'minutes'
         f.write(s1)
         f.write(s2)
         f.write(s3)
