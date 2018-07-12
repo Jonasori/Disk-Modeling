@@ -13,9 +13,14 @@ import csv
 from utils import makeModel, sumDisks, chiSq
 from run_params import diskAParams, diskBParams
 from constants import mol, today
+from tools import already_exists
 
 
+# Hopefully no more than 2 runs/day!
 modelPath = './models/run_' + today + '/' + today
+if already_exists(modelPath):
+    modelPath = './models/run_' + today + '_2/' + today + '_2'
+    print "One run has already happened today; running in", modelPath
 
 # A little silly, but an easy way to name disks by their disk index (DI)
 dnames = ['A', 'B']
