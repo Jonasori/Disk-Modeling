@@ -19,8 +19,9 @@ from tools import already_exists
 # Hopefully no more than 2 runs/day!
 # This doesn't work bc full_run already wipes out old directories.
 # Fix this some time.
-"""
+
 modelPath = './models/run_' + today + '/' + today
+"""
 if already_exists(modelPath):
     modelPath = './models/run_' + today + '_2/' + today + '_2'
     print "One run has already happened today; running in", modelPath
