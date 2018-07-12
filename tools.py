@@ -221,14 +221,14 @@ def imspec(imageName):
              'device=/xs, plot=sum'])
 
 
-def sample_model_in_uvplane(Name):
+def sample_model_in_uvplane(Name, mol='hco'):
     """Convert a fits file to im, vis, uvf.
 
     .fits -> {.im, .uvf, .vis}
     Note that this samples from hco.vis, so while it's basically
     general for my uses, it's not actually general.
     """
-    data_vis = 'data/hco/hco.vis'
+    data_vis = './data/' + mol + '/' + mol
 
     sp.call('rm -rf *{}.im'.format(Name), shell=True)
 
@@ -240,7 +240,7 @@ def sample_model_in_uvplane(Name):
     sp.call('rm -rf *{}.vis'.format(Name), shell=True)
     sp.call(['uvmodel',
              'options=replace',
-             'vis={}'.format(data_vis),
+             'vis={}.vis'.format(data_vis),
              'model={}.im'.format(Name),
              'out={}.vis'.format(Name)])
 
@@ -250,6 +250,37 @@ def sample_model_in_uvplane(Name):
              'op=uvout',
              'in={}.vis'.format(Name),
              'out={}.uvf'.format(Name)])
+
+
+def get_residuals(Name, mol='hco'):
+    """Convert a fits file to im, vis, uvf.
+
+    .fits -> {.im, .uvf, .vis}
+    Note that this samples from hco.vis, so while it's basically
+    general for my uses, it's not actually general.
+    """
+    data_vis = './data/' + mol + '/' + mol
+
+    sp.call('rm -rf *{}.im'.format(Name), shell=True)
+
+    sp.call(['fits', 'op=xyin',
+             'in={}.fits'.format(Name),
+             'out={}.im'.format(Name)])
+
+    # Sample the model image using the observation uv coverage
+    sp.call('rm -rf *{}.vis'.format(Name), shell=True)
+    sp.call(['uvmodel',
+             'options=subtract',
+             'vis={}'.format(data_vis),
+             'model={}.im'.format(Name),
+             'out={}.vis'.format(Name + '_resid')])
+
+    # Convert to UVfits
+    sp.call('rm -rf *{}.uvf'.format(Name + '_resid'), shell=True)
+    sp.call(['fits',
+             'op=uvout',
+             'in={}.vis'.format(Name + '_resid'),
+             'out={}.uvf'.format(Name + '_resid')])
 
 
 def depickleLogFile(filename):
@@ -301,9 +332,33 @@ def delete_files(name, extensions_to_delete=['bm', 'mp', 'cl']):
         sp.Popen(['rm -rf {}.{}'.format(name, ext)], shell=True)
 
 
+def parse_gridSearch_log(fname):
+    """blah."""
+    f_raw = open(fname).read().split('\n')
+    f = filter(None, f_raw)
 
+    chi_raws = f[1]
+    diskA_ranges, diskB_ranges = f[4:10], f[12:18]
 
+    diskA_bfvals, diskB_bfvals = f[21], f[23]
 
+    diskA_bfvals = filter(None, diskA_bfvals.split(' '))[1:-1]
+    diskB_bfvals = filter(None, diskB_bfvals.split(' '))[1:-1]
+
+    diskA_bfvals = [float(el) for el in diskA_bfvals]
+    diskB_bfvals = [float(el) for el in diskB_bfvals]
+
+    """Plot it
+    f, axarr = plt.subplots(2, 2)
+    axarr[0, 0].plot(x, y)
+    axarr[0, 0].set_title('Axis [0,0]')
+    axarr[0, 1].scatter(x, y)
+    axarr[0, 1].set_title('Axis [0,1]')
+    axarr[1, 0].plot(x, y ** 2)
+    axarr[1, 0].set_title('Axis [1,0]')
+    axarr[1, 1].scatter(x, y ** 2)
+    axarr[1, 1].set_title('Axis [1,1]')
+    """
 
 
 

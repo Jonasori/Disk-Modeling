@@ -17,6 +17,8 @@ from tools import already_exists
 
 
 # Hopefully no more than 2 runs/day!
+# This doesn't work bc full_run already wipes out old directories.
+# Fix this some time.
 modelPath = './models/run_' + today + '/' + today
 if already_exists(modelPath):
     modelPath = './models/run_' + today + '_2/' + today + '_2'
@@ -291,7 +293,7 @@ def fullRun(diskAParams, diskBParams):
     t_total = (t1 - t0)/60
 
     with open('run_' + today + '_stepDurations.csv', 'w') as f:
-        wr = csv.write(f)
+        wr = csv.writer(f)
         wr.writerows(times)
 
     print "\n\nFinal run duration was", t_total/60, 'hours'
@@ -300,19 +302,33 @@ def fullRun(diskAParams, diskBParams):
     # log file w/ best fit vals, range queried, indices of best vals, best chi2
     # 	- (maybe figure out how to round these for better readability)
     with open('run_' + today + 'summary.log', 'w') as f:
-        s1 = '\nBest Chi-Squared values [raw, reduced]:' + str(finalX2s)
-        s2 = '\n\n\nParameter ranges queried:\n' + '\nDisk A:\n' + \
-            str(diskAParams) + '\n\nDisk B:\n' + str(diskBParams)
-        s3 = '\n\n\nBest-fit values (Tatm, Tqq, Xmol, outerR, PA, Incl):' + \
-            '\nDisk A:\n' + str(fit_A_params) + '\nDisk B:\n' + str(fit_B_params)
-        s4 = '\n\nFinal run duration was' + str(t_total/60) + 'hours'
-        s5 = '\nwith each step taking on average' + str(t_total/n) + 'minutes'
-        f.write(s1)
-        f.write(s2)
-        f.write(s3)
-        f.write(s4)
-        f.write(s5)
+        s1 = '\nBest Chi-Squared values [raw, reduced]:\n' + str(finalX2s)
 
+        s2 = '\n\n\nParameter ranges queried:\n'
+        s3 = '\nDisk A:\n'
+        for ps in diskAParams:
+            s3 = s3 + str(ps) + '\n'
+        s4 = '\nDisk B:\n'
+        for ps in diskBParams:
+            s4 = s4 + str(ps) + '\n'
+
+        s5 = '\n\n\nBest-fit values (Tatm, Tqq, Xmol, outerR, PA, Incl):'
+        s6 = '\nDisk A:\n' + str(fit_A_params)
+        s7 = '\nDisk B:\n' + str(fit_B_params)
+
+        s8 = '\n\n\nFinal run duration was' + str(t_total/60) + 'hours'
+        s9 = '\nwith each step taking on average' + str(t_total/n) + 'minutes'
+
+        s = s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + s9
+        f.write(s)
+
+    log_out = [['DiskA', 'DiskB'],
+               [diskAParams, diskBParams],
+               [fit_A_params, fit_B_params]
+               ]
+    with open('better_log.csv', 'w') as f:
+        wr = csv.writer(f)
+        wr.writerows(log_out)
 
 
 # The End
