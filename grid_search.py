@@ -297,14 +297,15 @@ def fullRun(diskAParams, diskBParams):
     # Clock out
     t1 = time.time()
     t_total = (t1 - t0)/60
+    # n+2 to account for best-fit model making
+    t_per = str(t_total/(n + 2))
 
     with open('run_' + today + '_stepDurations.csv', 'w') as f:
         wr = csv.writer(f)
         wr.writerows(times)
 
     print "\n\nFinal run duration was", t_total/60, ' hours'
-    # n+2 to account for best-fit model making
-    print 'with each step taking on average', t_total/(n + 2), ' minutes'
+    print 'with each step taking on average', t_per, ' minutes'
 
     # log file w/ best fit vals, range queried, indices of best vals, best chi2
     # 	- (maybe figure out how to round these for better readability)
@@ -326,7 +327,7 @@ def fullRun(diskAParams, diskBParams):
         s7 = '\nDisk B:\n' + str(fit_B_params)
 
         s8 = '\n\n\nFinal run duration was' + str(t_total/60) + 'hours'
-        s9 = '\nwith each step taking on average' + str(t_total/(n + 2) + 'minutes'
+        s9 = '\nwith each step taking on average' + t_per + 'minutes'
 
         s = s0 + s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + s9
         f.write(s)

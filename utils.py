@@ -29,11 +29,6 @@ offsets = [[-0.0298, 0.072], [-1.0456, -0.1879]]
 col_dens, Tfo, Tmid, m_star, m_disk, r_in, rotHand = other_params
 vsys, restfreq, freq0, obsv, chanstep, n_chans, chanmins, jnum = obs_stuff(mol)
 
-# For some reason, CO and CS have channels that go backwards.
-if mol == 'co' or mol == 'cs':
-    # Maybe also switch chanmins?
-    chanstep *= -1
-
 
 ####################
 # USEFUL FUNCTIONS #
@@ -128,34 +123,24 @@ def sumDisks(filePathA, filePathB, outputPath):
     im.data = sum_data
 
     # Add the header. Kevin's code should populate the header more or less
-    # correctly, so pull a header from one of the models.
-    """
-    model_file = fits.open(filePathA + '.fits')
-    model_header = model_file[0].header
-    model_file.close()
-    """
+    # correctly, so pull a header from one of the models.å
     with fits.open(filePathA + '.fits') as model:
         model_header = model[0].header
 
     im.header = model_header
 
     # Now swap out some of the values using values from the data file:
-    """
-    header_info_from_data = fits.open(dataPath + '.fits')
-    data_header = header_info_from_data[0].header
-    header_info_from_data.close()
-    """
     with fits.open(dataPath + '.fits') as data:
         data_header = data[0].header
 
+    # Does the fact that I have to change these reflect a deeper problem?
     im.header['CRVAL1'] = data_header['CRVAL1']
     im.header['CRVAL2'] = data_header['CRVAL2']
     im.header['CDELT1'] = data_header['CDELT1']
-    print "Restfreq: ", data_header['RESTFREQ']
+    im.header['CDELT2'] = data_header['CDELT2']
     im.header['RESTFREQ'] = data_header['RESTFREQ']
     # im.header['EPOCH'] = data_header['EPOCH']
 
-    # Write it out to a file, overwriting the existing one if need be
     fitsout = outputPath + '.fits'
     im.writeto(fitsout, overwrite=True)
 
@@ -163,6 +148,7 @@ def sumDisks(filePathA, filePathB, outputPath):
     sp.call('rm -rf {}.im'.format(outputPath), shell=True)
     sp.call('rm -rf {}.uvf'.format(outputPath), shell=True)
     sp.call('rm -rf {}.vis'.format(outputPath), shell=True)
+    print "Deleted .im, .uvf, and .vis"
 
     # Now convert that file to the visibility domain:
     sp.call(['fits', 'op=xyin',
