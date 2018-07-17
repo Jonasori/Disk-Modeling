@@ -136,9 +136,11 @@ def sumDisks(filePathA, filePathB, outputPath):
     # Does the fact that I have to change these reflect a deeper problem?
     im.header['CRVAL1'] = data_header['CRVAL1']
     im.header['CRVAL2'] = data_header['CRVAL2']
+    """
     im.header['CDELT1'] = data_header['CDELT1']
     im.header['CDELT2'] = data_header['CDELT2']
-    im.header['RESTFREQ'] = data_header['RESTFREQ']
+    """
+    # im.header['RESTFREQ'] = data_header['RESTFREQ']
     # im.header['EPOCH'] = data_header['EPOCH']
 
     fitsout = outputPath + '.fits'
@@ -148,7 +150,7 @@ def sumDisks(filePathA, filePathB, outputPath):
     sp.call('rm -rf {}.im'.format(outputPath), shell=True)
     sp.call('rm -rf {}.uvf'.format(outputPath), shell=True)
     sp.call('rm -rf {}.vis'.format(outputPath), shell=True)
-    print "Deleted .im, .uvf, and .vis"
+    print "Deleted .im, .uvf, and .vis\n"
 
     # Now convert that file to the visibility domain:
     sp.call(['fits', 'op=xyin',

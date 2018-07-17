@@ -48,7 +48,6 @@ diskBRedX2 = np.zeros((len(diskAParams[0]), len(diskBParams[1]),
                        len(diskBParams[4]), len(diskBParams[5])))
 
 
-
 # GRID SEARCH OVER ONE DISK HOLDING OTHER CONSTANT
 def gridSearch(VariedDiskParams, StaticDiskParams, DI,
                num_iters, steps_so_far=1):
@@ -283,12 +282,12 @@ def fullRun(diskAParams, diskBParams):
     # Finally, Create the final best-fit model.
     print "\n\nCreating best fit model now"
     diskAName, diskBName = modelPath + 'fitA', modelPath + 'fitB'
-    makeModel(fit_A_params, modelPath + 'fitA', 0)
+    makeModel(fit_A_params, diskAName, 0)
     makeModel(fit_B_params, diskBName, 1)
-    sumDisks(diskAName, diskBName, modelPath)
+    sumDisks(diskAName, diskBName, modelPath + '_bestFit')
     # icr(modelPath, mol=mol)
-    sample_model_in_uvplane(modelPath, mol=mol)
-    print "Best-fit model created: ", modelPath, ".cm"
+    sample_model_in_uvplane(modelPath + '_bestFit', mol=mol)
+    print "Best-fit model created: ", modelPath, "_bestFit.cm"
 
     # Calculate and present the final X2 values.
     finalX2s = chiSq(modelPath)
@@ -298,8 +297,8 @@ def fullRun(diskAParams, diskBParams):
     # Clock out
     t1 = time.time()
     t_total = (t1 - t0)/60
-    # n+2 to account for best-fit model making
-    t_per = str(t_total/(n + 2))
+    # n+4 to account for best-fit model making and static disks in grid search
+    t_per = str(t_total/(n + 4))
 
     with open('run_' + today + '_stepDurations.csv', 'w') as f:
         wr = csv.writer(f)

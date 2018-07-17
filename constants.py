@@ -94,8 +94,8 @@ def obs_stuff(mol):
     # Dig some observational params out of the data file.
     hdr = fits.getheader('data/' + mol + '/' + mol + '.uvf')
 
-    # restfreq = lines[mol]['restfreq']
-    restfreq = hdr['CRVAL4'] * 1e-9
+    restfreq = lines[mol]['restfreq']
+    # restfreq = hdr['CRVAL4'] * 1e-9
 
     # Each freq step:
     # arange( nchans + 1 - chanNum) * chanStepFreq + ChanNumFreq * Hz2GHz
