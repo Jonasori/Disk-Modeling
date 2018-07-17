@@ -123,7 +123,7 @@ def sumDisks(filePathA, filePathB, outputPath):
     im.data = sum_data
 
     # Add the header. Kevin's code should populate the header more or less
-    # correctly, so pull a header from one of the models.å
+    # correctly, so pull a header from one of the models.
     with fits.open(filePathA + '.fits') as model:
         model_header = model[0].header
 
