@@ -12,7 +12,7 @@ import csv
 from utils import makeModel, sumDisks, chiSq
 from run_params import diskAParams, diskBParams
 from constants import mol, today, dataPath
-from tools import icr, sample_model_in_uvplane
+from tools import icr, sample_model_in_uvplane, remove
 
 
 # Hopefully no more than 2 runs/day!
@@ -123,6 +123,7 @@ def gridSearch(VariedDiskParams, StaticDiskParams, DI,
                             sumDisks(outNameVaried, outNameStatic, modelPath)
                             sample_model_in_uvplane(modelPath, dataPath, mol=mol)
 
+                            # Visibility-domain chi-squared evaluation
                             X2s = chiSq(modelPath)
                             rawX2, redX2 = X2s[0], X2s[1]
 
@@ -158,11 +159,13 @@ def gridSearch(VariedDiskParams, StaticDiskParams, DI,
                                 minX2Vals = [ta, tqq, xmol, r_out, pa, incl]
                                 minX2Location = [i, j, k, l, m, n]
                                 sp.call(
-                                    'mv {}.fits {}-bestFit.fits'.format(modelPath, modelPath), shell=True)
+                                    'mv {}.fits {}_bestFit.fits'.format(modelPath, modelPath), shell=True)
                                 print "Best fit happened; moved files"
-                                # Now clear out all the files (im, vis, uvf, fits) made by chiSq()
-                                sp.call('rm -rf {}.*'.format(modelPath),
-                                        shell=True)
+
+                            # Now clear out all the files (im, vis, uvf, fits)
+                            remove(modelPath + ".*")
+                            # sp.call('rm -rf {}.*'.format(modelPath),
+                            #         shell=True)
 
                             print "Min. Chi-Squared value so far:", minRedX2
                             print "which happened at: "
@@ -281,12 +284,16 @@ def fullRun(diskAParams, diskBParams):
 
     # Finally, Create the final best-fit model.
     print "\n\nCreating best fit model now"
+    """
     diskAName, diskBName = modelPath + 'fitA', modelPath + 'fitB'
     makeModel(fit_A_params, diskAName, 0)
     makeModel(fit_B_params, diskBName, 1)
     sumDisks(diskAName, diskBName, modelPath + '_bestFit')
     # icr(modelPath, mol=mol)
+    """
     sample_model_in_uvplane(modelPath + '_bestFit', dataPath, mol=mol)
+    icr(modelPath + '_bestFit', mol=mol)
+
     print "Best-fit model created: " + modelPath + "_bestFit.cm\n\n"
 
     # Calculate and present the final X2 values.

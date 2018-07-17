@@ -433,16 +433,22 @@ def plot_gridSearch_log(fname):
     plt.show()
 
 
-def get_rolling_avg(data):
+def get_rolling_avg(dataPath):
     """Get an SMA for some data."""
+    data = pd.read_csv(dataPath, sep=',')
     n = 10
-    xs = [d[0] for d in data]
-    ys = [d[1] for d in data]
+    xs = data['step']
+    ys = data['duration']
 
     avg_ys = []
 
-    for y in ys[n/2:-n/2]:
-        avg_y = sum
+    for i in range(n/2, len(ys) - n/2):
+        avg_y = sum(ys[i-n/2:i+n/2])
+        avg_ys.append(avg_y)
+
+    plt.plot(xs, avg_ys, '-r')
+    plt.plot(xs, ys[n/2:n/2], '-b')
+    plt.show(block=False)
 
 
 
