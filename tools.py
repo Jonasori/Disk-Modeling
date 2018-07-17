@@ -141,7 +141,6 @@ def imstat(modelName, ext='.cm', plane_to_check=30):
 
 
 # Invert/clean/restor: Take in a visibility, put out a convolved clean map.
-# Note that right now the restfreq is HCO+ specific
 def icr(visName, mol, min_baseline=0, niters=1e4):
     """Invert/clean/restor: Turn a vis into a convolved clean map.
 
@@ -217,22 +216,15 @@ def icr(visName, mol, min_baseline=0, niters=1e4):
              ])
 
 
-def imspec(imageName):
-    """Drop a sweet spectrum. Takes in a .im."""
-    sp.call(['imspec',
-             'in={}'.format(imageName),
-             'device=/xs, plot=sum'])
-
-
-def sample_model_in_uvplane(modelPath, mol='hco'):
+def sample_model_in_uvplane(modelPath, dataPath, mol='hco'):
     """Sample a model image in the uvplane given by the data.
 
     .fits -> {.im, .uvf, .vis}
     Args:
         modelPath (str): path to model fits file.
+        dataPath (str): path to data vis file.
         mol (str): the molecule we're looking at.
     """
-    data_vis = './data/' + mol + '/' + mol
 
     # sp.call('rm -rf *{}.im'.format(modelPath), shell=True)
     remove(modelPath + '.im')
@@ -245,7 +237,7 @@ def sample_model_in_uvplane(modelPath, mol='hco'):
     remove(modelPath + '.vis')
     sp.call(['uvmodel',
              'options=replace',
-             'vis={}.vis'.format(data_vis),
+             'vis={}.vis'.format(dataPath),
              'model={}.im'.format(modelPath),
              'out={}.vis'.format(modelPath)])
 
@@ -287,6 +279,13 @@ def get_residuals(Name, mol='hco'):
              'op=uvout',
              'in={}.vis'.format(Name + '_resid'),
              'out={}.uvf'.format(Name + '_resid')])
+
+
+def imspec(imageName):
+    """Drop a sweet spectrum. Takes in a .im."""
+    sp.call(['imspec',
+             'in={}'.format(imageName),
+             'device=/xs, plot=sum'])
 
 
 def already_exists(query):

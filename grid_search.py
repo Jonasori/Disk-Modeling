@@ -121,7 +121,7 @@ def gridSearch(VariedDiskParams, StaticDiskParams, DI,
                             # Make a new disk, sum them, sample in vis-space.
                             makeModel(params, outNameVaried, DI)
                             sumDisks(outNameVaried, outNameStatic, modelPath)
-                            sample_model_in_uvplane(modelPath, mol=mol)
+                            sample_model_in_uvplane(modelPath, dataPath, mol=mol)
 
                             X2s = chiSq(modelPath)
                             rawX2, redX2 = X2s[0], X2s[1]
@@ -286,7 +286,7 @@ def fullRun(diskAParams, diskBParams):
     makeModel(fit_B_params, diskBName, 1)
     sumDisks(diskAName, diskBName, modelPath + '_bestFit')
     # icr(modelPath, mol=mol)
-    sample_model_in_uvplane(modelPath + '_bestFit', mol=mol)
+    sample_model_in_uvplane(modelPath + '_bestFit', dataPath, mol=mol)
     print "Best-fit model created: " + modelPath + "_bestFit.cm\n\n"
 
     # Calculate and present the final X2 values.
