@@ -224,36 +224,38 @@ def imspec(imageName):
              'device=/xs, plot=sum'])
 
 
-def sample_model_in_uvplane(Name, mol='hco'):
+def sample_model_in_uvplane(modelPath, mol='hco'):
     """Sample a model image in the uvplane given by the data.
 
     .fits -> {.im, .uvf, .vis}
     Args:
-        Name (str): path to model fits file.
+        modelPath (str): path to model fits file.
         mol (str): the molecule we're looking at.
     """
     data_vis = './data/' + mol + '/' + mol
 
-    sp.call('rm -rf *{}.im'.format(Name), shell=True)
-
+    # sp.call('rm -rf *{}.im'.format(modelPath), shell=True)
+    remove(modelPath + '.im')
     sp.call(['fits', 'op=xyin',
-             'in={}.fits'.format(Name),
-             'out={}.im'.format(Name)])
+             'in={}.fits'.format(modelPath),
+             'out={}.im'.format(modelPath)])
 
     # Sample the model image using the observation uv coverage
-    sp.call('rm -rf *{}.vis'.format(Name), shell=True)
+    # sp.call('rm -rf *{}.vis'.format(modelPath), shell=True)
+    remove(modelPath + '.vis')
     sp.call(['uvmodel',
              'options=replace',
              'vis={}.vis'.format(data_vis),
-             'model={}.im'.format(Name),
-             'out={}.vis'.format(Name)])
+             'model={}.im'.format(modelPath),
+             'out={}.vis'.format(modelPath)])
 
     # Convert to UVfits
-    sp.call('rm -rf *{}.uvf'.format(Name), shell=True)
+    # sp.call('rm -rf *{}.uvf'.format(modelPath), shell=True)
+    remove(modelPath + '.uvf')
     sp.call(['fits',
              'op=uvout',
-             'in={}.vis'.format(Name),
-             'out={}.uvf'.format(Name)])
+             'in={}.vis'.format(modelPath),
+             'out={}.uvf'.format(modelPath)])
 
 
 def get_residuals(Name, mol='hco'):
@@ -287,6 +289,35 @@ def get_residuals(Name, mol='hco'):
              'out={}.uvf'.format(Name + '_resid')])
 
 
+def already_exists(query):
+    """Search an ls call to see if query is in it."""
+    f = query.split('/')[-1]
+    # path = query.split(f)[0]
+    path = query[:-len(f)]
+
+    print "Path is: ", path
+    print "file is: ", f
+
+    output = sp.check_output('ls', cwd=path).split('\n')
+
+    if f in output:
+        print query + ' alrady exists; skipping\n\n\n'
+        return True
+    else:
+        print query + ' does not yet exist; executing command\n\n'
+        return False
+
+
+def remove(filePath):
+    """Delete a file.
+
+    Mostly just written to avoid having to remember the syntax every time.
+    filePath is full filepath, including name and extension.
+    Supports wildcards.
+    """
+    sp.Popen(['rm -rf {}'.format(filePath)], shell=True)
+
+
 def depickleLogFile(filename):
     """Read in the pickle'd full-log file from a run."""
     df = pickle.load(open('{}_step-log.pickle'.format(filename), 'rb'))
@@ -309,31 +340,6 @@ def depickleLogFile(filename):
            'Best Fit B': best_fit_b
            }
     return out
-
-
-def already_exists(query):
-    """Search an ls call to see if query is in it."""
-    f = query.split('/')[-1]
-    # path = query.split(f)[0]
-    path = query[:-len(f)]
-
-    print "Path is: ", path
-    print "file is: ", f
-
-    output = sp.check_output('ls', cwd=path).split('\n')
-
-    if f in output:
-        print query + ' alrady exists; skipping\n\n\n'
-        return True
-    else:
-        print query + ' does not yet exist; executing command\n\n'
-        return False
-
-
-def delete_files(name, extensions_to_delete=['bm', 'mp', 'cl']):
-    """Delete some files without the ugliness of batch deletes."""
-    for ext in extensions_to_delete:
-        sp.Popen(['rm -rf {}.{}'.format(name, ext)], shell=True)
 
 
 def parse_gridSearch_log(fname):

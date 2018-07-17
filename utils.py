@@ -152,6 +152,7 @@ def sumDisks(filePathA, filePathB, outputPath):
     sp.call('rm -rf {}.vis'.format(outputPath), shell=True)
     print "Deleted .im, .uvf, and .vis\n"
 
+    """
     # Now convert that file to the visibility domain:
     sp.call(['fits', 'op=xyin',
              'in={}.fits'.format(outputPath),
@@ -173,6 +174,7 @@ def sumDisks(filePathA, filePathB, outputPath):
              'out={}.uvf'.format(outputPath)],
             stdout=open(os.devnull, 'wb')
             )
+    """
 
 
 def chiSq(infile):

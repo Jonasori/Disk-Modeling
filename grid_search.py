@@ -118,11 +118,11 @@ def gridSearch(VariedDiskParams, StaticDiskParams, DI,
                             print "incl:", incl
                             print "Static params: ", StaticDiskParams
 
-                            # The model making/data management
+                            # Make a new disk, sum them, sample in vis-space.
                             makeModel(params, outNameVaried, DI)
                             sumDisks(outNameVaried, outNameStatic, modelPath)
+                            sample_model_in_uvplane(modelPath, mol=mol)
 
-                            # Careful to put these in the right spot!
                             X2s = chiSq(modelPath)
                             rawX2, redX2 = X2s[0], X2s[1]
 
