@@ -281,6 +281,7 @@ def fullRun(diskAParams, diskBParams):
     # full_log.to_csv(path_or_buf='{}_step-log.csv'.format(modelPath))
 
     # Finally, Create the final best-fit model.
+    print "\n\nCreating best fit model now"
     diskAName, diskBName = modelPath + 'fitA', modelPath + 'fitB'
     makeModel(fit_A_params, modelPath + 'fitA', 0)
     makeModel(fit_B_params, diskBName, 1)
