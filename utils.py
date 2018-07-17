@@ -140,7 +140,7 @@ def sumDisks(filePathA, filePathB, outputPath):
     im.header['CDELT1'] = data_header['CDELT1']
     im.header['CDELT2'] = data_header['CDELT2']
     """
-    # im.header['RESTFREQ'] = data_header['RESTFREQ']
+    im.header['RESTFREQ'] = data_header['RESTFREQ']
     # im.header['EPOCH'] = data_header['EPOCH']
 
     fitsout = outputPath + '.fits'
