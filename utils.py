@@ -79,7 +79,7 @@ def makeModel(diskParams, outputPath, DI):
                      rotHand[DI]])
 
     # The data have 51 channels (from the casa split()), so n_chans must be 51
-    rt.total_model(a, imres=0.1,
+    rt.total_model(a, imres=0.045,
                    nchans=n_chans[DI],
                    chanmin=chanmins[DI],
                    chanstep=chanstep,

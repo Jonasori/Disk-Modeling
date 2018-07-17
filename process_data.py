@@ -15,7 +15,7 @@ from tools import icr, already_exists
 
 
 def pipe(commands):
-    """Translate a set of arguments into a CASA command."""
+    """Translate a set of arguments into a CASA command, written by Cail."""
     call_string = '\n'.join([command if type(command) is str else '\n'.join(command) for command in commands])
 
     print('Piping the following commands to CASA:\n')
@@ -76,7 +76,7 @@ def find_split_cutoffs(mol, other_restfreq=0):
 
     # ALl in GHz
     nchans = 3840
-    chanstep = chan_dir * 0.000488281
+    chanstep = 0.000488281 * chan_dir
     freqs = [chan0 + chanstep*i for i in range(nchans)]
 
     # Using these two different restfreqs yields locs of 1908 vs 1932. Weird.
