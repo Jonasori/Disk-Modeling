@@ -27,6 +27,8 @@ if already_exists(modelPath):
 """
 # A little silly, but an easy way to name disks by their disk index (DI)
 dnames = ['A', 'B']
+# Set up a list to keep track of how long each iteration takes.
+times = [['step', 'duration']]
 
 # Prep some storage space for all the chisq vals
 diskARawX2 = np.zeros((len(diskAParams[0]), len(diskAParams[1]),
@@ -45,8 +47,6 @@ diskBRedX2 = np.zeros((len(diskAParams[0]), len(diskBParams[1]),
                        len(diskBParams[2]), len(diskBParams[3]),
                        len(diskBParams[4]), len(diskBParams[5])))
 
-# Set up a list to keep track of how long each iteration takes.
-times = [['step', 'duration']]
 
 
 # GRID SEARCH OVER ONE DISK HOLDING OTHER CONSTANT
@@ -159,7 +159,7 @@ def gridSearch(VariedDiskParams, StaticDiskParams, DI,
                                 minX2Vals = [ta, tqq, xmol, r_out, pa, incl]
                                 minX2Location = [i, j, k, l, m, n]
                                 sp.call(
-                                    'mv {}.fits {}-bestFit.fits'.format(modelPath, modelPath + today), shell=True)
+                                    'mv {}.fits {}-bestFit.fits'.format(modelPath, modelPath), shell=True)
                                 print "Best fit happened; moved files"
                                 # Now clear out all the files (im, vis, uvf, fits) made by chiSq()
                                 sp.call('rm -rf {}.*'.format(modelPath),
@@ -179,7 +179,7 @@ def gridSearch(VariedDiskParams, StaticDiskParams, DI,
 
     # Finally, make the best-fit model for this disk
     makeModel(minX2Vals, outNameVaried, DI)
-    print "Best-fit model created: ", modelPath
+    print "Best-fit model for disk", dnames[DI], " created: ", modelPath, ".fits\n\n"
 
     # Knit the dataframe
     step_log = pd.DataFrame(df_rows)
@@ -303,7 +303,8 @@ def fullRun(diskAParams, diskBParams):
         wr.writerows(times)
 
     print "\n\nFinal run duration was", t_total/60, ' hours'
-    print 'with each step taking on average', t_total/n, ' minutes'
+    # n+2 to account for best-fit model making
+    print 'with each step taking on average', t_total/(n + 2), ' minutes'
 
     # log file w/ best fit vals, range queried, indices of best vals, best chi2
     # 	- (maybe figure out how to round these for better readability)
@@ -325,7 +326,7 @@ def fullRun(diskAParams, diskBParams):
         s7 = '\nDisk B:\n' + str(fit_B_params)
 
         s8 = '\n\n\nFinal run duration was' + str(t_total/60) + 'hours'
-        s9 = '\nwith each step taking on average' + str(t_total/n) + 'minutes'
+        s9 = '\nwith each step taking on average' + str(t_total/(n + 2) + 'minutes'
 
         s = s0 + s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + s9
         f.write(s)
