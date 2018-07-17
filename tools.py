@@ -225,15 +225,12 @@ def sample_model_in_uvplane(modelPath, dataPath, mol='hco'):
         dataPath (str): path to data vis file.
         mol (str): the molecule we're looking at.
     """
-
-    # sp.call('rm -rf *{}.im'.format(modelPath), shell=True)
     remove(modelPath + '.im')
     sp.call(['fits', 'op=xyin',
              'in={}.fits'.format(modelPath),
              'out={}.im'.format(modelPath)])
 
     # Sample the model image using the observation uv coverage
-    # sp.call('rm -rf *{}.vis'.format(modelPath), shell=True)
     remove(modelPath + '.vis')
     sp.call(['uvmodel',
              'options=replace',
@@ -242,7 +239,6 @@ def sample_model_in_uvplane(modelPath, dataPath, mol='hco'):
              'out={}.vis'.format(modelPath)])
 
     # Convert to UVfits
-    # sp.call('rm -rf *{}.uvf'.format(modelPath), shell=True)
     remove(modelPath + '.uvf')
     sp.call(['fits',
              'op=uvout',
@@ -439,12 +435,14 @@ def plot_gridSearch_log(fname):
 
 def get_rolling_avg(data):
     """Get an SMA for some data."""
-
+    n = 10
     xs = [d[0] for d in data]
     ys = [d[1] for d in data]
 
-    for y in ys:
-        print y
+    avg_ys = []
+
+    for y in ys[n/2:-n/2]:
+        avg_y = sum
 
 
 

@@ -11,7 +11,7 @@ import csv
 # Local package files
 from utils import makeModel, sumDisks, chiSq
 from run_params import diskAParams, diskBParams
-from constants import mol, today
+from constants import mol, today, dataPath
 from tools import icr, sample_model_in_uvplane
 
 
