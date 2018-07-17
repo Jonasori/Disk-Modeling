@@ -5,7 +5,6 @@ import numpy as np
 import subprocess as sp
 import pandas as pd
 import cPickle as pickle
-from tools import icr
 import time
 import csv
 
@@ -13,7 +12,7 @@ import csv
 from utils import makeModel, sumDisks, chiSq
 from run_params import diskAParams, diskBParams
 from constants import mol, today
-from tools import already_exists
+from tools import icr, sample_model_in_uvplane
 
 
 # Hopefully no more than 2 runs/day!
@@ -288,7 +287,8 @@ def fullRun(diskAParams, diskBParams):
     makeModel(fit_A_params, modelPath + 'fitA', 0)
     makeModel(fit_B_params, diskBName, 1)
     sumDisks(diskAName, diskBName, modelPath)
-    icr(modelPath, mol=mol)
+    # icr(modelPath, mol=mol)
+    sample_model_in_uvplane(modelPath, mol=mol)
     print "Best-fit model created: ", modelPath, ".cm"
 
     # Clock out

@@ -145,6 +145,7 @@ def imstat(modelName, ext='.cm', plane_to_check=30):
 def icr(visName, mol, min_baseline=0, niters=1e4):
     """Invert/clean/restor: Turn a vis into a convolved clean map.
 
+    .vis -> .bm, .mp, .cl, .cm, .fits
     Args:
         modelName (str): path to and name of the file. Do not include extension
         min_baseline (int): minimum baseline length to use. Cuts all below.
@@ -224,11 +225,12 @@ def imspec(imageName):
 
 
 def sample_model_in_uvplane(Name, mol='hco'):
-    """Convert a fits file to im, vis, uvf.
+    """Sample a model image in the uvplane given by the data.
 
     .fits -> {.im, .uvf, .vis}
-    Note that this samples from hco.vis, so while it's basically
-    general for my uses, it's not actually general.
+    Args:
+        Name (str): path to model fits file.
+        mol (str): the molecule we're looking at.
     """
     data_vis = './data/' + mol + '/' + mol
 
