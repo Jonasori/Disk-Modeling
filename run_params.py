@@ -36,7 +36,7 @@ TqqA = -1 * np.array([-0.5])
 XmolA = -1 * np.array([6.])
 R_outA = np.array([300])
 PAA = np.array([250])
-InclA = np.array([65, 70])
+InclA = np.array([65])
 
 # Parameters for Disk B
 TatmsB = np.array([200])
@@ -44,7 +44,7 @@ TqqB = -1 * np.array([-0.6])
 XmolB = -1 * np.array([7.])
 R_outB = np.array([200])
 PAB = np.array([135])
-InclB = np.array([30, 60])
+InclB = np.array([30])
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #

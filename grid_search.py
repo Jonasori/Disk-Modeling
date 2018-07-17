@@ -208,15 +208,18 @@ def fullRun(diskAParams, diskBParams):
     for b in range(0, len(diskBParams)):
         nb *= len(diskBParams[b])
 
-    n = na + nb
-    dt = 2.5
-    t = dt * n / 60
+    n, dt = na + nb, 2.5
+    t = n * dt
+    if t < 60:
+        t = str(n * dt) + " minutes."
+    else:
+        t = str(n * dt/60) + " hours."
 
     # Parameter Check:
     print "This run will be iteratating through these parameters for Disk A:"
     print diskAParams
     print "\nAnd these values for Disk B:\n", diskBParams
-    print "\nThis run will take", n, "steps, spanning about ", t, "hours."
+    print "\nThis run will take", n, "steps, spanning about ", t
     print "\nOutput will be in", modelPath, '\n'
     response = raw_input(
         "Sound good? (press Enter to continue, any other key to stop)")
@@ -277,11 +280,6 @@ def fullRun(diskAParams, diskBParams):
     # Alternatively, to get a csv:
     # full_log.to_csv(path_or_buf='{}_step-log.csv'.format(modelPath))
 
-    # Calculate and present the final X2 values.
-    finalX2s = chiSq(modelPath)
-    print "Final Raw Chi-Squared Value: ", finalX2s[0]
-    print "Final Reduced Chi-Squared Value: ", finalX2s[1]
-
     # Finally, Create the final best-fit model.
     diskAName, diskBName = modelPath + 'fitA', modelPath + 'fitB'
     makeModel(fit_A_params, modelPath + 'fitA', 0)
@@ -290,6 +288,11 @@ def fullRun(diskAParams, diskBParams):
     # icr(modelPath, mol=mol)
     sample_model_in_uvplane(modelPath, mol=mol)
     print "Best-fit model created: ", modelPath, ".cm"
+
+    # Calculate and present the final X2 values.
+    finalX2s = chiSq(modelPath)
+    print "Final Raw Chi-Squared Value: ", finalX2s[0]
+    print "Final Reduced Chi-Squared Value: ", finalX2s[1]
 
     # Clock out
     t1 = time.time()
@@ -306,6 +309,7 @@ def fullRun(diskAParams, diskBParams):
     # 	- (maybe figure out how to round these for better readability)
     param_names = ['ta', 'tqq', 'xmol', 'r_out', 'pa', 'incl']
     with open('run_' + today + 'summary.log', 'w') as f:
+        s0 = '\nLOG FOR RUN ON' + today + ' FOR THE ' + mol + ' LINE'
         s1 = '\nBest Chi-Squared values [raw, reduced]:\n' + str(finalX2s)
 
         s2 = '\n\n\nParameter ranges queried:\n'
@@ -323,7 +327,7 @@ def fullRun(diskAParams, diskBParams):
         s8 = '\n\n\nFinal run duration was' + str(t_total/60) + 'hours'
         s9 = '\nwith each step taking on average' + str(t_total/n) + 'minutes'
 
-        s = s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + s9
+        s = s0 + s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + s9
         f.write(s)
 
     log_out = [['DiskA', 'DiskB'],
