@@ -25,8 +25,9 @@ from constants import mol, obs_stuff, other_params, dataPath
 # centering_for_olay.cgdisp is the file that actually makes the green crosses!
 offsets = [[-0.0298, 0.072], [-1.0456, -0.1879]]
 
+# Default params
+col_dens, Tfo, Tmid, m_star, m_disk, r_in, rotHand = other_params
 vsys, restfreq, freq0, obsv, chanstep, n_chans, chanmins, jnum = obs_stuff(mol)
-col_dens, Tfo, Tmid, Tatm, Tqq, m_star, m_disk, r_in, r_out, rotHand = other_params
 
 # For some reason, CO and CS have channels that go backwards.
 if mol == 'co' or mol == 'cs':
@@ -44,7 +45,8 @@ def makeModel(diskParams, outputPath, DI):
 
     Args:
         diskParams (list of floats): the physical parameters for the model.
-        outputPath (str) The path to where created files should go.
+        outputPath (str): The path to where created files should go, including
+                          filename.
         DI (0 or 1): the index of the disk being modeled.
     Creates:
         {outputPath}.fits, a single model disk.
@@ -60,7 +62,7 @@ def makeModel(diskParams, outputPath, DI):
     Tatms = diskParams[0]
     Tqq = diskParams[1]
     Xmol = diskParams[2]
-    RAout = diskParams[3]
+    Rout = diskParams[3]
     PA = diskParams[4]
     Incl = diskParams[5]
 
@@ -68,7 +70,7 @@ def makeModel(diskParams, outputPath, DI):
                      m_disk[DI],
                      1.,
                      r_in[DI],
-                     r_out[DI],
+                     Rout,
                      100,
                      Incl,
                      m_star[DI],
@@ -78,7 +80,7 @@ def makeModel(diskParams, outputPath, DI):
                      Tmid,
                      Tatms,
                      col_dens,
-                     [1., RAout],
+                     [1., Rout],
                      rotHand[DI]])
 
     # The data have 51 channels (from the casa split()), so n_chans must be 51

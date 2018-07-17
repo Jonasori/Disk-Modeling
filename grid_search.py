@@ -326,11 +326,24 @@ def fullRun(diskAParams, diskBParams):
 
     log_out = [['DiskA', 'DiskB'],
                [diskAParams, diskBParams],
-               [fit_A_params, fit_B_params]
-               ]
+               [fit_A_params, fit_B_params]]
     with open('better_log.csv', 'w') as f:
         wr = csv.writer(f)
         wr.writerows(log_out)
+
+    # Another possibility
+    param_names = ['ta', 'tqq', 'xmol', 'raout', 'pa', 'incl']
+    ps_list = []
+    for i in range(len(diskAParams)-1):
+        row = {'parameter_name': param_names[i],
+               'range_A': diskAParams[i],
+               'range_B': diskBParams[i],
+               'bf_A': fit_A_params[i],
+               'bf_B': fit_B_params[i]}
+        ps_list.append(row)
+    ps_df = pd.DataFrame(ps_list)
+    pickle.dump(ps_df, open('summary-log.pickle', "wb"))
+
 
 
 # The End

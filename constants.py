@@ -57,6 +57,7 @@ restfreqs = {'hco': 356.73422300,
              'cs': 342.88285030
              }
 
+# DEFAULT VALUES
 # Column density [low, high]
 col_dens = [1.3e21/(1.59e21), 1e30/(1.59e21)]
 # Freeze out temp (K)
@@ -78,7 +79,7 @@ r_out = [500, 300]
 # Handedness of rotation
 rotHand = [-1, -1]
 
-other_params = [col_dens, Tfo, Tmid, Tatm, Tqq, m_star, m_disk, r_in, r_out, rotHand]
+other_params = [col_dens, Tfo, Tmid, m_star, m_disk, r_in, rotHand]
 
 
 def obs_stuff(mol):
