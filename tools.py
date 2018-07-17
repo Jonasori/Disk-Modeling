@@ -430,6 +430,16 @@ def plot_gridSearch_log(fname):
     plt.show()
 
 
+def get_rolling_avg(data):
+    """Get an SMA for some data."""
+
+    xs = [d[0] for d in data]
+    ys = [d[1] for d in data]
+
+    for y in ys:
+
+
+
 
 
 # The End

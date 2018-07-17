@@ -70,7 +70,7 @@ def gridSearch(VariedDiskParams, StaticDiskParams, DI,
     Tatms = VariedDiskParams[0]
     Tqq = VariedDiskParams[1]
     Xmol = VariedDiskParams[2]
-    RAout = VariedDiskParams[3]
+    R_out = VariedDiskParams[3]
     PA = VariedDiskParams[4]
     Incl = VariedDiskParams[5]
 
@@ -94,7 +94,7 @@ def gridSearch(VariedDiskParams, StaticDiskParams, DI,
     # GRIDLIFE #
     for i in range(0, len(Tatms)):
         for j in range(0, len(Tqq)):
-            for l in range(0, len(RAout)):
+            for l in range(0, len(R_out)):
                 for k in range(0, len(Xmol)):
                     for m in range(0, len(PA)):
                         for n in range(0, len(Incl)):
@@ -103,10 +103,10 @@ def gridSearch(VariedDiskParams, StaticDiskParams, DI,
                             ta = Tatms[i]
                             tqq = Tqq[j]
                             xmol = Xmol[k]
-                            raout = RAout[l]
+                            r_out = R_out[l]
                             pa = PA[m]
                             incl = Incl[n]
-                            params = [ta, tqq, xmol, raout, pa, incl]
+                            params = [ta, tqq, xmol, r_out, pa, incl]
 
                             print "\n\n\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
                             print "Currently fitting for: ", outNameVaried
@@ -115,7 +115,7 @@ def gridSearch(VariedDiskParams, StaticDiskParams, DI,
                             print "ta:", ta
                             print "tqq", tqq
                             print "xmol:", xmol
-                            print "raout:", raout
+                            print "r_out:", r_out
                             print "pa:", pa
                             print "incl:", incl
                             print "Static params: ", StaticDiskParams
@@ -146,7 +146,7 @@ def gridSearch(VariedDiskParams, StaticDiskParams, DI,
                             df_row = {'Atms Temp': ta,
                                       'Temp Struct': tqq,
                                       'Molecular Abundance': xmol,
-                                      'Outer Radius': raout,
+                                      'Outer Radius': r_out,
                                       'Pos. Angle': pa,
                                       'Incl.': incl,
                                       'Raw Chi2': rawX2,
@@ -157,7 +157,7 @@ def gridSearch(VariedDiskParams, StaticDiskParams, DI,
 
                             if redX2 > 0 and redX2 < minRedX2:
                                 minRedX2 = redX2
-                                minX2Vals = [ta, tqq, xmol, raout, pa, incl]
+                                minX2Vals = [ta, tqq, xmol, r_out, pa, incl]
                                 minX2Location = [i, j, k, l, m, n]
                                 sp.call(
                                     'mv {}.fits {}-bestFit.fits'.format(modelPath, modelPath + today), shell=True)
@@ -171,7 +171,7 @@ def gridSearch(VariedDiskParams, StaticDiskParams, DI,
                             print "ta:", minX2Vals[0]
                             print "tqq:", minX2Vals[1]
                             print "xmol:", minX2Vals[2]
-                            print "raout:", minX2Vals[3]
+                            print "r_out:", minX2Vals[3]
                             print "pa:", minX2Vals[4]
                             print "incl:", minX2Vals[5]
 
@@ -217,7 +217,8 @@ def fullRun(diskAParams, diskBParams):
     print "This run will be iteratating through these parameters for Disk A:"
     print diskAParams
     print "\nAnd these values for Disk B:\n", diskBParams
-    print "\nThis run will take ", n, "steps, spanning about ", t, "hours in the file", modelPath, '\n'
+    print "\nThis run will take", n, "steps, spanning about ", t, "hours."
+    print "\nOutput will be in", modelPath, '\n'
     response = raw_input(
         "Sound good? (press Enter to continue, any other key to stop)")
     if response != "":
@@ -298,21 +299,22 @@ def fullRun(diskAParams, diskBParams):
         wr = csv.writer(f)
         wr.writerows(times)
 
-    print "\n\nFinal run duration was", t_total/60, 'hours'
-    print 'with each step taking on average', t_total/n, 'minutes'
+    print "\n\nFinal run duration was", t_total/60, ' hours'
+    print 'with each step taking on average', t_total/n, ' minutes'
 
     # log file w/ best fit vals, range queried, indices of best vals, best chi2
     # 	- (maybe figure out how to round these for better readability)
+    param_names = ['ta', 'tqq', 'xmol', 'r_out', 'pa', 'incl']
     with open('run_' + today + 'summary.log', 'w') as f:
         s1 = '\nBest Chi-Squared values [raw, reduced]:\n' + str(finalX2s)
 
         s2 = '\n\n\nParameter ranges queried:\n'
         s3 = '\nDisk A:\n'
-        for ps in diskAParams:
-            s3 = s3 + str(ps) + '\n'
+        for i, ps in enumerate(diskAParams):
+            s3 = s3 + param_names[i] + str(ps) + '\n'
         s4 = '\nDisk B:\n'
-        for ps in diskBParams:
-            s4 = s4 + str(ps) + '\n'
+        for i, ps in enumerate(diskBParams):
+            s4 = s4 + param_names[i] + str(ps) + '\n'
 
         s5 = '\n\n\nBest-fit values (Tatm, Tqq, Xmol, outerR, PA, Incl):'
         s6 = '\nDisk A:\n' + str(fit_A_params)
@@ -332,7 +334,7 @@ def fullRun(diskAParams, diskBParams):
         wr.writerows(log_out)
 
     # Another possibility
-    param_names = ['ta', 'tqq', 'xmol', 'raout', 'pa', 'incl']
+    param_names = ['ta', 'tqq', 'xmol', 'r_out', 'pa', 'incl']
     ps_list = []
     for i in range(len(diskAParams)-1):
         row = {'parameter_name': param_names[i],
