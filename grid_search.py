@@ -287,10 +287,10 @@ def fullRun(diskAParams, diskBParams):
     sumDisks(diskAName, diskBName, modelPath + '_bestFit')
     # icr(modelPath, mol=mol)
     sample_model_in_uvplane(modelPath + '_bestFit', mol=mol)
-    print "Best-fit model created: ", modelPath, "_bestFit.cm"
+    print "Best-fit model created: " + modelPath + "_bestFit.cm\n\n"
 
     # Calculate and present the final X2 values.
-    finalX2s = chiSq(modelPath)
+    finalX2s = chiSq(modelPath + '_bestFit')
     print "Final Raw Chi-Squared Value: ", finalX2s[0]
     print "Final Reduced Chi-Squared Value: ", finalX2s[1]
 

@@ -184,11 +184,11 @@ def chiSq(infile):
     Creates: 	None
     """
     # GET VISIBILITIES
-    data = fits.open(dataPath + '.uvf')
-    data_vis = data[0].data['data'].squeeze()
+    with fits.open(dataPath + '.uvf') as data:
+        data_vis = data[0].data['data'].squeeze()
 
-    model = fits.open(infile + '.uvf')
-    model_vis = model[0].data['data'].squeeze()
+    with fits.open(infile + '.uvf') as model:
+        model_vis = model[0].data['data'].squeeze()
 
     # PREPARE STUFF FOR CHI SQUARED
 
@@ -209,13 +209,13 @@ def chiSq(infile):
     model_imag = model_vis[::2, :, 1]
 
     wt = data_vis[:, :, 0, 2]
-    loc = np.where(wt > 0)
+    # loc = np.where(wt > 0)
 
     raw_chi = np.sum(wt*(data_real - model_real)**2) + \
         np.sum(wt*(data_imag - model_imag)**2)
 
-    # Degrees of freedom is how many total real and imaginary weights we've got.
-    dof = 2*len(data_vis)
+    # Degrees of freedom is how many total real and imaginary weights exist.
+    dof = 2 * len(data_vis)
     red_chi = raw_chi/dof
     # return format([raw_chi, red_chi], 'f')
     return [raw_chi, red_chi]
