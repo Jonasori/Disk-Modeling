@@ -338,6 +338,7 @@ def fullRun(diskAParams, diskBParams):
         s = s0 + s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + s9
         f.write(s)
 
+    # How to log this stuff out best?
     log_out = [['DiskA', 'DiskB'],
                [diskAParams, diskBParams],
                [fit_A_params, fit_B_params]]

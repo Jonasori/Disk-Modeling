@@ -8,6 +8,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pickle
 import subprocess as sp
+import seaborn as sns
+from constants import today
 
 
 def depickleLogFile(filename):
@@ -34,100 +36,56 @@ def depickleLogFile(filename):
     return out
 
 
-def parse_gridSearch_log(fname):
-    """blah."""
-    f_raw = open(fname).read().split('\n')
-    f = filter(None, f_raw)
-
-    chi_raws = f[1]
-    diskA_ranges, diskB_ranges = f[4:10], f[12:18]
-
-    diskA_bfvals, diskB_bfvals = f[19], f[21]
-
-    diskA_bfvals = filter(None, diskA_bfvals.split(' '))[1:-1]
-    diskB_bfvals = filter(None, diskB_bfvals.split(' '))[1:-1]
-
-    diskA_bfvals = [float(el) for el in diskA_bfvals]
-    diskB_bfvals = [float(el) for el in diskB_bfvals]
-
-
-    r0 = filter(None, diskA_ranges[0].split(']')[0].split(' '))[1:]
-    """Plot it
-    f, axarr = plt.subplots(2, 2)
-    axarr[0, 0].plot(x, y)
-    axarr[0, 0].set_title('Axis [0,0]')
-    axarr[0, 1].scatter(x, y)
-    axarr[0, 1].set_title('Axis [0,1]')
-    axarr[1, 0].plot(x, y ** 2)
-    axarr[1, 0].set_title('Axis [1,0]')
-    axarr[1, 1].scatter(x, y ** 2)
-    axarr[1, 1].set_title('Axis [1,1]')
-    """
-    """
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    ax.set_xlim(0, 10)
-    ax.set_ylim(0, 10)
-
-    # draw lines
-    xmin = 1
-    xmax = 9
-    y = 5
-    height = 1
-
-    plt.hlines(y, xmin, xmax)
-    plt.vlines(xmin, y - height / 2., y + height / 2.)
-    plt.vlines(xmax, y - height / 2., y + height / 2.)
-
-    # draw a point on the line
-    px = 4
-    plt.plot(px, y, 'ro', ms=15, mfc='r')
-    """
-
-
 def plot_gridSearch_log(fname):
-    """Docstring."""
-    l = depickleLogFile(fname)
-    ls = []
-    for name in l['Disk A log']:
-        if 'Chi2' not in name:
-            p = l['Disk A log'][name]
-            p_range = [min(p), max(p)]
+    """Plot where the best-fit values from a grid search fall.
 
-            best_vals = [i for i in l['Best Fit A'][name]]
-            print name
-            print p_range
-            print best_vals
-            print
-            print
-            row = {'name': name,
-                   'range': p_range,
-                   'best_vals': best_vals}
-            ls.append(row)
-    df = pd.DataFrame(ls)
+    Takes in the pickled step log from the grid search,
+    plots where the best-fit value(s) stand(s) relative to the range queried
+    """
+    # Grab the values to distribute
+    df = depickleLogFile(fname)
 
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    p_min, p_max = df['range'][0]
-    ax.set_xlim(p_min - 0.1*p_max, p_max + 0.1*p_max)
+    del df['Disk A log']['Reduced Chi2']
+    del df['Disk A log']['Raw Chi2']
 
-    y = 3
-    height = 1
+    disk_A, disk_B = [], []
+    [disk_A.append({}) for i in df['Disk A log']]
+    [disk_B.append({}) for i in df['Disk A log']]
 
-    plt.hlines(y, p_min, p_max)
-    plt.vlines(p_min, y - height / 2., y + height / 2.)
-    plt.vlines(p_max, y - height / 2., y + height / 2.)
+    for i, p in enumerate(df['Disk A log']):
+        if p != 'Raw Chi2' and p != 'Reduced Chi2':
 
-    colors = ['r', 'b', 'g']
-    for i in range(len(df['best_vals'])-1):
-        plt.plot(df['best_vals'][i], y, marker='o', color=colors[i])  # , ms=15, mfc='r')
+            ps_A = df['Disk A log'][p]
+            disk_A[i]['p_min'] = min(ps_A)
+            disk_A[i]['p_max'] = max(ps_A)
+            disk_A[i]['best_fits'] = list(df['Best Fit A'][p])
+            disk_A[i]['name'] = p
 
-    plt.text(p_min - 0.1, y, p_min, horizontalalignment='right')
-    plt.text(p_max + 0.1, y, p_max, horizontalalignment='left')
+            ps_B = df['Disk B log'][p]
+            disk_B[i]['p_min'] = min(ps_B)
+            disk_B[i]['p_max'] = max(ps_B)
+            disk_B[i]['best_fits'] = list(df['Best Fit B'][p])
+            disk_B[i]['name'] = p
+    both_disks = [disk_A, disk_B]
 
-    plt.title(df['name'][0])
-    ax.get_yaxis().set_visible(False)
-    plt.show()
+    # Plot out
+    colors = ['red', 'blue']
+    f, axarr = plt.subplots(len(disk_A), 2)
+    for d in [0, 1]:
+        params = both_disks[d]
+        for i, p in enumerate(params):
+            xs = np.linspace(p['p_min'], p['p_max'], 2)
+            axarr[i, d].set_title(p['name'])
+            # axarr[i, d].axis('off')
+            axarr[i, d].yaxis.set_ticklabels([])
+            axarr[i, d].plot(xs, [0]*2, '-k')
+            for bf in p['best_fits']:
+                axarr[i, d].plot(bf, 0, marker='o', color=colors[d], alpha=0.2)
+
+    plt.tight_layout()
+
+    plt.savefig(fname + 'results.png')
+    plt.show(block=False)
 
 
 def plot_rolling_avg(dataPath):
