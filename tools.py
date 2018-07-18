@@ -245,6 +245,8 @@ def sample_model_in_uvplane(modelPath, dataPath, mol='hco'):
              'in={}.vis'.format(modelPath),
              'out={}.uvf'.format(modelPath)])
 
+    print "completed sampling uvplane; created .im, .vis, .uvf\n\n"
+
 
 def get_residuals(Name, mol='hco'):
     """Convert a fits file to im, vis, uvf.
@@ -310,7 +312,7 @@ def remove(filePath):
     filePath is full filepath, including name and extension.
     Supports wildcards.
     """
-    sp.Popen(['rm -rf {}'.format(filePath)], shell=True)
+    sp.Popen(['rm -rf {}'.format(filePath)], shell=True).wait()
 
 
 def depickleLogFile(filename):
@@ -433,21 +435,31 @@ def plot_gridSearch_log(fname):
     plt.show()
 
 
-def get_rolling_avg(dataPath):
+def plot_rolling_avg(dataPath):
     """Get an SMA for some data."""
     data = pd.read_csv(dataPath, sep=',')
-    n = 10
     xs = data['step']
-    ys = data['duration']
+    ys = data['duration']/60
 
-    avg_ys = []
+    colors = ['red', 'blue', 'green', 'yellow', 'orange']
+    ns = [10, 20, 50]
 
-    for i in range(n/2, len(ys) - n/2):
-        avg_y = sum(ys[i-n/2:i+n/2])
-        avg_ys.append(avg_y)
+    def get_rolling_avg(xs, ys, n):
+        avg_ys = []
+        for i in range(n/2, len(ys) - n/2):
+            avg_y = sum(ys[i-n/2:i+n/2])/n
+            avg_ys.append(avg_y)
+        return avg_ys
 
-    plt.plot(xs, avg_ys, '-r')
-    plt.plot(xs, ys[n/2:n/2], '-b')
+    plt.plot(xs, ys, '-k', alpha=0.4, linewidth=0.1)
+    for i in range(len(ns)):
+        n = ns[i]
+        avg_ys = get_rolling_avg(xs, ys, n)
+        plt.plot(xs[n/2:-n/2], avg_ys, linestyle='-', color=colors[i],
+                 linewidth=0.1 * n, label=str(n) + 'step smoothing')
+    plt.legend()
+    plt.xlabel('Step')
+    plt.ylabel('Time (minutes)')
     plt.show(block=False)
 
 
