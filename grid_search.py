@@ -89,7 +89,7 @@ def gridSearch(VariedDiskParams, StaticDiskParams, DI,
     minRawX2 = 10000000000
     minX2Vals = [0, 0, 0, 0, 0, 0]
 
-    # GRIDLIFE #
+    # GRIDLIFE
     for i in range(0, len(Tatms)):
         for j in range(0, len(Tqq)):
             for l in range(0, len(R_out)):
@@ -124,8 +124,7 @@ def gridSearch(VariedDiskParams, StaticDiskParams, DI,
                             sample_model_in_uvplane(modelPath, dataPath, mol=mol)
 
                             # Visibility-domain chi-squared evaluation
-                            X2s = chiSq(modelPath)
-                            rawX2, redX2 = X2s[0], X2s[1]
+                            rawX2, redX2 = chiSq(modelPath)
 
                             # It's ok to split these up by disk since disk B's
                             # best params are independent of where disk A is.
@@ -157,10 +156,10 @@ def gridSearch(VariedDiskParams, StaticDiskParams, DI,
                             if redX2 > 0 and redX2 < minRedX2:
                                 minRedX2 = redX2
                                 minX2Vals = [ta, tqq, xmol, r_out, pa, incl]
-                                minX2Location = [i, j, k, l, m, n]
+                                # minX2Location = [i, j, k, l, m, n]
                                 sp.call(
                                     'mv {}.fits {}_bestFit.fits'.format(modelPath, modelPath), shell=True)
-                                print "Best fit happened; moved files"
+                                print "Best fit happened; moved file"
 
                             # Now clear out all the files (im, vis, uvf, fits)
                             remove(modelPath + ".*")

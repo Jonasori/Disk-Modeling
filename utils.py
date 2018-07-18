@@ -5,7 +5,6 @@
 # PACKAGES #
 ############
 
-import os
 import numpy as np
 import subprocess as sp
 from astropy.io import fits
@@ -21,12 +20,8 @@ from constants import mol, obs_stuff, other_params, dataPath
 ######################
 
 
-# Offsets (from center), in arcseconds
-# centering_for_olay.cgdisp is the file that actually makes the green crosses!
-offsets = [[-0.0298, 0.072], [-1.0456, -0.1879]]
-
 # Default params
-col_dens, Tfo, Tmid, m_star, m_disk, r_in, rotHand = other_params
+col_dens, Tfo, Tmid, m_star, m_disk, r_in, rotHand, offsets = other_params
 vsys, restfreq, freq0, obsv, chanstep, n_chans, chanmins, jnum = obs_stuff(mol)
 
 
@@ -200,13 +195,10 @@ def chiSq(infile):
     data_real = (data_vis[:, :, 0, 0] + data_vis[:, :, 1, 0])/2.
     data_imag = (data_vis[:, :, 0, 1] + data_vis[:, :, 1, 1])/2.
 
-    # get real and imaginary values, skipping repeating vals created by uvmodel
-    # when uvmodel converts to Stokes I, it either puts the value in place
+    # Get real and imaginary vals, skipping repeating vals created by uvmodel.
+    # When uvmodel converts to Stokes I, it either puts the value in place
     # of BOTH xx and yy, or makes xx and yy the same.
-    # either way, selecting every other value solves the problem.
-
-    # These might not be right yet
-    # chiSq is coming out around 300, which seems way too high
+    # Either way, selecting every other value solves the problem.
     model_real = model_vis[::2, :, 0]
     model_imag = model_vis[::2, :, 1]
 
@@ -219,5 +211,4 @@ def chiSq(infile):
     # Degrees of freedom is how many total real and imaginary weights exist.
     dof = 2 * len(data_vis)
     red_chi = raw_chi/dof
-    # return format([raw_chi, red_chi], 'f')
     return [raw_chi, red_chi]

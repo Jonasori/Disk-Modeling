@@ -78,8 +78,11 @@ r_in = [1., 1.]
 r_out = [500, 300]
 # Handedness of rotation
 rotHand = [-1, -1]
+# Offsets (from center), in arcseconds
+# centering_for_olay.cgdisp is the file that actually makes the green crosses!
+offsets = [[-0.0298, 0.072], [-1.0456, -0.1879]]
 
-other_params = [col_dens, Tfo, Tmid, m_star, m_disk, r_in, rotHand]
+other_params = [col_dens, Tfo, Tmid, m_star, m_disk, r_in, rotHand, offsets]
 
 
 def obs_stuff(mol):

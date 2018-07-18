@@ -41,6 +41,8 @@ def plot_gridSearch_log(fname):
 
     Takes in the pickled step log from the grid search,
     plots where the best-fit value(s) stand(s) relative to the range queried
+
+    Make xticks([unique(Disk A log)])
     """
     # Grab the values to distribute
     df = depickleLogFile(fname)
@@ -80,7 +82,8 @@ def plot_gridSearch_log(fname):
             axarr[i, d].yaxis.set_ticklabels([])
             axarr[i, d].plot(xs, [0]*2, '-k')
             for bf in p['best_fits']:
-                axarr[i, d].plot(bf, 0, marker='o', color=colors[d], alpha=0.2)
+                a = 1/(len(p['best_fits']))
+                axarr[i, d].plot(bf, 0, marker='o', color=colors[d], alpha=a)
 
     plt.tight_layout()
 
