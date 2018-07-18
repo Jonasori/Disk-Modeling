@@ -292,9 +292,8 @@ def fullRun(diskAParams, diskBParams):
     # icr(modelPath, mol=mol)
     """
     sample_model_in_uvplane(modelPath + '_bestFit', dataPath, mol=mol)
-    icr(modelPath + '_bestFit', mol=mol)
 
-    print "Best-fit model created: " + modelPath + "_bestFit.cm\n\n"
+    print "Best-fit model created: " + modelPath + "_bestFit.im\n\n"
 
     # Calculate and present the final X2 values.
     finalX2s = chiSq(modelPath + '_bestFit')
