@@ -74,7 +74,7 @@ def find_split_cutoffs(mol, other_restfreq=0):
     chan0 = lines[mol]['chan0']
     restfreq = lines[mol]['restfreq']
 
-    # ALl in GHz
+    # ALl in GHz. Both values pulled from listobs
     nchans = 3840
     chanstep = 0.000488281 * chan_dir
     freqs = [chan0 + chanstep*i for i in range(nchans)]
