@@ -11,16 +11,22 @@ import matplotlib.pyplot as plt
 import pickle
 import subprocess as sp
 import seaborn as sns
+import matplotlib
+
+matplotlib.rcParams['font.sans-serif'] = "Times"
+matplotlib.rcParams['font.family'] = "serif"
 
 
-def depickleLogFile(filename):
+def depickleLogFile(fname):
     """Read in the pickle'd full-log file from a run.
 
     Could reorganize this and plot_gridSearch_log make this more of an
     unpacking function and that to be more of a plotter, i.e. moving the first
     23 lines of plot_gridSearch_log here.
+
+    This can now be significantly cleaned up.
     """
-    df = pickle.load(open('{}_step-log.pickle'.format(filename), 'rb'))
+    df = pickle.load(open('{}_step-log.pickle'.format(fname), 'rb'))
     # Note that we can find the min Chi2 val with:
     # m = df.set_index('Reduced Chi2').loc[min(df['Reduced Chi2'])]
     # This indexes the whole df by RedX2 and then finds the values that
@@ -40,33 +46,34 @@ def depickleLogFile(filename):
            'Best Fit B': best_fit_b
            }
 
-    X2s = [out['Disk A log']['Raw Chi2'], out['Disk A log']['Reduced Chi2']]
-    del df['Disk A log']['Reduced Chi2']
-    del df['Disk A log']['Raw Chi2']
+    # Make one more geared towards plotting
+    X2s = [df_a['Raw Chi2'], df_a['Reduced Chi2']]
+    del df_a['Reduced Chi2']
+    del df_a['Raw Chi2']
 
     disk_A, disk_B = [], []
-    [disk_A.append({}) for i in df['Disk A log']]
-    [disk_B.append({}) for i in df['Disk A log']]
+    [disk_A.append({}) for i in df_a]
+    [disk_B.append({}) for i in df_a]
 
-    for i, p in enumerate(df['Disk A log']):
+    for i, p in enumerate(df_a):
         if p != 'Raw Chi2' and p != 'Reduced Chi2':
 
-            ps_A = df['Disk A log'][p]
+            ps_A = df_a[p]
             disk_A[i]['p_min'] = min(ps_A)
             disk_A[i]['p_max'] = max(ps_A)
-            disk_A[i]['best_fits'] = list(df['Best Fit A'][p])
+            disk_A[i]['best_fits'] = list(best_fit_a[p])
             disk_A[i]['xvals_queried'] = list(set(ps_A))
             disk_A[i]['name'] = p
 
-            ps_B = df['Disk B log'][p]
+            ps_B = df_b[p]
             disk_B[i]['p_min'] = min(ps_B)
             disk_B[i]['p_max'] = max(ps_B)
-            disk_B[i]['best_fits'] = list(out['Best Fit B'][p])
+            disk_B[i]['best_fits'] = list(best_fit_b[p])
             disk_B[i]['xvals_queried'] = list(set(ps_B))
             disk_B[i]['name'] = p
 
     both_disks = [disk_A, disk_B]
-    return both_disks
+    return both_disks, X2s
 
 
 def plot_gridSearch_log(fname):
@@ -79,46 +86,25 @@ def plot_gridSearch_log(fname):
         fname (str): Name of the pickled step log from the grid search.
         Assumes fname is './models/run_dateofrun/dateofrun'
     """
+    run_date = fname.split('/')[-1]
     # Grab the values to distribute
-    df = depickleLogFile(fname)
-
-    X2s = [df['Disk A log']['Raw Chi2'], df['Disk A log']['Reduced Chi2']]
-    del df['Disk A log']['Reduced Chi2']
-    del df['Disk A log']['Raw Chi2']
-
-    disk_A, disk_B = [], []
-    [disk_A.append({}) for i in df['Disk A log']]
-    [disk_B.append({}) for i in df['Disk A log']]
-
-    for i, p in enumerate(df['Disk A log']):
-        if p != 'Raw Chi2' and p != 'Reduced Chi2':
-
-            ps_A = df['Disk A log'][p]
-            disk_A[i]['p_min'] = min(ps_A)
-            disk_A[i]['p_max'] = max(ps_A)
-            disk_A[i]['best_fits'] = list(df['Best Fit A'][p])
-            disk_A[i]['xvals_queried'] = list(set(ps_A))
-            disk_A[i]['name'] = p
-
-            ps_B = df['Disk B log'][p]
-            disk_B[i]['p_min'] = min(ps_B)
-            disk_B[i]['p_max'] = max(ps_B)
-            disk_B[i]['best_fits'] = list(df['Best Fit B'][p])
-            disk_B[i]['xvals_queried'] = list(set(ps_B))
-            disk_B[i]['name'] = p
-
-    both_disks = [disk_A, disk_B]
-    both_disks = depickleLogFile
+    both_disks, X2s = depickleLogFile(fname)
+    disk_A, disk_B = both_disks
+    raw_x2, red_x2 = X2s
 
     # Plot out
     colors = ['red', 'blue']
-    f, axarr = plt.subplots(len(disk_A) + 1, 2, figsize=[5, 6])
+    f, axarr = plt.subplots(len(disk_A) + 1, 2, figsize=[6, 6])
     # f, axarr = plt.subplots(len(disk_A), 2, figsize=[5, 8])
     # Add the text info
     axarr[0, 0].axis('off')
     axarr[0, 1].axis('off')
-    axarr[0, 0].text(0, 0, "Test string", fontsize=14, fontweight='bold')
-    axarr[0, 1].text(0, 0, "Test string", fontsize=14, fontweight='bold')
+    axarr[0, 0].text(0, 0, "      Summary of\n       " + run_date + " Run",
+                     fontsize=16, fontweight='bold')
+
+    chi_str = "Min. Raw Chi2: " + str(min(raw_x2)) + \
+        "\nMin. Reduced Chi2: " + str(min(red_x2))
+    axarr[0, 1].text(0, 0, chi_str, fontsize=10)
     # Plot the number lines
     for d in [0, 1]:
         params = both_disks[d]
@@ -126,17 +112,21 @@ def plot_gridSearch_log(fname):
             # for i, p in enumerate(params):
             xs = np.linspace(p['p_min'], p['p_max'], 2)
             # axarr[i, d].get_xaxis().set_visible(False)
-            axarr[i, d].set_title(p['name'])
+            axarr[i, d].set_title(p['name'], fontsize=10)
             axarr[i, d].yaxis.set_ticks([])
             axarr[i, d].xaxis.set_ticks(p['xvals_queried'])
             axarr[i, d].plot(xs, [0]*2, '-k')
             for bf in p['best_fits']:
-                a = 1/(len(p['best_fits']))
-                axarr[i, d].plot(bf, 0, marker='o', color=colors[d], alpha=a)
+                a = 1/(2*len(p['best_fits']))
+                axarr[i, d].plot(bf, 0, marker='o', markersize=10,
+                                 color='black', alpha=a)
+                axarr[i, d].plot(bf, 0, marker='o', markersize=9,
+                                 color=colors[d], markerfacecolor='none',
+                                 markeredgewidth=2)
 
     plt.tight_layout()
     # sns.despine()
-    # plt.savefig('./models/' + fname.split('/')[-1] + 'results.png')
+    plt.savefig('./models/' + fname.split('/')[-1] + 'results.png')
     plt.show(block=False)
 
 
@@ -174,5 +164,6 @@ def plot_step_duration(dataPath, ns=[10, 20, 50]):
     plt.legend()
     plt.xlabel('Step')
     plt.ylabel('Time (minutes)')
-    plt.title('Time per Step for Grid Search Run on ' + run_date)
+    plt.title('Time per Step for Grid Search Run on ' + run_date,
+              fontweight='bold')
     plt.show(block=False)
