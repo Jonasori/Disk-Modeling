@@ -99,7 +99,7 @@ def plot_gridSearch_log(fname):
     # Add the text info
     axarr[0, 0].axis('off')
     axarr[0, 1].axis('off')
-    axarr[0, 0].text(0, 0, "      Summary of\n       " + run_date + " Run",
+    axarr[0, 0].text(0.5, 0.5, "Summary of\n" + run_date + " Run",
                      fontsize=16, fontweight='bold')
 
     chi_str = "Min. Raw Chi2: " + str(min(raw_x2)) + \
@@ -151,19 +151,109 @@ def plot_step_duration(dataPath, ns=[10, 20, 50]):
             avg_ys.append(avg_y)
         return avg_ys
 
-    plt.plot(xs, ys, '-k', alpha=0.9, linewidth=0.1, label='True Time')
+    plt.plot(xs, ys, '-k', linewidth=0.1, label='True time')
 
     colors = ['orange', 'red', 'blue', 'green', 'yellow']
     for i in range(len(ns)):
         n = ns[i]
         avg_ys = get_rolling_avg(xs, ys, n)
         plt.plot(xs[n/2:-n/2], avg_ys, linestyle='-', color=colors[i],
-                 linewidth=0.1 * n, label=str(n) + 'step smoothing')
+                 linewidth=0.1 * n, label=str(n) + '-step smoothing')
 
     run_date = dataPath.split('/')[-1]
     plt.legend()
-    plt.xlabel('Step')
-    plt.ylabel('Time (minutes)')
+    plt.xlabel('Step', fontweight='bold')
+    plt.ylabel('Time (minutes)', fontweight='bold')
     plt.title('Time per Step for Grid Search Run on ' + run_date,
-              fontweight='bold')
+              fontweight='bold', fontsize=14)
     plt.show(block=False)
+
+
+def full_analysis_plot(pickleLog, timeLog):
+    """Docstring.
+
+    timeLog = pickleLog
+    """
+    import matplotlib.gridspec as gridspec
+
+    # Get pickle data
+    run_date = pickleLog.split('/')[-1]
+    # Grab the values to distribute
+    both_disks, X2s = depickleLogFile(pickleLog)
+    disk_A, disk_B = both_disks
+    raw_x2, red_x2 = X2s
+    colors = ['red', 'blue']
+
+    # Get time data
+    data = pd.read_csv(timeLog + '_stepDurations.csv', sep=',')
+    steps = data['step']
+    times = data['duration']/60
+    ns = [10, 20, 50]
+
+    def get_rolling_avg(xs, ys, n):
+        avg_ys = []
+        for i in range(n/2, len(ys) - n/2):
+            avg_y = sum(ys[i-n/2:i+n/2])/n
+            avg_ys.append(avg_y)
+        return avg_ys
+
+
+    # PLOTTING
+    fig = plt.figure(figsize=(8, 13))
+    # outer = gridspec.GridSpec(3, 1, wspace=0.2, hspace=0.6)
+    outer = gridspec.GridSpec(3, 1, height_ratios=[1, 4, 2])
+
+    # TOP
+    ax_top = plt.Subplot(fig, outer[0])
+    ax_top.axis('off')
+    ax_top.axis('off')
+    ax_top.text(0.2, 0.2, run_date + " Run Summary",
+                fontsize=20, fontweight='bold')
+    fig.add_subplot(ax_top)
+
+    # MIDDLE
+    inner = gridspec.GridSpecFromSubplotSpec(len(both_disks[0]), 2,
+                                             subplot_spec=outer[1],
+                                             wspace=0.1, hspace=0.3)
+    for d in range(2):
+        params = both_disks[d]
+        for i, p in enumerate(params):
+            xs = np.linspace(p['p_min'], p['p_max'], 2)
+            ax = plt.Subplot(fig, inner[i, d])
+
+            ax.set_title(p['name'], fontsize=10)
+            ax.yaxis.set_ticks([])
+            ax.xaxis.set_ticks(p['xvals_queried'])
+
+            ax.plot(xs, [0]*len(xs), '-k')
+            for bf in p['best_fits']:
+                ax.plot(bf, 0, marker='o', markersize=9,
+                        color=colors[d], markerfacecolor='none',
+                        markeredgewidth=2)
+
+            fig.add_subplot(ax)
+    fig.sca(inner)
+    fig.tight_layout()
+    # BOTTOM
+    ax_bottom = plt.Subplot(fig, outer[2])
+    ax_bottom.text(0.5, 0.5, "Footer")
+
+    ax_bottom.plot(steps, times, '-k', linewidth=0.1, label='True time')
+
+    colors = ['orange', 'red', 'blue', 'green', 'yellow']
+    for i in range(len(ns)):
+        n = ns[i]
+        avg_ys = get_rolling_avg(steps, times, n)
+        ax_bottom.plot(steps[n/2:-n/2], avg_ys, linestyle='-', color=colors[i],
+                       linewidth=0.1 * n, label=str(n) + '-step smoothing')
+    ax_bottom.legend()
+    ax_bottom.set_xlabel('Step', fontweight='bold')
+    ax_bottom.set_ylabel('Time (minutes)', fontweight='bold')
+    ax_bottom.set_title('Time per Step for Grid Search Run on ' + run_date,
+                        fontweight='bold', fontsize=14)
+    fig.add_subplot(ax_bottom)
+    fig.tight_layout()
+    fig.show()
+
+
+# The End
