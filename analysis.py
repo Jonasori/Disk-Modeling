@@ -61,12 +61,14 @@ def plot_gridSearch_log(fname):
             disk_A[i]['p_min'] = min(ps_A)
             disk_A[i]['p_max'] = max(ps_A)
             disk_A[i]['best_fits'] = list(df['Best Fit A'][p])
+            disk_A[i]['xvals_queried'] = list(set(ps_A))
             disk_A[i]['name'] = p
 
             ps_B = df['Disk B log'][p]
             disk_B[i]['p_min'] = min(ps_B)
             disk_B[i]['p_max'] = max(ps_B)
             disk_B[i]['best_fits'] = list(df['Best Fit B'][p])
+            disk_B[i]['xvals_queried'] = list(set(ps_B))
             disk_B[i]['name'] = p
     both_disks = [disk_A, disk_B]
 
@@ -78,15 +80,14 @@ def plot_gridSearch_log(fname):
         for i, p in enumerate(params):
             xs = np.linspace(p['p_min'], p['p_max'], 2)
             axarr[i, d].set_title(p['name'])
-            # axarr[i, d].axis('off')
-            axarr[i, d].yaxis.set_ticklabels([])
+            axarr[i, d].yaxis.set_ticks([])
+            axarr[i, d].xaxis.set_ticks(p['xvals_queried'])
             axarr[i, d].plot(xs, [0]*2, '-k')
             for bf in p['best_fits']:
                 a = 1/(len(p['best_fits']))
                 axarr[i, d].plot(bf, 0, marker='o', color=colors[d], alpha=a)
 
     plt.tight_layout()
-
     plt.savefig(fname + 'results.png')
     plt.show(block=False)
 
