@@ -13,7 +13,7 @@ from utils import makeModel, sumDisks, chiSq
 from run_params import diskAParams, diskBParams
 from constants import mol, today, dataPath
 from tools import sample_model_in_uvplane, remove
-from analysis import plot_gridSearch_log
+from analysis import plot_gridSearch_log, plot_step_duration
 
 
 # Hopefully no more than 2 runs/day!
@@ -83,12 +83,11 @@ def gridSearch(VariedDiskParams, StaticDiskParams, DI,
 
     makeModel(StaticDiskParams, outNameStatic, DIs)
 
-    counter = steps_so_far
-
     # Set up huge initial chi squared values so that they can be improved upon.
     minRedX2 = 10000000000
-    minRawX2 = 10000000000
     minX2Vals = [0, 0, 0, 0, 0, 0]
+
+    counter = steps_so_far
 
     # GRIDLIFE
     for i in range(0, len(Tatms)):
@@ -339,5 +338,6 @@ def fullRun(diskAParams, diskBParams):
         f.write(s)
 
     plot_gridSearch_log(modelPath)
+    plot_step_duration(modelPath)
 
 # The End

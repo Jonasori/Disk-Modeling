@@ -19,11 +19,7 @@ matplotlib.rcParams['font.family'] = "serif"
 def depickleLogFile(fname):
     """Read in the pickle'd full-log file from a run.
 
-    Could reorganize this and plot_gridSearch_log make this more of an
-    unpacking function and that to be more of a plotter, i.e. moving the first
-    23 lines of plot_gridSearch_log here.
-
-    This can now be significantly cleaned up.
+    This can be cleaned up significantly, but is functional.
     """
     df = pickle.load(open('{}_step-log.pickle'.format(fname), 'rb'))
     # Note that we can find the min Chi2 val with:
@@ -38,12 +34,14 @@ def depickleLogFile(fname):
     best_fit_a = df_a.loc[df_a['Reduced Chi2'] == min_X2_a]
     best_fit_b = df_b.loc[df_b['Reduced Chi2'] == min_X2_b]
 
+    """
     out = {'full_log': df,
            'Disk A log': df_a,
            'Disk B log': df_b,
            'Best Fit A': best_fit_a,
            'Best Fit B': best_fit_b
            }
+    """
 
     # Make one more geared towards plotting
     X2s = [df_a['Raw Chi2'], df_a['Reduced Chi2']]
