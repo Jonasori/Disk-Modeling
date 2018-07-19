@@ -2,16 +2,15 @@
 
 Some thoughts:
     - All of them (so far) have
-
 """
 
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle
-import subprocess as sp
-import seaborn as sns
 import matplotlib
+import matplotlib.gridspec as gridspec
+
 
 matplotlib.rcParams['font.sans-serif'] = "Times"
 matplotlib.rcParams['font.family'] = "serif"
@@ -170,12 +169,10 @@ def plot_step_duration(dataPath, ns=[10, 20, 50]):
 
 
 def full_analysis_plot(pickleLog, timeLog):
-    """Docstring.
+    """Make a plot with date, chi2 vals, number lines, and time costs.
 
-    timeLog = pickleLog
+    Doesn't work right now.
     """
-    import matplotlib.gridspec as gridspec
-
     # Get pickle data
     run_date = pickleLog.split('/')[-1]
     # Grab the values to distribute
@@ -197,12 +194,12 @@ def full_analysis_plot(pickleLog, timeLog):
             avg_ys.append(avg_y)
         return avg_ys
 
-
     # PLOTTING
-    fig = plt.figure(figsize=(8, 13))
+    fig = plt.figure(figsize=(7, 15))
     # outer = gridspec.GridSpec(3, 1, wspace=0.2, hspace=0.6)
-    outer = gridspec.GridSpec(3, 1, height_ratios=[1, 4, 2])
-
+    outer = gridspec.GridSpec(3, 1, height_ratios=[1, 10, 4], hspace=1,
+                              wspace=0.2)
+    # width_ratios=[1, 1, 1],
     # TOP
     ax_top = plt.Subplot(fig, outer[0])
     ax_top.axis('off')
@@ -211,10 +208,11 @@ def full_analysis_plot(pickleLog, timeLog):
                 fontsize=20, fontweight='bold')
     fig.add_subplot(ax_top)
 
+    # outer.tight_layout(fig)
     # MIDDLE
     inner = gridspec.GridSpecFromSubplotSpec(len(both_disks[0]), 2,
                                              subplot_spec=outer[1],
-                                             wspace=0.1, hspace=0.3)
+                                             wspace=0.1, hspace=1)
     for d in range(2):
         params = both_disks[d]
         for i, p in enumerate(params):
@@ -232,12 +230,9 @@ def full_analysis_plot(pickleLog, timeLog):
                         markeredgewidth=2)
 
             fig.add_subplot(ax)
-    fig.sca(inner)
-    fig.tight_layout()
+            # fig.sca(inner)
     # BOTTOM
     ax_bottom = plt.Subplot(fig, outer[2])
-    ax_bottom.text(0.5, 0.5, "Footer")
-
     ax_bottom.plot(steps, times, '-k', linewidth=0.1, label='True time')
 
     colors = ['orange', 'red', 'blue', 'green', 'yellow']
@@ -252,7 +247,6 @@ def full_analysis_plot(pickleLog, timeLog):
     ax_bottom.set_title('Time per Step for Grid Search Run on ' + run_date,
                         fontweight='bold', fontsize=14)
     fig.add_subplot(ax_bottom)
-    fig.tight_layout()
     fig.show()
 
 
