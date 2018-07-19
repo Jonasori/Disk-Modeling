@@ -12,7 +12,8 @@ import csv
 from utils import makeModel, sumDisks, chiSq
 from run_params import diskAParams, diskBParams
 from constants import mol, today, dataPath
-from tools import icr, sample_model_in_uvplane, remove
+from tools import sample_model_in_uvplane, remove
+from analysis import plot_gridSearch_log
 
 
 # Hopefully no more than 2 runs/day!
@@ -337,5 +338,6 @@ def fullRun(diskAParams, diskBParams):
         s = s0 + s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + s9
         f.write(s)
 
+    plot_gridSearch_log(modelPath)
 
 # The End

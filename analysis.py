@@ -75,7 +75,7 @@ def depickleLogFile(fname):
     return both_disks, X2s
 
 
-def plot_gridSearch_log(fname):
+def plot_gridSearch_log(fname, show=False):
     """Plot where the best-fit values from a grid search fall.
 
     Plot where the best-fit value(s) stand(s) relative to the range queried in
@@ -98,7 +98,7 @@ def plot_gridSearch_log(fname):
     # Add the text info
     axarr[0, 0].axis('off')
     axarr[0, 1].axis('off')
-    axarr[0, 0].text(0.5, 0.5, "Summary of\n" + run_date + " Run",
+    axarr[0, 0].text(0.2, -0.2, "Summary of\n" + run_date + " Run",
                      fontsize=16, fontweight='bold')
 
     chi_str = "Min. Raw Chi2: " + str(min(raw_x2)) + \
@@ -121,12 +121,13 @@ def plot_gridSearch_log(fname):
                                  color='black', alpha=a)
                 axarr[i, d].plot(bf, 0, marker='o', markersize=9,
                                  color=colors[d], markerfacecolor='none',
-                                 markeredgewidth=2)
+                                 markeredgewidth=3)
 
     plt.tight_layout()
     # sns.despine()
     plt.savefig('./models/' + fname.split('/')[-1] + 'results.png')
-    plt.show(block=False)
+    if show is True:
+        plt.show(block=False)
 
 
 def plot_step_duration(dataPath, ns=[10, 20, 50]):
@@ -197,7 +198,7 @@ def full_analysis_plot(pickleLog, timeLog):
     # PLOTTING
     fig = plt.figure(figsize=(7, 15))
     # outer = gridspec.GridSpec(3, 1, wspace=0.2, hspace=0.6)
-    outer = gridspec.GridSpec(3, 1, height_ratios=[1, 10, 4], hspace=1,
+    outer = gridspec.GridSpec(3, 1, height_ratios=[1, 8, 4], hspace=0.6,
                               wspace=0.2)
     # width_ratios=[1, 1, 1],
     # TOP
