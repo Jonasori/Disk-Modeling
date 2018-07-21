@@ -8,16 +8,7 @@ import numpy as np
 import datetime
 
 
-mol = 'hco'
-
-# DATA FILE NAME
-dataPath = './data/' + mol + '/' + mol + '-short110'
-
-# What day is it? Used to ID files.
-months = ['jan', 'feb', 'march', 'april', 'may',
-          'june', 'july', 'aug', 'sep', 'oct', 'nov', 'dec']
-td = datetime.datetime.now()
-today = months[td.month - 1] + str(td.day)
+mol = 'co'
 
 # These frequencies come from Splatalogue and are different than those
 # embedded in, for example, the uvf file imported as hdr below
@@ -50,12 +41,16 @@ lines = {'hco': {'restfreq': 356.73422300,
          }
 
 
-# Just the rest frequencies. I don't think these are used anywhere anymore.
-restfreqs = {'hco': 356.73422300,
-             'hcn': 354.50547590,
-             'co': 345.79598990,
-             'cs': 342.88285030
-             }
+# DATA FILE NAME
+dataPath = './data/' + mol + '/' + mol + \
+    '-short' + str(lines[mol]['baseline_cutoff'])
+
+# What day is it? Used to ID files.
+months = ['jan', 'feb', 'march', 'april', 'may',
+          'june', 'july', 'aug', 'sep', 'oct', 'nov', 'dec']
+td = datetime.datetime.now()
+today = months[td.month - 1] + str(td.day)
+
 
 # DEFAULT VALUES
 # Column density [low, high]
