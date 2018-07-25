@@ -138,7 +138,7 @@ def imstat(modelName, ext='.cm', plane_to_check=30):
 
 
 # Invert/clean/restor: Take in a visibility, put out a convolved clean map.
-def icr(visName, mol, min_baseline=0, niters=1e4):
+def icr(visPath, mol, min_baseline=0, niters=1e4):
     """Invert/clean/restor: Turn a vis into a convolved clean map.
 
     .vis -> .bm, .mp, .cl, .cm, .fits
@@ -154,8 +154,9 @@ def icr(visName, mol, min_baseline=0, niters=1e4):
 
     # Since the path is sometimes more than 64 characters long, need to slice
     # it and use Popen/cwd to cut things down.
-    filepath = visName.split('/')[1:-1]
-    visName = visName.split('/')[-1]
+    # filepath = visPath.split('/')[1:-1]
+    visName = visPath.split('/')[-1]
+    filepath = visPath[:-len(visName)]
 
     # Add a shorthand name (easier to write)
     # Rename the outfile if we're cutting baselines and add the cut call.
@@ -184,8 +185,8 @@ def icr(visName, mol, min_baseline=0, niters=1e4):
         invert_str.append('select=-uvrange(0,{})'.format(b))
 
     for end in ['cm', 'cl', 'bm', 'mp']:
-        sp.Popen('rm -rf {}.{}'.format(outName, end), shell=True,
-                 cwd=filepath).wait()
+        sp.Popen('rm -rf {}.{}'.format(outName, end),
+                 shell=True, cwd=filepath).wait()
     print "Deleted", outName + '.[cm, cl, bm, mp]'
 
     # sp.call(invert_str, stdout=open(os.devnull, 'wb'))
