@@ -90,7 +90,8 @@ def obs_stuff(mol):
     vsys = [10.55, 10.85]
 
     # Dig some observational params out of the data file.
-    hdr = fits.getheader('data/' + mol + '/' + mol + '.uvf')
+    # hdr = fits.getheader('data/' + mol + '/' + mol + '.uvf')
+    hdr = fits.getheader(dataPath + '.uvf')
 
     restfreq = lines[mol]['restfreq']
     # restfreq = hdr['CRVAL4'] * 1e-9
