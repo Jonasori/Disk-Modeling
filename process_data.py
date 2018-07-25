@@ -29,7 +29,7 @@ def pipe(commands):
 
 
 def casa_sequence(mol, split_range, raw_data_path,
-                  output_path, b_min, remake_all=False):
+                  output_path, cut_baselines=True, remake_all=False):
     """Cvel, split, and export as uvf the original cont-sub'ed .ms.
 
     Args:
@@ -39,7 +39,8 @@ def casa_sequence(mol, split_range, raw_data_path,
         - output_path: path, with name included
         - remake_all (bool): if True, remove delete all pre-existing files.
     """
-    if b_min != 0:
+    b_min = lines[mol]['baseline_cutoff']
+    if cut_baselines != 0:
         output_path += '-short' + b_min
 
     if already_exists(output_path + '_cvel.ms') is False:
@@ -63,11 +64,12 @@ def casa_sequence(mol, split_range, raw_data_path,
 
         # If necessary, insert a baseline cutoff. Not appending because we want
         # to keep the ) in the right spot, so just put uvrange= in the middle.
-        if b_min != 0:
+        if cut_baselines is True:
             print "\nCutting baselines in casa_sequence\n"
+
             split_str = split_str[:-2] + \
-                        [("uvrange='>" + b_min + "klambda,'")] + \
-                        split_str[-2:]
+                [("uvrange='>" + b_min + "klambda,'")] + \
+                split_str[-2:]
 
     if already_exists(output_path + '_exportuvfits.uvf') is False:
         pipe(["exportuvfits(",
@@ -163,8 +165,6 @@ def run_full_pipeline(mol, cut_baselines=True, remake_all=True):
     raw_data_path = jonas + 'raw_data/'
     final_data_path = jonas + 'freshStart/modeling/data/' + mol + '/'
     name = mol
-    b_min = lines[mol]['baseline_cutoff']
-
 
     # Establish a string for the log file to be made at the end
     log = 'Files created on ' + today + '\n\n'
@@ -182,7 +182,7 @@ def run_full_pipeline(mol, cut_baselines=True, remake_all=True):
     print "Split range is ", str(split_range[0]), str(split_range[1])
     print "Now processing data...."
     casa_sequence(mol, split_range, raw_data_path,
-                  final_data_path + name, b_min)
+                  final_data_path + name, cut_baselines)
     log = log + 'Split range used: ' + str(split_range) + '\n'
     print "Finished casa_sequence()\n\n"
 
@@ -213,17 +213,14 @@ def run_full_pipeline(mol, cut_baselines=True, remake_all=True):
 
     print "Deleting the junk process files...\n\n"
     # Clear out the bad stuff. There's gotta be a better way of doing this.
-    sp.Popen(['rm -rf {}.bm'.format(name)],
-             shell=True, cwd=final_data_path)
-    sp.Popen(['rm -rf {}.cl'.format(name)],
-             shell=True, cwd=final_data_path)
-    sp.Popen(['rm -rf {}.mp'.format(name)],
-             shell=True, cwd=final_data_path)
+    sp.Popen(['rm -rf {}.bm'.format(name)], shell=True, cwd=final_data_path)
+    sp.Popen(['rm -rf {}.cl'.format(name)], shell=True, cwd=final_data_path)
+    sp.Popen(['rm -rf {}.mp'.format(name)], shell=True, cwd=final_data_path)
 
-    sp.Popen(['rm -rf {}_cvel.*'.format(name)],
-             shell=True, cwd=final_data_path)
-    sp.Popen(['rm -rf {}_split.*'.format(name)],
-             shell=True, cwd=final_data_path)
+    sp.Popen(['rm -rf {}_cvel.*'.format(name)], shell=True,
+             cwd=final_data_path)
+    sp.Popen(['rm -rf {}_split.*'.format(name)], shell=True,
+             cwd=final_data_path)
     sp.Popen(['rm -rf {}_exportuvfits.*'.format(name)],
              shell=True, cwd=final_data_path)
     sp.Popen(['rm -rf casa*.log'], shell=True, cwd=final_data_path)
