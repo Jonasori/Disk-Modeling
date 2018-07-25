@@ -8,7 +8,7 @@ import numpy as np
 import datetime
 
 
-mol = 'co'
+mol = 'hco'
 
 # These frequencies come from Splatalogue and are different than those
 # embedded in, for example, the uvf file imported as hdr below

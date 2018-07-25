@@ -9,9 +9,10 @@ sp.Popen vs sp.call: Popen lets you change working directory for the call with
 
 
 import subprocess as sp
-from constants import lines, today
+from constants import lines, today, mol
 from var_vis import var_vis
 from tools import icr, already_exists
+import argparse
 
 
 def pipe(commands):
@@ -223,22 +224,21 @@ def run_full_pipeline(mol, remake_all=True):
     print "All done!"
 
 
-# if __name__ == "__main__":
-#     parser = argparse.ArgumentParser(description='Clean CASA measurement sets')
-#     parser.add_argument('vis', help='path(s) of visibilities to be cleaned')
-#     parser.add_argument('-concat', help='output path of concatenation')
-#     parser.add_argument('rms', help='either float or CASA region used to get rms with imstat')
-#     parser.add_argument('mask', help='clean mask file')
-#     args=parser.parse_args()
-#
-#     vis_list = args.vis.split(',')
-#     if args.concat:
-#         concatenate(vis_list, args.concat)
-#         clean(args.concat, args.rms, args.mask)
-#     else:
-#         for vis in vis_list: clean(vis, rms, mask)
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Process the data.')
+    parser.add_argument('-r', '--run', help='Run the processor.')
+    args = parser.parse_args()
 
-    # if len(vis_list) > 1:
-    #     concat(vis_list,)
-    #
-    # clean(vis_list, rms, mask)
+    if args.run:
+        run_full_pipeline(mol)
+
+
+
+
+
+
+
+
+
+
+# The End
