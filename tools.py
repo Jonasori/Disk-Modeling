@@ -134,8 +134,8 @@ def imstat(modelName, ext='.cm', plane_to_check=30):
         print hdr[i], ': ', imstat_list[i]
 
     # Return the mean and rms
-    return d
-    # return float(d['Mean']), float(d['rms'])
+    # return d
+    return float(d['Mean']), float(d['rms'])
 
 
 # Invert/clean/restor: Take in a visibility, put out a convolved clean map.
