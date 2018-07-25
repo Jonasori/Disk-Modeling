@@ -68,7 +68,7 @@ def casa_sequence(mol, split_range, raw_data_path,
             print "\nCutting baselines in casa_sequence\n"
 
             split_str = split_str[:-2] + \
-                [("uvrange='>" + b_min + "klambda,'")] + \
+                [("uvrange='>" + str(b_min) + "klambda,'")] + \
                 split_str[-2:]
 
     if already_exists(output_path + '_exportuvfits.uvf') is False:
