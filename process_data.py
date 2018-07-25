@@ -173,6 +173,7 @@ def run_full_pipeline(mol, cut_baselines=True, remake_all=True):
     log = 'Files created on ' + today + '\n\n'
 
     if remake_all is True:
+        # This doesn't work yet.
         print "Remaking everything; emptied line dir and remaking."
         sp.call(['rm -rf', '{}*'.format(final_data_path)], shell=True)
         log += "Full remake occured; all files are fresh.\n\n"
@@ -234,7 +235,7 @@ def run_full_pipeline(mol, cut_baselines=True, remake_all=True):
     with open(final_data_path + 'file_log.txt', 'w') as f:
         f.write(log)
 
-    print "All done! This processing took" + str(t_total) + "minutes."
+    print "All done! This processing took " + str(t_total) + " minutes."
 
 
 if __name__ == "__main__":
