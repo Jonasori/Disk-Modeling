@@ -226,7 +226,7 @@ def run_full_pipeline(mol, remake_all=True):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Process the data.')
-    parser.add_argument('-r', action='store_true', help='Run the processor.')
+    parser.add_argument('-r', '--run', action='store_true', help='Run the processor.')
     args = parser.parse_args()
 
     if args.run:
