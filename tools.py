@@ -152,21 +152,25 @@ def icr(visName, mol, min_baseline=0, niters=1e4):
     """
     print "\nConvolving image\n"
 
+    # Since the path is sometimes more than 64 characters long, need to slice
+    # it and use Popen/cwd to cut things down.
+    filepath = visName.split('/')[1:-1]
+    visName = visName.split('/')[-1]
+
     # Add a shorthand name (easier to write)
     # Rename the outfile if we're cutting baselines and add the cut call.
-    if min_baseline == 0:
-        b = ''
-    else:
-        b = min_baseline
+    b = '' if min_baseline == 0 else min_baseline
     outName = visName + str(b)
 
     # Add restfreq to this vis
     rf = lines[mol]['restfreq']
-    sp.call(['puthd',
-             'in={}.vis/restfreq'.format(visName),
-             'value={}'.format(rf)],
-            stdout=open(os.devnull, 'wb'))
+    sp.Popen(['puthd',
+              'in={}.vis/restfreq'.format(visName),
+              'value={}'.format(rf)],
+             stdout=open(os.devnull, 'wb'),
+             cwd=filepath).wait()
 
+    # Invert stuff:
     invert_str = ['invert',
                   'vis={}.vis'.format(visName),
                   'map={}.mp'.format(outName),
@@ -180,37 +184,38 @@ def icr(visName, mol, min_baseline=0, niters=1e4):
         invert_str.append('select=-uvrange(0,{})'.format(b))
 
     for end in ['cm', 'cl', 'bm', 'mp']:
-        sp.call('rm -rf {}.{}'.format(outName, end), shell=True)
+        sp.Popen('rm -rf {}.{}'.format(outName, end), shell=True,
+                 cwd=filepath).wait()
     print "Deleted", outName + '.[cm, cl, bm, mp]'
 
-    # Run invert
-    sp.call(invert_str, stdout=open(os.devnull, 'wb'))  # , cwd=filepath)
+    # sp.call(invert_str, stdout=open(os.devnull, 'wb'))
+    sp.Popen(invert_str, stdout=open(os.devnull, 'wb'), cwd=filepath).wait()
 
     # Grab the rms
     rms = imstat(outName, '.mp')[1]
 
-    sp.call(['clean',
-             'map={}.mp'.format(outName),
-             'beam={}.bm'.format(outName),
-             'out={}.cl'.format(outName),
-             'niters={}'.format(niters),
-             'threshold={}'.format(rms)]
-            # stdout=open(os.devnull, 'wb')
-            )
+    sp.Popen(['clean',
+              'map={}.mp'.format(outName),
+              'beam={}.bm'.format(outName),
+              'out={}.cl'.format(outName),
+              'niters={}'.format(niters),
+              'threshold={}'.format(rms)],
+             # stdout=open(os.devnull, 'wb')
+             cwd=filepath).wait()
 
-    sp.call(['restor',
-             'map={}.mp'.format(outName),
-             'beam={}.bm'.format(outName),
-             'model={}.cl'.format(outName),
-             'out={}.cm'.format(outName)
-             ],
-            stdout=open(os.devnull, 'wb'))
+    sp.Popen(['restor',
+              'map={}.mp'.format(outName),
+              'beam={}.bm'.format(outName),
+              'model={}.cl'.format(outName),
+              'out={}.cm'.format(outName)],
+             stdout=open(os.devnull, 'wb'),
+             cwd=filepath).wait()
 
-    sp.call(['fits',
-             'op=xyout',
-             'in={}.cm'.format(outName),
-             'out={}.fits'.format(outName)
-             ])
+    sp.Popen(['fits',
+              'op=xyout',
+              'in={}.cm'.format(outName),
+              'out={}.fits'.format(outName)],
+             cwd=filepath).wait()
 
 
 def sample_model_in_uvplane(modelPath, dataPath, mol='hco'):
