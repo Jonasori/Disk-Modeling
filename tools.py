@@ -193,7 +193,7 @@ def icr(visPath, mol, min_baseline=0, niters=1e4):
     sp.Popen(invert_str, stdout=open(os.devnull, 'wb'), cwd=filepath).wait()
 
     # Grab the rms
-    rms = imstat(outName, '.mp')[1]
+    rms = imstat(filepath + outName, '.mp')[1]
 
     sp.Popen(['clean',
               'map={}.mp'.format(outName),
