@@ -85,7 +85,7 @@ def cgdisp(imageName, crop=True, contours=True, rms=6.8e-3):
     """
 
 
-def imstat(modelName, ext='.cm', plane_to_check=30):
+def imstat(modelName, ext='.cm', plane_to_check=32):
     """Call imstat to find rms and mean.
 
     Want an offsource region so that we can look at the noise. Decision to look
@@ -93,7 +93,6 @@ def imstat(modelName, ext='.cm', plane_to_check=30):
     data. Look at June 27 notes for justification of it.
     Args:
         modelName (str): name of the input file. Not necessarily a model.
-                         MUST INCLUDE FILE EXTENSION
         plane_to_check (int): Basically which channel to look at, but that
         this includes the ~10 header planes, too, so I think plane 30
         corresponds to channel 21 or so.
