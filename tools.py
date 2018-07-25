@@ -107,7 +107,7 @@ def imstat(modelName, ext='.cm', plane_to_check=30):
                                   ])
     imstat_out = imstat_raw.split('\n')
     # Get column names
-    hdr = filter(None, imstat_out[9].split(' '))
+    hdr = filter(None, imstat_out[11].split(' '))
 
     # Split the output on spaces and then drop empty elements.
     imstat_list = filter(None, imstat_out[plane_to_check].split(' '))
@@ -134,7 +134,8 @@ def imstat(modelName, ext='.cm', plane_to_check=30):
         print hdr[i], ': ', imstat_list[i]
 
     # Return the mean and rms
-    return float(d['Mean']), float(d['rms'])
+    return d
+    # return float(d['Mean']), float(d['rms'])
 
 
 # Invert/clean/restor: Take in a visibility, put out a convolved clean map.
