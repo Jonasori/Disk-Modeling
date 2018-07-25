@@ -39,10 +39,6 @@ def casa_sequence(mol, split_range, raw_data_path,
         - output_path: path, with name included
         - remake_all (bool): if True, remove delete all pre-existing files.
     """
-    b_min = lines[mol]['baseline_cutoff']
-    if cut_baselines != 0:
-        output_path += '-short' + str(b_min)
-
     if already_exists(output_path + '_cvel.ms') is False:
         pipe(["cvel(",
               "vis='{}calibrated-{}.ms.contsub',".format(raw_data_path, mol),
@@ -66,7 +62,7 @@ def casa_sequence(mol, split_range, raw_data_path,
         # to keep the ) in the right spot, so just put uvrange= in the middle.
         if cut_baselines is True:
             print "\nCutting baselines in casa_sequence\n"
-
+            b_min = lines[mol]['baseline_cutoff']
             split_str = split_str[:-2] + \
                 [("uvrange='>" + str(b_min) + "klambda,'")] + \
                 split_str[-2:]
@@ -165,6 +161,8 @@ def run_full_pipeline(mol, cut_baselines=True, remake_all=True):
     raw_data_path = jonas + 'raw_data/'
     final_data_path = jonas + 'freshStart/modeling/data/' + mol + '/'
     name = mol
+    if cut_baselines is True:
+        name += '-short' + str(lines[mol]['baseline_cutoff'])
 
     # Establish a string for the log file to be made at the end
     log = 'Files created on ' + today + '\n\n'
