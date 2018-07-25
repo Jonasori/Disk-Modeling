@@ -9,10 +9,11 @@ sp.Popen vs sp.call: Popen lets you change working directory for the call with
 
 
 import subprocess as sp
+import argparse
+import time
 from constants import lines, today, mol
 from var_vis import var_vis
 from tools import icr, already_exists
-import argparse
 
 
 def pipe(commands):
@@ -66,6 +67,8 @@ def casa_sequence(mol, split_range, raw_data_path,
             split_str = split_str[:-2] + \
                 [("uvrange='>" + str(b_min) + "klambda,'")] + \
                 split_str[-2:]
+
+        pipe(split_str)
 
     if already_exists(output_path + '_exportuvfits.uvf') is False:
         pipe(["exportuvfits(",
@@ -156,6 +159,8 @@ def run_full_pipeline(mol, cut_baselines=True, remake_all=True):
         - cm to fits; now we have mol.{{uvf, vis, fits, cm}}
         - delete the clutter files: _split, _cvel, _exportuvfits, bm, cl, mp
     """
+    t0 = time.time()
+
     # Paths to the data
     jonas = '/Volumes/disks/jonas/'
     raw_data_path = jonas + 'raw_data/'
@@ -223,10 +228,13 @@ def run_full_pipeline(mol, cut_baselines=True, remake_all=True):
              shell=True, cwd=final_data_path)
     sp.Popen(['rm -rf casa*.log'], shell=True, cwd=final_data_path)
 
+    tf = time.time()
+    t_total = (tf - t0)/60
+    log += '\nThis processing took' + str(t_total) + 'minutes.'
     with open(final_data_path + 'file_log.txt', 'w') as f:
         f.write(log)
 
-    print "All done!"
+    print "All done! This processing took" + str(t_total) + "minutes."
 
 
 if __name__ == "__main__":
