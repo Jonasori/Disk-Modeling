@@ -65,7 +65,7 @@ def casa_sequence(mol, split_range, raw_data_path,
             print "\nCutting baselines in casa_sequence\n"
             b_min = lines[mol]['baseline_cutoff']
             split_str = split_str[:-2] + \
-                [("uvrange='>" + str(b_min) + "klambda,'")] + \
+                [("uvrange='>" + str(b_min) + "klambda',")] + \
                 split_str[-2:]
 
         pipe(split_str)
