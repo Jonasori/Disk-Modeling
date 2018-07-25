@@ -39,6 +39,9 @@ def casa_sequence(mol, split_range, raw_data_path,
         - output_path: path, with name included
         - remake_all (bool): if True, remove delete all pre-existing files.
     """
+    if b_min != 0:
+        output_path += '-short' + b_min
+
     if already_exists(output_path + '_cvel.ms') is False:
         pipe(["cvel(",
               "vis='{}calibrated-{}.ms.contsub',".format(raw_data_path, mol),
@@ -57,8 +60,14 @@ def casa_sequence(mol, split_range, raw_data_path,
                       "datacolumn='data',",
                       "keepflags=False)"
                       ])
+
+        # If necessary, insert a baseline cutoff. Not appending because we want
+        # to keep the ) in the right spot, so just put uvrange= in the middle.
         if b_min != 0:
-            split_str.append(", uvrange='>" + b_min + "klambda'")
+            print "\nCutting baselines in casa_sequence\n"
+            split_str = split_str[:-2] + \
+                        [("uvrange='>" + b_min + "klambda,'")] + \
+                        split_str[-2:]
 
     if already_exists(output_path + '_exportuvfits.uvf') is False:
         pipe(["exportuvfits(",
@@ -99,11 +108,13 @@ def find_split_cutoffs(mol, other_restfreq=0):
     return split_range
 
 
-def cut_baselines(mol):
+def baseline_cutter(mol):
     """Cut a vis file.
 
     It seems like doing this with uvaver is no good because it drops the
-    SPECSYS keyword from the header, so now implementing it with CASA
+    SPECSYS keyword from the header, so now implementing it with CASA in the
+    split early on, so this is no longer used.
+
     This one uses Popen and cwd (change working directory) because the path was
     getting to be longer than buffer's 64-character limit. Could be translated
     to other funcs as well, but would just take some work.
@@ -112,31 +123,13 @@ def cut_baselines(mol):
     min_baseline = lines[mol]['baseline_cutoff']
     name = mol
     new_name = name + '-short' + str(min_baseline)
-    uvaver = False
 
-    if uvaver is True:
-        print "\nStarting uvaver on ", new_name, '\n'
-        sp.Popen(['uvaver',
-                  'vis={}.vis'.format(name),
-                  'select=-uvrange(0,{})'.format(min_baseline),
-                  'out={}.vis'.format(new_name)],
-                 cwd=filepath).wait()
-
-        print "\nCompleted uvaver; starting fits uvout\n"
-        sp.call(['fits',
-                 'op=uvout',
-                 'in={}.vis'.format(new_name),
-                 'out={}.uvf'.format(new_name)],
-                cwd=filepath)
-
-    else:
-        pipe(["split(",
-              "vis='{}.ms',".format(output_path),
-              "outputvis='{}_split.ms',".format(output_path),
-              "spw='{}',".format(spw),
-              "datacolumn='data',",
-              "keepflags=False)"
-              ])
+    print "\nCompleted uvaver; starting fits uvout\n"
+    sp.call(['fits',
+             'op=uvout',
+             'in={}.vis'.format(new_name),
+             'out={}.uvf'.format(new_name)],
+            cwd=filepath)
 
     # Now clean that out file.
     print "\nCompleted fits uvout; starting ICR\n\n"
@@ -148,9 +141,12 @@ def cut_baselines(mol):
     sp.Popen(['rm -rf {}.mp'.format(new_name)], shell=True)
 
 
-def run_full_pipeline(mol, remake_all=True):
+def run_full_pipeline(mol, cut_baselines=True, remake_all=True):
     """Run the whole thing.
 
+    Note that this no longer produces both cut and uncut output; since the cut
+    happens much earlier, it now only produces one or the other (depending
+    on whether or not cut_baselines is true.)
     The Process:
         - casa_sequence():
             - cvel the cont-sub'ed dataset from jonas/raw_data to here.
@@ -186,7 +182,7 @@ def run_full_pipeline(mol, remake_all=True):
     print "Split range is ", str(split_range[0]), str(split_range[1])
     print "Now processing data...."
     casa_sequence(mol, split_range, raw_data_path,
-                  final_data_path + name, min_b)
+                  final_data_path + name, b_min)
     log = log + 'Split range used: ' + str(split_range) + '\n'
     print "Finished casa_sequence()\n\n"
 
