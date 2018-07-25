@@ -29,7 +29,7 @@ def pipe(commands):
 
 
 def casa_sequence(mol, split_range, raw_data_path,
-                  output_path, remake_all=False):
+                  output_path, b_min, remake_all=False):
     """Cvel, split, and export as uvf the original cont-sub'ed .ms.
 
     Args:
@@ -50,13 +50,15 @@ def casa_sequence(mol, split_range, raw_data_path,
 
     if already_exists(output_path + '_split.ms') is False:
         spw = '*:' + str(split_range[0]) + '~' + str(split_range[1])
-        pipe(["split(",
-              "vis='{}_cvel.ms',".format(output_path),
-              "outputvis='{}_split.ms',".format(output_path),
-              "spw='{}',".format(spw),
-              "datacolumn='data',",
-              "keepflags=False)"
-              ])
+        split_str = (["split(",
+                      "vis='{}_cvel.ms',".format(output_path),
+                      "outputvis='{}_split.ms',".format(output_path),
+                      "spw='{}',".format(spw),
+                      "datacolumn='data',",
+                      "keepflags=False)"
+                      ])
+        if b_min != 0:
+            split_str.append(", uvrange='>" + b_min + "klambda'")
 
     if already_exists(output_path + '_exportuvfits.uvf') is False:
         pipe(["exportuvfits(",
@@ -97,9 +99,11 @@ def find_split_cutoffs(mol, other_restfreq=0):
     return split_range
 
 
-def uvaver(mol):
+def cut_baselines(mol):
     """Cut a vis file.
 
+    It seems like doing this with uvaver is no good because it drops the
+    SPECSYS keyword from the header, so now implementing it with CASA
     This one uses Popen and cwd (change working directory) because the path was
     getting to be longer than buffer's 64-character limit. Could be translated
     to other funcs as well, but would just take some work.
@@ -108,28 +112,33 @@ def uvaver(mol):
     min_baseline = lines[mol]['baseline_cutoff']
     name = mol
     new_name = name + '-short' + str(min_baseline)
+    uvaver = False
 
-    """
-    if already_exists(filepath + new_name + '.cm') is True:
-        return "This vis is already fully cut; aborting."
+    if uvaver is True:
+        print "\nStarting uvaver on ", new_name, '\n'
+        sp.Popen(['uvaver',
+                  'vis={}.vis'.format(name),
+                  'select=-uvrange(0,{})'.format(min_baseline),
+                  'out={}.vis'.format(new_name)],
+                 cwd=filepath).wait()
+
+        print "\nCompleted uvaver; starting fits uvout\n"
+        sp.call(['fits',
+                 'op=uvout',
+                 'in={}.vis'.format(new_name),
+                 'out={}.uvf'.format(new_name)],
+                cwd=filepath)
+
     else:
-        sp.Popen(['rm -rf ./*'], shell=True, cwd=filepath).wait()
-    """
+        pipe(["split(",
+              "vis='{}.ms',".format(output_path),
+              "outputvis='{}_split.ms',".format(output_path),
+              "spw='{}',".format(spw),
+              "datacolumn='data',",
+              "keepflags=False)"
+              ])
 
-    print "\nStarting uvaver on ", new_name, '\n'
-    sp.Popen(['uvaver',
-              'vis={}.vis'.format(name),
-              'select=-uvrange(0,{})'.format(min_baseline),
-              'out={}.vis'.format(new_name)],
-             cwd=filepath).wait()
-
-    print "\nCompleted uvaver; starting fits uvout\n"
-    sp.call(['fits',
-             'op=uvout',
-             'in={}.vis'.format(new_name),
-             'out={}.uvf'.format(new_name)],
-            cwd=filepath)
-
+    # Now clean that out file.
     print "\nCompleted fits uvout; starting ICR\n\n"
     icr(filepath + new_name, mol)
 
@@ -158,6 +167,8 @@ def run_full_pipeline(mol, remake_all=True):
     raw_data_path = jonas + 'raw_data/'
     final_data_path = jonas + 'freshStart/modeling/data/' + mol + '/'
     name = mol
+    b_min = lines[mol]['baseline_cutoff']
+
 
     # Establish a string for the log file to be made at the end
     log = 'Files created on ' + today + '\n\n'
@@ -170,12 +181,12 @@ def run_full_pipeline(mol, remake_all=True):
         log += "Some files already existed and so were not remade.\n"
         log += "Careful for inconsistencies.\n\n"
 
-    b_min = lines[mol]['baseline_cutoff']
     split_range = find_split_cutoffs(mol)
 
     print "Split range is ", str(split_range[0]), str(split_range[1])
     print "Now processing data...."
-    casa_sequence(mol, split_range, raw_data_path, final_data_path + name)
+    casa_sequence(mol, split_range, raw_data_path,
+                  final_data_path + name, min_b)
     log = log + 'Split range used: ' + str(split_range) + '\n'
     print "Finished casa_sequence()\n\n"
 
@@ -192,10 +203,13 @@ def run_full_pipeline(mol, remake_all=True):
                   'out={}.vis'.format(name)],
                  cwd=final_data_path).wait()
 
+    """
+    # Cut out baselines.
     if b_min != 0:
         print "Cutting out baselines below", b_min
-        uvaver(mol)
+        # uvaver(mol)
         log += 'These visibilities were cut at' + str(b_min) + '\n'
+    """
 
     print "Convolving data to get image, converting output to .fits\n\n"
     if already_exists(final_data_path + name + '.cm') is False:
@@ -226,9 +240,9 @@ def run_full_pipeline(mol, remake_all=True):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Process the data.')
-    parser.add_argument('-r', '--run', action='store_true', help='Run the processor.')
+    parser.add_argument('-r', '--run', action='store_true',
+                        help='Run the processor.')
     args = parser.parse_args()
-
     if args.run:
         run_full_pipeline(mol)
 
