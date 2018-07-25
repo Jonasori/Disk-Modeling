@@ -41,7 +41,7 @@ def casa_sequence(mol, split_range, raw_data_path,
     """
     b_min = lines[mol]['baseline_cutoff']
     if cut_baselines != 0:
-        output_path += '-short' + b_min
+        output_path += '-short' + str(b_min)
 
     if already_exists(output_path + '_cvel.ms') is False:
         pipe(["cvel(",
