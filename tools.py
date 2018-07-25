@@ -106,7 +106,7 @@ def imstat(modelName, ext='.cm', plane_to_check=32):
                                   ])
     imstat_out = imstat_raw.split('\n')
     # Get column names
-    hdr = filter(None, imstat_out[11].split(' '))
+    hdr = filter(None, imstat_out[9].split(' '))
 
     # Split the output on spaces and then drop empty elements.
     imstat_list = filter(None, imstat_out[plane_to_check].split(' '))
