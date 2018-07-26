@@ -41,6 +41,50 @@ lines = {'hco': {'restfreq': 356.73422300,
          }
 
 
+headers = {'hco': {'im': fits.getheader('./data/hco/hco.fits'),
+                   'vis': fits.getheader('./data/hco/hco.uvf')},
+           'hcn': {'im': fits.getheader('./data/hcn/hcn.fits'),
+                   'vis': fits.getheader('./data/hco/hcn.uvf')},
+           'co': {'im': fits.getheader('./data/co/co.fits'),
+                  'vis': fits.getheader('./data/co/co.uvf')},
+           'cs': {'im': fits.getheader('./data//cs.fits'),
+                  'vis': fits.getheader('./data/cs/cs.uvf')}
+           }
+
+
+# Get rid of chandir later (extract it from the header in stead with chanstep)
+# Chan0 comes from listobs; could get it later or just trust
+lines = {'hco': {'restfreq': headers['hco']['im']['RESTFREQ'] * 1e-9,
+                 'chanstep': headers['hco']['vis']['CDELT4'] * 1e-9,
+                 'jnum': 3,
+                 'rms': 1,
+                 'chan_dir': 1,
+                 'baseline_cutoff': 110,
+                 'chan0': 355.791034},
+         'hcn': {'restfreq': headers['hcn']['im']['RESTFREQ'] * 1e-9,
+                 'chanstep': headers['hcn']['vis']['CDELT4'] * 1e-9,
+                 'jnum': 3,
+                 'rms': 1,
+                 'chan_dir': 1,
+                 'baseline_cutoff': 0,
+                 'chan0': 354.2837},
+         'co': {'restfreq': headers['co']['RESTFREQ'] * 1e-9,
+                'chanstep': headers['co']['vis']['CDELT4'] * 1e-9,
+                'jnum': 2,
+                'rms': 1,
+                'chan_dir': 1,
+                'baseline_cutoff': 35,
+                'chan0': 346.114523},
+         'cs': {'restfreq': headers['cs']['RESTFREQ'] * 1e-9,
+                'chanstep': headers['cs']['vis']['CDELT4'] * 1e-9,
+                'jnum': 6,
+                'rms': 1,
+                'chan_dir': 1,
+                'baseline_cutoff': 30,
+                'chan0': 344.237292}
+         }
+
+
 # DATA FILE NAME
 dataPath = './data/' + mol + '/' + mol + \
     '-short' + str(lines[mol]['baseline_cutoff'])

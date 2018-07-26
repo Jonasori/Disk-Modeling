@@ -330,7 +330,7 @@ def fullRun(diskAParams, diskBParams):
         s = s0 + s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + s9
         f.write(s)
 
-    plot_gridSearch_log(modelPath)
-    plot_step_duration(modelPath)
+    plot_gridSearch_log(modelPath, show=False)
+    plot_step_duration(modelPath, show=False)
 
 # The End

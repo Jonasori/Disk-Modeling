@@ -73,7 +73,7 @@ def depickleLogFile(fname):
     return both_disks, X2s
 
 
-def plot_gridSearch_log(fname, show=False):
+def plot_gridSearch_log(fname, show=True):
     """Plot where the best-fit values from a grid search fall.
 
     Plot where the best-fit value(s) stand(s) relative to the range queried in
@@ -122,13 +122,12 @@ def plot_gridSearch_log(fname, show=False):
                                  markeredgewidth=3)
 
     plt.tight_layout()
-    # sns.despine()
     plt.savefig('./models/' + fname.split('/')[-1] + 'results.png')
     if show is True:
         plt.show(block=False)
 
 
-def plot_step_duration(dataPath, ns=[10, 20, 50]):
+def plot_step_duration(dataPath, ns=[10, 20, 50], show=True):
     """Plot how long each step took, plus some smoothing stuff.
 
     Args:
@@ -164,7 +163,10 @@ def plot_step_duration(dataPath, ns=[10, 20, 50]):
     plt.ylabel('Time (minutes)', fontweight='bold')
     plt.title('Time per Step for Grid Search Run on ' + run_date,
               fontweight='bold', fontsize=14)
-    plt.show(block=False)
+
+    plt.savefig('./models/' + dataPath.split('/')[-1] + 'results.png')
+    if show is True:
+        plt.show(block=False)
 
 
 def full_analysis_plot(pickleLog, timeLog):
