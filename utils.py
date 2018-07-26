@@ -129,6 +129,7 @@ def sumDisks(filePathA, filePathB, outputPath):
         data_header = data[0].header
 
     # Does the fact that I have to change these reflect a deeper problem?
+    # They are RA and DEC, and are both 0.0 straight out of the model.
     im.header['CRVAL1'] = data_header['CRVAL1']
     im.header['CRVAL2'] = data_header['CRVAL2']
     """
@@ -136,6 +137,9 @@ def sumDisks(filePathA, filePathB, outputPath):
     im.header['CDELT2'] = data_header['CDELT2']
     """
     im.header['RESTFREQ'] = data_header['RESTFREQ']
+    # Ok to do this since velocity axis is labeled VELO-LSR and
+    # but the header doesn't have a SPECSYS value yet.
+    im.header['SPECSYS'] = 'LSRK'
     # im.header['EPOCH'] = data_header['EPOCH']
 
     fitsout = outputPath + '.fits'
