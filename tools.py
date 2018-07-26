@@ -155,8 +155,12 @@ def icr(visPath, mol, min_baseline=0, niters=1e4):
     # Since the path is sometimes more than 64 characters long, need to slice
     # it and use Popen/cwd to cut things down.
     # filepath = visPath.split('/')[1:-1]
-    visName = visPath.split('/')[-1]
-    filepath = visPath[:-len(visName)]
+    if '/' in visPath:
+        visName = visPath.split('/')[-1]
+        filepath = visPath[:-len(visName)]
+    else:
+        visName = visPath
+        filepath = './'
 
     # Add a shorthand name (easier to write)
     # Rename the outfile if we're cutting baselines and add the cut call.

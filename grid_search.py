@@ -12,11 +12,11 @@ import csv
 from utils import makeModel, sumDisks, chiSq
 from run_params import diskAParams, diskBParams
 from constants import mol, today, dataPath
-from tools import sample_model_in_uvplane, remove
+from tools import icr, sample_model_in_uvplane, remove
 from analysis import plot_gridSearch_log, plot_step_duration
 
 
-# Hopefully no more than 2 runs/day!
+# Hopefully no more than 1 runs/day!
 # This doesn't work bc full_run already wipes out old directories.
 # Fix this some time.
 
@@ -109,7 +109,7 @@ def gridSearch(VariedDiskParams, StaticDiskParams, DI,
                             print "\n\n\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
                             print "Currently fitting for: ", outNameVaried
                             print "Beginning model ", str(
-                                counter)+"/"+str(num_iters)
+                                counter + steps_so_far) + "/"+str(num_iters)
                             print "ta:", ta
                             print "tqq", tqq
                             print "xmol:", xmol
@@ -283,15 +283,8 @@ def fullRun(diskAParams, diskBParams):
 
     # Finally, Create the final best-fit model.
     print "\n\nCreating best fit model now"
-    """
-    diskAName, diskBName = modelPath + 'fitA', modelPath + 'fitB'
-    makeModel(fit_A_params, diskAName, 0)
-    makeModel(fit_B_params, diskBName, 1)
-    sumDisks(diskAName, diskBName, modelPath + '_bestFit')
-    # icr(modelPath, mol=mol)
-    """
     sample_model_in_uvplane(modelPath + '_bestFit', dataPath, mol=mol)
-
+    icr(modelPath + '_bestFit', mol=mol)
     print "Best-fit model created: " + modelPath + "_bestFit.im\n\n"
 
     # Calculate and present the final X2 values.
