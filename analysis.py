@@ -122,7 +122,7 @@ def plot_gridSearch_log(fname, show=True):
                                  markeredgewidth=3)
 
     plt.tight_layout()
-    plt.savefig('./models/' + fname.split('/')[-1] + 'results.png')
+    plt.savefig('./models/' + fname.split('/')[-1] + '_results.png')
     if show is True:
         plt.show(block=False)
 
@@ -164,7 +164,7 @@ def plot_step_duration(dataPath, ns=[10, 20, 50], show=True):
     plt.title('Time per Step for Grid Search Run on ' + run_date,
               fontweight='bold', fontsize=14)
 
-    plt.savefig('./models/' + dataPath.split('/')[-1] + 'results.png')
+    plt.savefig('./models/' + dataPath.split('/')[-1] + '_durations.png')
     if show is True:
         plt.show(block=False)
 
