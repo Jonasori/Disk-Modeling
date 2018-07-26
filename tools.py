@@ -12,7 +12,7 @@ Script some Miriad commands for easier calling, more specialized usage.
 # Packages
 import subprocess as sp
 import os
-from constants import lines
+from constants import lines, get_data_path
 
 
 def cgdisp(imageName, crop=True, contours=True, rms=6.8e-3):
@@ -223,7 +223,7 @@ def icr(visPath, mol, min_baseline=0, niters=1e4):
              cwd=filepath).wait()
 
 
-def sample_model_in_uvplane(modelPath, dataPath, mol='hco', option='replace'):
+def sample_model_in_uvplane(modelPath, mol='hco', option='replace'):
     """Sample a model image in the uvplane given by the data.
 
     .fits -> {.im, .uvf, .vis}
@@ -234,6 +234,7 @@ def sample_model_in_uvplane(modelPath, dataPath, mol='hco', option='replace'):
         option (str): Choose whether we want a simple sampling (replace),
                       or a residual (subtract).
     """
+    dataPath = get_data_path(mol)
     # Oooooo baby this is janky. Basically just wanting to have the name
     # reflect that it's a residual map if that's what's chosen.
     old_modelPath = modelPath

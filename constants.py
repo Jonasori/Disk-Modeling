@@ -86,8 +86,15 @@ lines = {'hco': {'restfreq': headers['hco']['im']['RESTFREQ'] * 1e-9,
 
 
 # DATA FILE NAME
-dataPath = './data/' + mol + '/' + mol + \
-    '-short' + str(lines[mol]['baseline_cutoff'])
+def get_data_path(mol, short_vis_only=True):
+    """Get the path to the data files for a given line."""
+    dataPath = './data/' + mol + '/' + mol
+    if short_vis_only is True:
+        dataPath += '-short' + str(lines[mol]['baseline_cutoff'])
+    return dataPath
+
+
+dataPath = get_data_path(mol)
 
 # What day is it? Used to ID files.
 months = ['jan', 'feb', 'march', 'april', 'may',
