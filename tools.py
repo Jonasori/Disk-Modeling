@@ -223,7 +223,7 @@ def icr(visPath, mol, min_baseline=0, niters=1e4):
              cwd=filepath).wait()
 
 
-def sample_model_in_uvplane(modelPath, dataPath, mol='hco'):
+def sample_model_in_uvplane(modelPath, dataPath, mol='hco', option='replace'):
     """Sample a model image in the uvplane given by the data.
 
     .fits -> {.im, .uvf, .vis}
@@ -231,16 +231,26 @@ def sample_model_in_uvplane(modelPath, dataPath, mol='hco'):
         modelPath (str): path to model fits file.
         dataPath (str): path to data vis file.
         mol (str): the molecule we're looking at.
+        option (str): Choose whether we want a simple sampling (replace),
+                      or a residual (subtract).
     """
+    # Oooooo baby this is janky. Basically just wanting to have the name
+    # reflect that it's a residual map if that's what's chosen.
+    old_modelPath = modelPath
+    modelPath = modelPath + '_resid' if option == 'subtract' else modelPath
+
+    if option == 'subtract':
+        print "Making residual map."
+
     remove(modelPath + '.im')
     sp.call(['fits', 'op=xyin',
-             'in={}.fits'.format(modelPath),
+             'in={}.fits'.format(old_modelPath),
              'out={}.im'.format(modelPath)])
 
     # Sample the model image using the observation uv coverage
     remove(modelPath + '.vis')
     sp.call(['uvmodel',
-             'options=replace',
+             'options={}'.format(option),
              'vis={}.vis'.format(dataPath),
              'model={}.im'.format(modelPath),
              'out={}.vis'.format(modelPath)])
@@ -255,36 +265,37 @@ def sample_model_in_uvplane(modelPath, dataPath, mol='hco'):
     print "completed sampling uvplane; created .im, .vis, .uvf\n\n"
 
 
-def get_residuals(Name, mol='hco'):
+def get_residuals(filePath, mol='hco', show=False):
     """Convert a fits file to im, vis, uvf.
 
     .fits -> {.im, .uvf, .vis}
-    Note that this samples from hco.vis, so while it's basically
-    general for my uses, it's not actually general.
     """
     data_vis = './data/' + mol + '/' + mol
 
-    sp.call('rm -rf *{}.im'.format(Name), shell=True)
+    sp.call('rm -rf *{}.im'.format(filePath), shell=True)
 
     sp.call(['fits', 'op=xyin',
-             'in={}.fits'.format(Name),
-             'out={}.im'.format(Name)])
+             'in={}.fits'.format(filePath),
+             'out={}.im'.format(filePath)])
 
     # Sample the model image using the observation uv coverage
-    sp.call('rm -rf *{}.vis'.format(Name), shell=True)
+    sp.call('rm -rf *{}.vis'.format(filePath), shell=True)
     sp.call(['uvmodel',
              'options=subtract',
              'vis={}'.format(data_vis),
-             'model={}.im'.format(Name),
-             'out={}.vis'.format(Name + '_resid')])
+             'model={}.im'.format(filePath),
+             'out={}.vis'.format(filePath + '_resid')])
 
     # Convert to UVfits
-    sp.call('rm -rf *{}.uvf'.format(Name + '_resid'), shell=True)
+    sp.call('rm -rf *{}.uvf'.format(filePath + '_resid'), shell=True)
     sp.call(['fits',
              'op=uvout',
-             'in={}.vis'.format(Name + '_resid'),
-             'out={}.uvf'.format(Name + '_resid')])
+             'in={}.vis'.format(filePath + '_resid'),
+             'out={}.uvf'.format(filePath + '_resid')])
 
+    if show is True:
+        icr(filePath + '_resid')
+        cgdisp(filePath + '_resid.cm')
 
 def imspec(imageName):
     """Drop a sweet spectrum. Takes in a .im."""
