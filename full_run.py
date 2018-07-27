@@ -21,10 +21,11 @@ if gs:
     print "Making new directories and setting up symlink."
 
     # Maybe a little bit janky
-    scratch_dir = '/scratch/jonas/run_' + today
-    counter = 1
+    scratch_dir_base = '/scratch/jonas/run_' + today
+    scratch_dir = scratch_dir_base
+    counter = 2
     while already_exists(scratch_dir) is True:
-        scratch_dir += '-' + str(counter)
+        scratch_dir = scratch_dir_base + '-' + str(counter)
         counter += 1
 
     sp.call(['rm', '-rf', './models/run_{}'.format(today)])
