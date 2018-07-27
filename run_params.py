@@ -19,9 +19,9 @@ InclA = np.array([65])
 
 # Parameters for Disk B
 TatmsB = np.arange(20, 240, 50)
-TqqB = np.arange(-3., 3, 1.2)
+TqqB = np.arange(-3., 5, 1.3)
 XmolB = -1 * np.arange(1., 8., 1.5)
-R_outB = np.arange(10, 300, 75)
+R_outB = np.arange(10, 350, 50)
 PAB = np.array([135])
 InclB = np.array([45])
 
