@@ -22,7 +22,7 @@ if gs:
 
     # A little bit janky
     scratch_home = '/scratch/jonas/'
-    this_run_basename = 'run_' + today
+    this_run_basename = today
 
     counter = 2
     this_run = this_run_basename
@@ -32,14 +32,17 @@ if gs:
 
     scratch_dir = scratch_home + this_run
 
-    sp.call(['rm', '-rf', './models/{}'.format(this_run)])
+    # Cool. Now we know where we're symlinking to.
+    modelPath = './models/' + this_run + '/' + this_run
+
+    sp.call(['rm', '-rf', '{}'.format(modelPath)])
     sp.call(['rm', '-rf', scratch_dir])
 
     sp.call(['mkdir', scratch_dir])
     sp.call(['ln', '-s', scratch_dir, './models/'])
 
     print "Starting fullRun"
-    fullRun(diskAParams, diskBParams)
+    fullRun(diskAParams, diskBParams, )
 
 
 else:

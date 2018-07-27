@@ -20,7 +20,7 @@ from analysis import plot_gridSearch_log, plot_step_duration
 # This doesn't work bc full_run already wipes out old directories.
 # Fix this some time.
 
-modelPath = './models/run_' + today + '/' + today
+# modelPath = './models/run_' + today + '/' + today
 """
 if already_exists(modelPath):
     modelPath = './models/run_' + today + '_2/' + today + '_2'
@@ -192,7 +192,7 @@ def gridSearch(VariedDiskParams, StaticDiskParams, DI,
 
 
 # PERFORM A FULL RUN USING FUNCTIONS ABOVE #
-def fullRun(diskAParams, diskBParams, use_a_previous_result=False):
+def fullRun(diskAParams, diskBParams, modelPath, use_a_previous_result=False):
     """Run it all.
 
     diskXParams are fed in from full_run.py,
