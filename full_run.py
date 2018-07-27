@@ -42,7 +42,7 @@ if gs:
     sp.call(['ln', '-s', scratch_dir, './models/'])
 
     print "Starting fullRun"
-    fullRun(diskAParams, diskBParams, )
+    fullRun(diskAParams, diskBParams, modelPath)
 
 
 else:
