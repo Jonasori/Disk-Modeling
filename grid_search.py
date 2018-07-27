@@ -230,6 +230,12 @@ def fullRun(diskAParams, diskBParams, use_a_previous_result=False):
     else:
         print "Sounds good!n\n"
 
+    """This is a little bit janky looking but makes sense. Since we are
+    treating the two disks as independent, then if, in one run, we find good
+    fits (no edge values), then it doesn't make sense to run that grid again;
+    it would be better to just grab the relevant information from that run
+    and only fit the disk that needs fitting. That's what this is for."""
+    to_skip = ''
     if use_a_previous_result is True:
         response2 = raw_input(
             'Please enter the path to the .fits file to use from a previous',
