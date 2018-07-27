@@ -298,6 +298,7 @@ def get_residuals(filePath, mol='hco', show=False):
         icr(filePath + '_resid')
         cgdisp(filePath + '_resid.cm')
 
+
 def imspec(imageName):
     """Drop a sweet spectrum. Takes in a .im."""
     sp.call(['imspec',
@@ -311,8 +312,8 @@ def already_exists(query):
     # path = query.split(f)[0]
     path = query[:-len(f)]
 
-    print "Path is: ", path
-    print "file is: ", f
+    # print "Path is: ", path
+    # print "file is: ", f
 
     output = sp.check_output('ls', cwd=path).split('\n')
 

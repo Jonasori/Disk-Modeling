@@ -9,6 +9,7 @@ import subprocess as sp
 from grid_search import fullRun
 from run_params import diskAParams, diskBParams
 from constants import today
+from tools import already_exists
 
 
 # Which line are we looking at, and how are we fitting?
@@ -21,6 +22,11 @@ if gs:
 
     # Maybe a little bit janky
     scratch_dir = '/scratch/jonas/run_' + today
+    counter = 1
+    while already_exists(scratch_dir) is True:
+        scratch_dir += '-' + str(counter)
+        counter += 1
+
     sp.call(['rm', '-rf', './models/run_{}'.format(today)])
     sp.call(['rm', '-rf', scratch_dir])
 
