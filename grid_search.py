@@ -121,7 +121,7 @@ def gridSearch(VariedDiskParams, StaticDiskParams, DI, modelPath,
                             # Make a new disk, sum them, sample in vis-space.
                             makeModel(params, outNameVaried, DI)
                             sumDisks(outNameVaried, outNameStatic, modelPath)
-                            sample_model_in_uvplane(modelPath, dataPath, mol=mol)
+                            sample_model_in_uvplane(modelPath, mol=mol)
 
                             # Visibility-domain chi-squared evaluation
                             rawX2, redX2 = chiSq(modelPath)
@@ -223,12 +223,12 @@ def fullRun(diskAParams, diskBParams, modelPath, use_a_previous_result=False):
     print "\nThis run will take", n, "steps, spanning about ", t
     print "\nOutput will be in", modelPath, '\n'
     response = raw_input(
-        "Sound good? (press Enter to continue, any other key to stop)\n\n")
+        'Sound good? (press Enter to continue, any other key to stop)\n')
     if response != "":
         print "\nGo fix whatever you don't like and try again.\n\n"
         return
     else:
-        print "Sounds good!n\n"
+        print "Sounds good!\n"
 
     """This is a little bit janky looking but makes sense. Since we are
     treating the two disks as independent, then if, in one run, we find good
@@ -239,8 +239,7 @@ def fullRun(diskAParams, diskBParams, modelPath, use_a_previous_result=False):
     if use_a_previous_result is True:
         response2 = raw_input(
             'Please enter the path to the .fits file to use from a previous',
-            'run (should be ./models/date/run_date/datefitted_[A or B].fits)\n'
-        )
+            'run (should be ./models/date/run_date/datefitted_[A/B].fits)\n')
         if 'A' in response2:
             to_skip = 'A'
         elif 'B' in response2:
@@ -303,7 +302,7 @@ def fullRun(diskAParams, diskBParams, modelPath, use_a_previous_result=False):
 
     # Finally, Create the final best-fit model.
     print "\n\nCreating best fit model now"
-    sample_model_in_uvplane(modelPath + '_bestFit', dataPath, mol=mol)
+    sample_model_in_uvplane(modelPath + '_bestFit', mol=mol)
     icr(modelPath + '_bestFit', mol=mol)
     print "Best-fit model created: " + modelPath + "_bestFit.im\n\n"
 
