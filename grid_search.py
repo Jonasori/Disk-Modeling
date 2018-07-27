@@ -223,7 +223,7 @@ def fullRun(diskAParams, diskBParams, modelPath, use_a_previous_result=False):
     print "\nThis run will take", n, "steps, spanning about ", t
     print "\nOutput will be in", modelPath, '\n'
     response = raw_input(
-        "Sound good? (press Enter to continue, any other key to stop)")
+        "Sound good? (press Enter to continue, any other key to stop)\n\n")
     if response != "":
         print "\nGo fix whatever you don't like and try again.\n\n"
         return
