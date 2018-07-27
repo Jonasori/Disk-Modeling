@@ -53,8 +53,8 @@ InclB = np.array([30])
 
 # Parameters for Disk B
 TatmsA = np.array([10, 50, 100, 200])
-# TqqA = -1 * np.array([-0.5])
-TqqA = np.array([-2.1, -1.6, -1.1, -0.7])
+# TqqA = -1 * np.array([0.5])
+TqqA = np.array([-0.5, 0.5])
 XmolA = -1 * np.array([3., 4., 6., 8.])
 R_outA = np.array([50, 200, 400, 600])
 # PA and InclA are from Williams et al
@@ -66,7 +66,7 @@ TatmsB = np.array([10, 50, 100, 200])
 # TqqB = -1 * np.array([-0.6, -0.9])
 TqqB = np.array([-0.5])
 XmolB = -1 * np.array([3., 4., 6., 8.])
-R_outB = np.array([10, 50, 200, 400])
+R_outB = np.array([10, 50, 150, 300])
 PAB = np.array([135])
 InclB = np.array([30])
 
