@@ -9,7 +9,7 @@ import subprocess as sp
 from grid_search import fullRun
 from run_params import diskAParams, diskBParams
 from constants import today
-from tools import already_exists
+from tools import already_exists, remove
 
 
 # Which line are we looking at, and how are we fitting?
@@ -30,20 +30,21 @@ if gs:
         this_run = this_run_basename + '-' + str(counter)
         counter += 1
 
+    # Cool. Now we know where we're symlinking to.
     scratch_dir = scratch_home + this_run
 
-    # Cool. Now we know where we're symlinking to.
-    modelPath = './models/' + this_run + '/' + this_run
-
-    sp.call(['rm', '-rf', '{}'.format(modelPath)])
-    sp.call(['rm', '-rf', scratch_dir])
+    # remove(modelPath)
+    # remove(scratch_dir)
 
     sp.call(['mkdir', scratch_dir])
     sp.call(['ln', '-s', scratch_dir, './models/'])
 
     print "Starting fullRun"
+
+    # Give the grid search the path to be dumping things into.
+    modelPath = './models/' + this_run + '/' + this_run
     fullRun(diskAParams, diskBParams, modelPath)
 
 
-else:
-    mcmc.fullRun()
+# else:
+#     mcmc.fullRun()
