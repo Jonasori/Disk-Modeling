@@ -10,18 +10,18 @@ import numpy as np
 # Big run values
 
 TatmsA = np.arange(10, 300, 50)
-TqqA = np.arange(-3., 3, 1)
+TqqA = np.arange(-3., 3, 1.2)
 XmolA = -1 * np.arange(3, 11, 1.5)
-R_outA = np.arange(200, 600, 50)
+R_outA = np.arange(200, 600, 75)
 # PA and InclA are from Williams et al
 PAA = np.array([69.7])
 InclA = np.array([65])
 
 # Parameters for Disk B
 TatmsB = np.arange(20, 240, 50)
-TqqB = np.arange(-3., 3, 1)
+TqqB = np.arange(-3., 3, 1.2)
 XmolB = -1 * np.arange(1., 8., 1.5)
-R_outB = np.arange(10, 260, 60)
+R_outB = np.arange(10, 300, 75)
 PAB = np.array([135])
 InclB = np.array([45])
 
