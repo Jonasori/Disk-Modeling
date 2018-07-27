@@ -192,7 +192,7 @@ def gridSearch(VariedDiskParams, StaticDiskParams, DI,
 
 
 # PERFORM A FULL RUN USING FUNCTIONS ABOVE #
-def fullRun(diskAParams, diskBParams):
+def fullRun(diskAParams, diskBParams, use_a_previous_result=False):
     """Run it all.
 
     diskXParams are fed in from full_run.py,
@@ -228,8 +228,20 @@ def fullRun(diskAParams, diskBParams):
         print "\nGo fix whatever you don't like and try again.\n\n"
         return
     else:
-        print "Sounds good! Starting run.\n\n"
+        print "Sounds good!n\n"
 
+    if use_a_previous_result is True:
+        response2 = raw_input(
+            'Please enter the path to the .fits file to use from a previous',
+            'run (should be ./models/date/run_date/datefitted_[A or B].fits)\n'
+        )
+        if 'A' in response2:
+            to_skip = 'A'
+        elif 'B' in response2:
+            to_skip = 'B'
+        else:
+            print "Bad path; must have 'fitted_A or fitted_B' in it. Try again"
+            return
     # STARTING THE RUN #
     # Make the initial static model (B), just with the first parameter values
     dBInit = []
@@ -237,7 +249,8 @@ def fullRun(diskAParams, diskBParams):
         dBInit.append(i[0])
 
     # Grid search over Disk A, retrieve the resulting pd.DataFrame
-    df_A_fit = gridSearch(diskAParams, dBInit, 0, n)
+    if to_skip != 'A':
+        df_A_fit = gridSearch(diskAParams, dBInit, 0, n)
 
     # Find where the chi2 is minimized and save it
     idx_of_BF_A = df_A_fit.index[df_A_fit['Reduced Chi2'] == np.min(
