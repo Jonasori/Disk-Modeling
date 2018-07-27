@@ -20,15 +20,19 @@ if gs:
     # Set up a symlink to the /scratch directory to dump the model files to.
     print "Making new directories and setting up symlink."
 
-    # Maybe a little bit janky
-    scratch_dir_base = '/scratch/jonas/run_' + today
-    scratch_dir = scratch_dir_base
+    # A little bit janky
+    scratch_home = '/scratch/jonas/'
+    this_run_basename = 'run_' + today
+
     counter = 2
-    while already_exists(scratch_dir) is True:
-        scratch_dir = scratch_dir_base + '-' + str(counter)
+    this_run = this_run_basename
+    while already_exists(scratch_home + this_run) is True:
+        this_run = this_run_basename + '-' + str(counter)
         counter += 1
 
-    sp.call(['rm', '-rf', './models/run_{}'.format(today)])
+    scratch_dir = scratch_home + this_run
+
+    sp.call(['rm', '-rf', './models/{}'.format(this_run)])
     sp.call(['rm', '-rf', scratch_dir])
 
     sp.call(['mkdir', scratch_dir])
