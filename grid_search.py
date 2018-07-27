@@ -50,7 +50,7 @@ diskBRedX2 = np.zeros((len(diskAParams[0]), len(diskBParams[1]),
 
 
 # GRID SEARCH OVER ONE DISK HOLDING OTHER CONSTANT
-def gridSearch(VariedDiskParams, StaticDiskParams, DI,
+def gridSearch(VariedDiskParams, StaticDiskParams, DI, modelPath,
                num_iters, steps_so_far=1):
     """
     Run a grid search over parameter space.
@@ -256,7 +256,7 @@ def fullRun(diskAParams, diskBParams, modelPath, use_a_previous_result=False):
 
     # Grid search over Disk A, retrieve the resulting pd.DataFrame
     if to_skip != 'A':
-        df_A_fit = gridSearch(diskAParams, dBInit, 0, n)
+        df_A_fit = gridSearch(diskAParams, dBInit, 0, modelPath, n)
 
     # Find where the chi2 is minimized and save it
     idx_of_BF_A = df_A_fit.index[df_A_fit['Reduced Chi2'] == np.min(
@@ -275,7 +275,8 @@ def fullRun(diskAParams, diskBParams, modelPath, use_a_previous_result=False):
     print "First disk has been fit\n"
 
     # Now search over the other disk
-    df_B_fit = gridSearch(diskBParams, fit_A_params, 1, n, steps_so_far=na)
+    df_B_fit = gridSearch(diskBParams, fit_A_params, 1, modelPath,
+                          n, steps_so_far=na)
 
     idx_of_BF_B = df_B_fit.index[df_B_fit['Reduced Chi2'] == np.min(
         df_B_fit['Reduced Chi2'])][0]
