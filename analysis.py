@@ -167,6 +167,7 @@ def plot_step_duration(dataPath, ns=[10, 20, 50], show=False):
     plt.savefig('./models/' + dataPath.split('/')[-1] + '_durations.png')
     if show is True:
         plt.show()
+    plt.close()
 
 
 def full_analysis_plot(pickleLog, timeLog):

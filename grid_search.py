@@ -12,7 +12,7 @@ import csv
 from utils import makeModel, sumDisks, chiSq
 from run_params import diskAParams, diskBParams
 from constants import mol, today, dataPath
-from tools import icr, sample_model_in_uvplane, remove
+from tools import icr, sample_model_in_uvplane, already_exists, remove
 from analysis import plot_gridSearch_log, plot_step_duration
 
 
@@ -230,6 +230,26 @@ def fullRun(diskAParams, diskBParams, modelPath, use_a_previous_result=False):
     else:
         print "Sounds good!\n"
 
+    # SET UP SYMLINK
+    scratch_home = '/scratch/jonas/'
+    this_run_basename = today
+
+    counter = 2
+    this_run = this_run_basename
+    while already_exists(scratch_home + this_run) is True:
+        this_run = this_run_basename + '-' + str(counter)
+        counter += 1
+
+    # Cool. Now we know where we're symlinking to.
+    scratch_dir = scratch_home + this_run
+
+    # remove(modelPath)
+    # remove(scratch_dir)
+
+    sp.call(['mkdir', scratch_dir])
+    sp.call(['ln', '-s', scratch_dir, './models/'])
+
+    # CHECK FOR REUSE
     """This is a little bit janky looking but makes sense. Since we are
     treating the two disks as independent, then if, in one run, we find good
     fits (no edge values), then it doesn't make sense to run that grid again;
@@ -247,6 +267,7 @@ def fullRun(diskAParams, diskBParams, modelPath, use_a_previous_result=False):
         else:
             print "Bad path; must have 'fitted_A or fitted_B' in it. Try again"
             return
+
     # STARTING THE RUN #
     # Make the initial static model (B), just with the first parameter values
     dBInit = []
@@ -297,8 +318,6 @@ def fullRun(diskAParams, diskBParams, modelPath, use_a_previous_result=False):
     pickle.dump(full_log, open('{}_step-log.pickle'.format(modelPath), "wb"))
     # To read the pickle:
     # f = pickle.load(open('{}_step-log.pickle'.format(modelPath), "rb"))
-    # Alternatively, to get a csv:
-    # full_log.to_csv(path_or_buf='{}_step-log.csv'.format(modelPath))
 
     # Finally, Create the final best-fit model.
     print "\n\nCreating best fit model now"
@@ -325,12 +344,10 @@ def fullRun(diskAParams, diskBParams, modelPath, use_a_previous_result=False):
     print 'with each step taking on average', t_per, ' minutes'
 
     # log file w/ best fit vals, range queried, indices of best vals, best chi2
-    # 	- (maybe figure out how to round these for better readability)
     param_names = ['ta', 'tqq', 'xmol', 'r_out', 'pa', 'incl']
     with open('run_' + today + 'summary.log', 'w') as f:
         s0 = '\nLOG FOR RUN ON' + today + ' FOR THE ' + mol + ' LINE'
         s1 = '\nBest Chi-Squared values [raw, reduced]:\n' + str(finalX2s)
-
         s2 = '\n\n\nParameter ranges queried:\n'
         s3 = '\nDisk A:\n'
         for i, ps in enumerate(diskAParams):
@@ -338,14 +355,11 @@ def fullRun(diskAParams, diskBParams, modelPath, use_a_previous_result=False):
         s4 = '\nDisk B:\n'
         for i, ps in enumerate(diskBParams):
             s4 = s4 + param_names[i] + str(ps) + '\n'
-
         s5 = '\n\n\nBest-fit values (Tatm, Tqq, Xmol, outerR, PA, Incl):'
         s6 = '\nDisk A:\n' + str(fit_A_params)
         s7 = '\nDisk B:\n' + str(fit_B_params)
-
         s8 = '\n\n\nFinal run duration was' + str(t_total/60) + 'hours'
         s9 = '\nwith each step taking on average' + t_per + 'minutes'
-
         s = s0 + s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + s9
         f.write(s)
 

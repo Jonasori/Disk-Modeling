@@ -19,7 +19,7 @@ gs = True
 if gs:
     # Set up a symlink to the /scratch directory to dump the model files to.
     print "Making new directories and setting up symlink."
-
+    """
     # A little bit janky
     scratch_home = '/scratch/jonas/'
     this_run_basename = today
@@ -38,7 +38,7 @@ if gs:
 
     sp.call(['mkdir', scratch_dir])
     sp.call(['ln', '-s', scratch_dir, './models/'])
-
+    """
     print "Starting fullRun"
 
     # Give the grid search the path to be dumping things into.

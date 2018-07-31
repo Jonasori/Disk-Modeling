@@ -200,6 +200,7 @@ def run_full_pipeline(mol, cut_baselines=True, remake_all=True):
         sp.Popen(['fits',
                   'op=uvin',
                   'in={}.uvf'.format(name),
+                  # 'velocity=lsr,{},{}'.format(356731089163.0, 26.0),
                   'out={}.vis'.format(name)],
                  cwd=final_data_path).wait()
 

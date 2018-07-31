@@ -121,11 +121,10 @@ def sumDisks(filePathA, filePathB, outputPath):
     # correctly, so pull a header from one of the models.
     with fits.open(filePathA + '.fits') as model:
         model_header = model[0].header
-
     im.header = model_header
 
     # Now swap out some of the values using values from the data file:
-    with fits.open(dataPath + '.fits') as data:
+    with fits.open(dataPath + '_veloTest.fits') as data:
         data_header = data[0].header
 
     # Does the fact that I have to change these reflect a deeper problem?
@@ -139,7 +138,7 @@ def sumDisks(filePathA, filePathB, outputPath):
     im.header['RESTFREQ'] = data_header['RESTFREQ']
     # Ok to do this since velocity axis is labeled VELO-LSR and
     # but the header doesn't have a SPECSYS value yet.
-    im.header['SPECSYS'] = 'LSRK'
+    # im.header['SPECSYS'] = 'LSRK'
     # im.header['EPOCH'] = data_header['EPOCH']
 
     fitsout = outputPath + '.fits'

@@ -138,7 +138,7 @@ def imstat(modelName, ext='.cm', plane_to_check=32):
 
 
 # Invert/clean/restor: Take in a visibility, put out a convolved clean map.
-def icr(visPath, mol, min_baseline=0, niters=1e4):
+def icr(visPath, mol='hco', min_baseline=0, niters=1e4):
     """Invert/clean/restor: Turn a vis into a convolved clean map.
 
     .vis -> .bm, .mp, .cl, .cm, .fits
