@@ -151,7 +151,6 @@ def sumDisks(filePathA, filePathB, outputPath):
     print "Deleted .im, .uvf, and .vis\n"
 
 
-
 def chiSq(infile):
     """Calculate chi-squared metric between model and data.
 

@@ -197,7 +197,7 @@ def run_full_pipeline(mol, cut_baselines=True, remake_all=True):
         var_vis(final_data_path + name)
 
     print "Finished varvis; converting uvf to vis now....\n\n"
-    d_file = fits.getheader(name + '.uvf')
+    d_file = fits.getheader(final_data_path + name + '.uvf')
     crval4, crpix4 = d_file['CRVAL4'], d_file['CRPIX4']
     if already_exists(final_data_path + name + '.vis') is False:
         sp.Popen(['fits',
