@@ -150,29 +150,6 @@ def sumDisks(filePathA, filePathB, outputPath):
     sp.call('rm -rf {}.vis'.format(outputPath), shell=True)
     print "Deleted .im, .uvf, and .vis\n"
 
-    """
-    # Now convert that file to the visibility domain:
-    sp.call(['fits', 'op=xyin',
-             'in={}.fits'.format(outputPath),
-             'out={}.im'.format(outputPath)],
-            stdout=open(os.devnull, 'wb')
-            )
-
-    # Sample the model image using the observation uv coverage
-    sp.call(['uvmodel', 'options=replace',
-             'vis={}.vis'.format(dataPath),
-             'model={}.im'.format(outputPath),
-             'out={}.vis'.format(outputPath)],
-            stdout=open(os.devnull, 'wb')
-            )
-
-    # Convert to UVfits
-    sp.call(['fits', 'op=uvout',
-             'in={}.vis'.format(outputPath),
-             'out={}.uvf'.format(outputPath)],
-            stdout=open(os.devnull, 'wb')
-            )
-    """
 
 
 def chiSq(infile):

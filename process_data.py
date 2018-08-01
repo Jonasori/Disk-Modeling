@@ -11,6 +11,7 @@ sp.Popen vs sp.call: Popen lets you change working directory for the call with
 import subprocess as sp
 import argparse
 import time
+from astropy.io import fits
 from constants import lines, today, mol
 from var_vis import var_vis
 from tools import icr, already_exists
@@ -196,11 +197,13 @@ def run_full_pipeline(mol, cut_baselines=True, remake_all=True):
         var_vis(final_data_path + name)
 
     print "Finished varvis; converting uvf to vis now....\n\n"
+    d_file = fits.getheader(name + '.uvf')
+    crval4, crpix4 = d_file['CRVAL4'], d_file['CRPIX4']
     if already_exists(final_data_path + name + '.vis') is False:
         sp.Popen(['fits',
                   'op=uvin',
                   'in={}.uvf'.format(name),
-                  # 'velocity=lsr,{},{}'.format(356731089163.0, 26.0),
+                  'velocity=lsr,{},{}'.format(crval4, crpix4),
                   'out={}.vis'.format(name)],
                  cwd=final_data_path).wait()
 
