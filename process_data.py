@@ -143,7 +143,7 @@ def baseline_cutter(mol):
     sp.Popen(['rm -rf {}.mp'.format(new_name)], shell=True)
 
 
-def run_full_pipeline(mol, cut_baselines=True, remake_all=True):
+def run_full_pipeline():
     """Run the whole thing.
 
     Note that this no longer produces both cut and uncut output; since the cut
@@ -161,6 +161,11 @@ def run_full_pipeline(mol, cut_baselines=True, remake_all=True):
         - delete the clutter files: _split, _cvel, _exportuvfits, bm, cl, mp
     """
     t0 = time.time()
+    mol = raw_input('Which line (HCN, HCO, CS, or CO)?\n').lower()
+    cut = raw_input('All visibilities or cut baselines (y/n)?\n').lower()
+    cut_baselines = True if cut == 'y' else False
+    remake = raw_input('Remake everything (y/n)? (Not functional rn)\n\n')
+    remake_all = True if remake == 'y' else False
 
     # Paths to the data
     jonas = '/Volumes/disks/jonas/'
