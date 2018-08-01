@@ -12,7 +12,7 @@ import subprocess as sp
 import argparse
 import time
 from astropy.io import fits
-from constants import lines, today, mol
+from constants import lines, today
 from var_vis import var_vis
 from tools import icr, already_exists
 
@@ -162,9 +162,9 @@ def run_full_pipeline():
     """
     t0 = time.time()
     mol = raw_input('Which line (HCN, HCO, CS, or CO)?\n').lower()
-    cut = raw_input('All visibilities or cut baselines (y/n)?\n').lower()
+    cut = raw_input('Cut baselines for better signal (y/n)?\n').lower()
     cut_baselines = True if cut == 'y' else False
-    remake = raw_input('Remake everything (y/n)? (Not functional rn)\n\n')
+    remake = raw_input('Remake everything (y/n)? (Not functional rn)\n')
     remake_all = True if remake == 'y' else False
 
     # Paths to the data
