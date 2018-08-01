@@ -253,7 +253,7 @@ if __name__ == "__main__":
                         help='Run the processor.')
     args = parser.parse_args()
     if args.run:
-        run_full_pipeline(mol)
+        run_full_pipeline()
 
 
 
