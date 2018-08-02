@@ -335,5 +335,52 @@ def remove(filePath):
     sp.Popen(['rm -rf {}'.format(filePath)], shell=True).wait()
 
 
+def pipe(commands):
+    """Translate a set of arguments into a CASA command, written by Cail."""
+    call_string = '\n'.join([command if type(command) is str else '\n'.join(command) for command in commands])
+
+    print('Piping the following commands to CASA:\n')
+    print(call_string)
+    # sp.call(['casa', '-c', call_string])
+    sp.Popen(['casa', '-c', call_string]).wait()
+
+    # clean up .log files that casa poops out
+    sp.Popen('rm -rf *.log', shell=True).wait()
+
+
+def tclean(mol, output_path='./test'):
+    """Fix SPW - it's a guess.
+
+    What is phasecenter?
+    Which weighting should I use?
+    What robustness level?
+    What restoringbeam?
+    """
+    chan_min = str(lines[mol]['chanstep'])
+    chan_step = str(lines[mol]['chanstep'])
+    restfreq = lines[mol]['restfreq']
+    pipe(["tclean(",
+          "vis = './raw_data/calibrated-{}.ms.contsub',".format(mol),
+          "imagename = './tclean_test.image',",
+          "field = 'OrionField4',",
+          "spw = '',",
+          "specmode = 'cube',",
+          "nchan = 51,",
+          "start = '{}GHz,".format(chan_min),
+          "width = '{}GHz,".format(chan_step),
+          "outframe = 'LSRK',",
+          "restfreq = {},".format(restfreq),
+          "deconvolver= 'hogbom',",
+          "gridder = 'standard',",
+          "imsize = [256, 256],",
+          "cell = '0.045arcsec',",
+          "phasecenter = 0,",
+          "weighting = 'briggs',",
+          "robust = 0.5,",
+          "restoringbeam='common',",
+          "interactive = False,",
+          "niter=5000",
+          "pbcor=True"
+          ])
 
 # The End

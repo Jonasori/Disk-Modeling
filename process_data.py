@@ -14,20 +14,7 @@ import time
 from astropy.io import fits
 from constants import lines, today
 from var_vis import var_vis
-from tools import icr, already_exists
-
-
-def pipe(commands):
-    """Translate a set of arguments into a CASA command, written by Cail."""
-    call_string = '\n'.join([command if type(command) is str else '\n'.join(command) for command in commands])
-
-    print('Piping the following commands to CASA:\n')
-    print(call_string)
-    # sp.call(['casa', '-c', call_string])
-    sp.Popen(['casa', '-c', call_string]).wait()
-
-    # clean up .log files that casa poops out
-    sp.Popen('rm -rf *.log', shell=True).wait()
+from tools import icr, already_exists, pipe
 
 
 def casa_sequence(mol, split_range, raw_data_path,
