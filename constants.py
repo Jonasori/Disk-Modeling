@@ -40,7 +40,7 @@ lines = {'hco': {'restfreq': 356.73422300,
                 'chan0': 344.237292},
          }
 
-"""
+
 headers = {'hco': {'im': fits.getheader('./data/hco/hco.fits'),
                    'vis': fits.getheader('./data/hco/hco.uvf')},
            'hcn': {'im': fits.getheader('./data/hcn/hcn.fits'),
@@ -83,7 +83,7 @@ lines = {'hco': {'restfreq': headers['hco']['im']['RESTFREQ'] * 1e-9,
                 'baseline_cutoff': 30,
                 'chan0': 344.237292}
          }
-"""
+
 
 # DATA FILE NAME
 def get_data_path(mol, short_vis_only=True):
