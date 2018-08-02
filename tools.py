@@ -365,9 +365,9 @@ def tclean(mol='hco', output_path='./test'):
           "field         = 'OrionField4',",
           "spw           = '',",
           "specmode      = 'cube',",
-          # "nchan = 51,",
-          # "start = '{}GHz,".format(chan_min),
-          # "width = '{}GHz,".format(chan_step),
+          # "nchan         = 51,",
+          # "start         = '{}GHz,".format(chan_min),
+          # "width         = '{}GHz,".format(chan_step),
           "outframe      = 'LSRK',",
           "restfreq      = {},".format(restfreq),
           "deconvolver   = 'hogbom',",
@@ -380,7 +380,6 @@ def tclean(mol='hco', output_path='./test'):
           "restoringbeam ='common',",
           "interactive   = False,",
           # "pbcor         = True",
-          "niter         = 5000"
-          ])
+          "niter         = 5000"])
 
 # The End
