@@ -12,7 +12,7 @@ Script some Miriad commands for easier calling, more specialized usage.
 # Packages
 import subprocess as sp
 import os
-from constants import lines, get_data_path
+from constants import lines, get_data_path, obs_stuff
 
 
 def cgdisp(imageName, crop=True, contours=True, rms=6.8e-3):
@@ -348,7 +348,7 @@ def pipe(commands):
     sp.Popen('rm -rf *.log', shell=True).wait()
 
 
-def tclean(mol, output_path='./test'):
+def tclean(mol='hco', output_path='./test'):
     """Fix SPW - it's a guess.
 
     What is phasecenter?
@@ -356,8 +356,8 @@ def tclean(mol, output_path='./test'):
     What robustness level?
     What restoringbeam?
     """
-    chan_min = str(lines[mol]['chanstep'])
-    chan_step = str(lines[mol]['chanstep'])
+    chan_min = str(lines[mol]['chan0'])
+    chan_step = obs_stuff('hco')[4]
     restfreq = lines[mol]['restfreq']
     pipe(["tclean(",
           "vis = './raw_data/calibrated-{}.ms.contsub',".format(mol),
