@@ -40,7 +40,7 @@ lines = {'hco': {'restfreq': 356.73422300,
                 'chan0': 344.237292},
          }
 
-
+"""
 headers = {'hco': {'im': fits.getheader('./data/hco/hco.fits'),
                    'vis': fits.getheader('./data/hco/hco.uvf')},
            'hcn': {'im': fits.getheader('./data/hcn/hcn.fits'),
@@ -55,7 +55,6 @@ headers = {'hco': {'im': fits.getheader('./data/hco/hco.fits'),
 # Get rid of chandir later (extract it from the header in stead with chanstep)
 # Chan0 comes from listobs; could get it later or just trust
 # Chanstep here is a frequency, not velocity!
-"""
 lines = {'hco': {'restfreq': headers['hco']['im']['RESTFREQ'] * 1e-9,
                  'chanstep': headers['hco']['vis']['CDELT4'] * 1e-9,
                  'jnum': 3,
