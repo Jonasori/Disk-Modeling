@@ -379,7 +379,7 @@ def tclean(mol='hco', output_path='./test'):
           "robust        = 0.5,",
           "restoringbeam ='common',",
           "interactive   = False,",
-          # "pbcor         = True",
+          # "pbcor         = True,",
           "niter         = 5000",
           ")"])
 

@@ -54,6 +54,8 @@ headers = {'hco': {'im': fits.getheader('./data/hco/hco.fits'),
 
 # Get rid of chandir later (extract it from the header in stead with chanstep)
 # Chan0 comes from listobs; could get it later or just trust
+# Chanstep here is a frequency, not velocity!
+"""
 lines = {'hco': {'restfreq': headers['hco']['im']['RESTFREQ'] * 1e-9,
                  'chanstep': headers['hco']['vis']['CDELT4'] * 1e-9,
                  'jnum': 3,
@@ -83,7 +85,7 @@ lines = {'hco': {'restfreq': headers['hco']['im']['RESTFREQ'] * 1e-9,
                 'baseline_cutoff': 30,
                 'chan0': 344.237292}
          }
-
+"""
 
 # DATA FILE NAME
 def get_data_path(mol, short_vis_only=True):
