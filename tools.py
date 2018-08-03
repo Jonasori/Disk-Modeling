@@ -13,6 +13,7 @@ Script some Miriad commands for easier calling, more specialized usage.
 import subprocess as sp
 from astropy.io import fits
 import os
+import argparse
 from constants import lines, get_data_path, obs_stuff
 
 
@@ -386,5 +387,21 @@ def tclean(mol='hco', output_path='./test'):
           # "pbcor         = True,",
           "niter         = 5000",
           ")"])
+
+
+
+
+
+
+
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Do the tools.')
+    parser.add_argument('-t', '--tclean', action='store_true',
+                        help='Run a tcleaning.')
+    args = parser.parse_args()
+    if args.run:
+        tclean('hco')
 
 # The End
