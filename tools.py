@@ -401,7 +401,7 @@ if __name__ == "__main__":
     parser.add_argument('-t', '--tclean', action='store_true',
                         help='Run a tcleaning.')
     args = parser.parse_args()
-    if args.run:
+    if args.tclean:
         tclean('hco')
 
 # The End
