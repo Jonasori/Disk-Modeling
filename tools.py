@@ -360,7 +360,7 @@ def tclean(mol='hco', output_path='./test'):
     chan_step = obs_stuff('hco')[4]
     restfreq = lines[mol]['restfreq']
     pipe(["tclean(",
-          "vis           = './raw_data/calibrated-{}.ms.contsub',".format(mol),
+          "vis       = '../../raw_data/calibrated-{}.ms.contsub',".format(mol),
           "imagename     = './tclean_test.image',",
           "field         = 'OrionField4',",
           "spw           = '',",
