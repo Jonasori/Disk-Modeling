@@ -369,7 +369,7 @@ def tclean(mol='hco', output_path='./test'):
           "start         = '{}GHz',".format(chan_min),
           "width         = '{}GHz',".format(chan_step),
           "outframe      = 'LSRK',",
-          "restfreq      = {},".format(restfreq),
+          "restfreq      = '{}GHz',".format(restfreq),
           "deconvolver   = 'hogbom',",
           "gridder       = 'standard',",
           "imsize        = [256, 256],",
