@@ -11,6 +11,7 @@ Script some Miriad commands for easier calling, more specialized usage.
 
 # Packages
 import subprocess as sp
+from astropy.io import fits
 import os
 from constants import lines, get_data_path, obs_stuff
 
@@ -357,11 +358,14 @@ def tclean(mol='hco', output_path='./test'):
     What restoringbeam?
     """
     chan_min = str(lines[mol]['chan0'])
-    chan_step = obs_stuff('hco')[4]
+    # chan_step = obs_stuff('hco')[4]
     restfreq = lines[mol]['restfreq']
+    hco_im = fits.getheader('./data/hco/hco.fits')
+    hco_vis = fits.getheader('./data/hco/hco.uvf')
+    chan_step = hco_vis['CDELT4'] * 1e-9
     pipe(["tclean(",
           "vis       = '../../raw_data/calibrated-{}.ms.contsub',".format(mol),
-          "imagename     = './tclean_test.image',",
+          "imagename     = './tclean_test',",
           "field         = 'OrionField4',",
           "spw           = '',",
           "specmode      = 'cube',",
