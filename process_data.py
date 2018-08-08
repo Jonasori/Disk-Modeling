@@ -17,33 +17,61 @@ from var_vis import var_vis
 from tools import icr, already_exists, pipe
 
 
-def casa_sequence(mol, split_range, raw_data_path,
-                  output_path, cut_baselines=True, remake_all=False):
+def casa_sequence(mol, raw_data_path, output_path,
+                  spwID=1,
+                  cut_baselines=True, remake_all=False):
     """Cvel, split, and export as uvf the original cont-sub'ed .ms.
 
     Args:
         - mol:
-        - split_range:
         - raw_data_path:
         - output_path: path, with name included
+        - spwID: the line's spectral window ID. spwID(HCO+) = 1
+        - cut_baselines: obvious.
         - remake_all (bool): if True, remove delete all pre-existing files.
     """
+    # blah
+    split_range = find_split_cutoffs(mol)
+    print "Split range is ", str(split_range[0]), str(split_range[1])
+
+    # Blah
+    pipe(["split(",
+          "vis='../../raw_data/calibrated.ms',",
+          "outputvis='calibrated_of4_hco.ms',",
+          "field='OrionField4',",
+          "source='OrionField4',",
+          "spw={}".format(spwID)])
+
+    # Want to exlude the data disk from our contsub, so use split_range
+    pipe(["uvcontsub(",
+          "vis='calibrated_of4_hco.ms',",
+          "fitspw={},".format(split_range),
+          "excludechans=True,",
+          "spw='0'"])
+
     if already_exists(output_path + '_cvel.ms') is False:
+        # The values of width and start should be changed.
+        width, start = '0.42km/s', '-10.0km/s'
         pipe(["cvel(",
               "vis='{}calibrated-{}.ms.contsub',".format(raw_data_path, mol),
               "outputvis='{}_cvel.ms',".format(output_path),
-              "field='OrionField4',",
+              "field='',",
+              "mode='velocity',",
+              "nchans=-1,",
+              "width={},".format(width),
+              "start={},".format(start),
               "restfreq='{}GHz',".format(lines[mol]['restfreq']),
               "outframe='LSRK')"
               ])
 
     if already_exists(output_path + '_split.ms') is False:
-        spw = '*:' + str(split_range[0]) + '~' + str(split_range[1])
+        # There is only one spw now, so this is ok to do.
+        spw = '0:' + str(split_range[0]) + '~' + str(split_range[1])
         split_str = (["split(",
                       "vis='{}_cvel.ms',".format(output_path),
                       "outputvis='{}_split.ms',".format(output_path),
                       "spw='{}',".format(spw),
-                      "datacolumn='data',",
+                      "datacolumn='all',",
                       "keepflags=False)"
                       ])
 
@@ -174,13 +202,9 @@ def run_full_pipeline():
         log += "Some files already existed and so were not remade.\n"
         log += "Careful for inconsistencies.\n\n"
 
-    split_range = find_split_cutoffs(mol)
-
-    print "Split range is ", str(split_range[0]), str(split_range[1])
     print "Now processing data...."
-    casa_sequence(mol, split_range, raw_data_path,
+    casa_sequence(mol, raw_data_path,
                   final_data_path + name, cut_baselines)
-    log = log + 'Split range used: ' + str(split_range) + '\n'
     print "Finished casa_sequence()\n\n"
 
     print "Running varvis....\n\n"
@@ -189,13 +213,14 @@ def run_full_pipeline():
         var_vis(final_data_path + name)
 
     print "Finished varvis; converting uvf to vis now....\n\n"
-    d_file = fits.getheader(final_data_path + name + '.uvf')
-    crval4, crpix4 = d_file['CRVAL4'], d_file['CRPIX4']
+    # CRVAL4 IS NOT RESTFREQ
+    # d_file = fits.getheader(final_data_path + name + '.uvf')
+    # crval4, crpix4 = d_file['CRVAL4'], d_file['CRPIX4']
     if already_exists(final_data_path + name + '.vis') is False:
         sp.Popen(['fits',
                   'op=uvin',
                   'in={}.uvf'.format(name),
-                  'velocity=lsr,{},{}'.format(crval4, crpix4),
+                  # 'velocity=lsr,{},{}'.format(crval4, crpix4),
                   'out={}.vis'.format(name)],
                  cwd=final_data_path).wait()
 

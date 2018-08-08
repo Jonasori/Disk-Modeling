@@ -328,13 +328,18 @@ def already_exists(query):
 
 
 def remove(filePath):
-    """Delete a file.
+    """Delete some files.
 
     Mostly just written to avoid having to remember the syntax every time.
     filePath is full filepath, including name and extension.
     Supports wildcards.
     """
-    sp.Popen(['rm -rf {}'.format(filePath)], shell=True).wait()
+    if type(filePath) == 'str':
+        sp.Popen(['rm -rf {}'.format(filePath)], shell=True).wait()
+
+    elif type(filePath) == 'list':
+        for f in filePath:
+            sp.Popen(['rm -rf {}'.format(f)], shell=True).wait()
 
 
 def pipe(commands):
@@ -379,14 +384,8 @@ def tclean(mol='hco', output_path='./test'):
           "gridder       = 'standard',",
           "imsize        = [256, 256],",
           "cell          = '0.045arcsec',",
-          "phasecenter   = 0,",
-          "weighting     = 'briggs',",
-          "robust        = 0.5,",
-          "restoringbeam ='common',",
           "interactive   = False,",
-          # "pbcor         = True,",
-          "niter         = 5000",
-          ")"])
+          "niter         = 5000)"])
 
 
 
