@@ -34,63 +34,63 @@ def casa_sequence(mol, raw_data_path, output_path,
     split_range = find_split_cutoffs(mol)
     print "Split range is ", str(split_range[0]), str(split_range[1])
 
-    # Blah
+    # FIELD SPLIT
+    # All files past this point should be saved to a different directory.
     pipe(["split(",
-          "vis='../../raw_data/calibrated.ms',",
-          "outputvis='calibrated_of4_hco.ms',",
+          "vis='{}calibrated.ms',".format(raw_data_path),
+          "outputvis='{}calibrated-{}.ms',".format(raw_data_path, mol),
           "field='OrionField4',",
           "source='OrionField4',",
           "spw={}".format(spwID)])
 
+    # CONTINUUM SUBTRACTION
     # Want to exlude the data disk from our contsub, so use split_range
     pipe(["uvcontsub(",
-          "vis='calibrated_of4_hco.ms',",
+          "vis='{}calibrated-{}.ms',".format(raw_data_path, mol),
           "fitspw={},".format(split_range),
           "excludechans=True,",
           "spw='0'"])
 
-    if already_exists(output_path + '_cvel.ms') is False:
-        # The values of width and start should be changed.
-        width, start = '0.42km/s', '-10.0km/s'
-        pipe(["cvel(",
-              "vis='{}calibrated-{}.ms.contsub',".format(raw_data_path, mol),
-              "outputvis='{}_cvel.ms',".format(output_path),
-              "field='',",
-              "mode='velocity',",
-              "nchans=-1,",
-              "width={},".format(width),
-              "start={},".format(start),
-              "restfreq='{}GHz',".format(lines[mol]['restfreq']),
-              "outframe='LSRK')"
-              ])
+    # CVEL
+    # The values of width and start should be changed.
+    width, start = '0.42km/s', '-10.0km/s'
+    pipe(["cvel(",
+          "vis='{}calibrated-{}.ms.contsub',".format(raw_data_path, mol),
+          "outputvis='{}_cvel.ms',".format(output_path),
+          "field='',",
+          "mode='velocity',",
+          "nchans=-1,",
+          # "width={},".format(width),
+          # "start={},".format(start),
+          "restfreq='{}GHz',".format(lines[mol]['restfreq']),
+          "outframe='LSRK')"
+          ])
 
-    if already_exists(output_path + '_split.ms') is False:
-        # There is only one spw now, so this is ok to do.
-        spw = '0:' + str(split_range[0]) + '~' + str(split_range[1])
-        split_str = (["split(",
-                      "vis='{}_cvel.ms',".format(output_path),
-                      "outputvis='{}_split.ms',".format(output_path),
-                      "spw='{}',".format(spw),
-                      "datacolumn='all',",
-                      "keepflags=False)"
-                      ])
+    # There is only one spw now, so this is ok to do.
+    spw = '0:' + str(split_range[0]) + '~' + str(split_range[1])
+    split_str = (["split(",
+                  "vis='{}_cvel.ms',".format(output_path),
+                  "outputvis='{}_split.ms',".format(output_path),
+                  "spw='{}',".format(spw),
+                  "datacolumn='all',",
+                  "keepflags=False)"
+                  ])
 
-        # If necessary, insert a baseline cutoff. Not appending because we want
-        # to keep the ) in the right spot, so just put uvrange= in the middle.
-        if cut_baselines is True:
-            print "\nCutting baselines in casa_sequence\n"
-            b_min = lines[mol]['baseline_cutoff']
-            split_str = split_str[:-2] + \
-                [("uvrange='>" + str(b_min) + "klambda',")] + \
-                split_str[-2:]
+    # If necessary, insert a baseline cutoff. Not appending because we want
+    # to keep the ) in the right spot, so just put uvrange= in the middle.
+    if cut_baselines is True:
+        print "\nCutting baselines in casa_sequence\n"
+        b_min = lines[mol]['baseline_cutoff']
+        split_str = split_str[:-2] + \
+            [("uvrange='>" + str(b_min) + "klambda',")] + \
+            split_str[-2:]
 
-        pipe(split_str)
+    pipe(split_str)
 
-    if already_exists(output_path + '_exportuvfits.uvf') is False:
-        pipe(["exportuvfits(",
-              "vis='{}_split.ms',".format(output_path),
-              "fitsfile='{}_exportuvfits.uvf')".format(output_path)
-              ])
+    pipe(["exportuvfits(",
+          "vis='{}_split.ms',".format(output_path),
+          "fitsfile='{}_exportuvfits.uvf')".format(output_path)
+          ])
 
 
 def find_split_cutoffs(mol, other_restfreq=0):
@@ -122,6 +122,9 @@ def find_split_cutoffs(mol, other_restfreq=0):
             loc = i
 
     split_range = [loc - 25, loc + 25]
+
+    v_step = 0.410339      # km/s
+    split_range_vel =
     return split_range
 
 
