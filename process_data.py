@@ -123,8 +123,8 @@ def find_split_cutoffs(mol, other_restfreq=0):
 
     split_range = [loc - 25, loc + 25]
 
-    v_step = 0.410339      # km/s
-    split_range_vel =
+    # v_step = 0.410339      # km/s
+    # split_range_vel =
     return split_range
 
 
