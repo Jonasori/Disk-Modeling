@@ -59,7 +59,7 @@ def casa_sequence(mol, raw_data_path, output_path,
           "outputvis='{}_cvel.ms',".format(output_path),
           "field='',",
           "mode='velocity',",
-          "nchans=-1,",
+          # "nchans=-1,",
           # "width={},".format(width),
           # "start={},".format(start),
           "restfreq='{}GHz',".format(lines[mol]['restfreq']),
@@ -87,6 +87,7 @@ def casa_sequence(mol, raw_data_path, output_path,
 
     pipe(split_str)
 
+    # EXPORT IT
     pipe(["exportuvfits(",
           "vis='{}_split.ms',".format(output_path),
           "fitsfile='{}_exportuvfits.uvf')".format(output_path)
@@ -188,7 +189,7 @@ def run_full_pipeline():
     # Paths to the data
     jonas = '/Volumes/disks/jonas/'
     raw_data_path = jonas + 'raw_data/'
-    final_data_path = jonas + 'freshStart/modeling/data/' + mol + '/'
+    final_data_path = jonas + 'freshStart/modeling/data/' + mol + '/' + mol
     name = mol
     if cut_baselines is True:
         name += '-short' + str(lines[mol]['baseline_cutoff'])
