@@ -56,7 +56,6 @@ def casa_sequence(mol, raw_data_path, output_path,
     # CVEL
     remove(output_path + '_cvel.ms')
     # The values of width and start should be changed.
-    width, start = '0.42km/s', '-10.0km/s'
     pipe(["cvel(",
           "vis='{}calibrated-{}.ms.contsub',".format(raw_data_path, mol),
           "outputvis='{}_cvel.ms',".format(output_path),
@@ -103,7 +102,7 @@ def find_split_cutoffs(mol, other_restfreq=0):
     """Find the indices of the 50 channels around the restfreq.
 
     chan_dir, chan0, nchans, chanstep from
-    listobs(vis='mol.ms', field='OrionField4')
+    listobs(vis='raw_data/calibrated-mol.ms.contsub')
     """
     chan_dir = lines[mol]['chan_dir']
     chan0 = lines[mol]['chan0']
@@ -222,9 +221,10 @@ def run_full_pipeline():
         var_vis(final_data_path + name)
     print "Finished varvis; converting uvf to vis now....\n\n"
     # These are HCO specific rn
-    restfreq = 356.73422300
+    restfreq = lines[mol]['restfreq']
+    # Need this to be chan0 of the split set. Find it with something like
+    # chan0_freq = lines[mol][chan0] * split_range[0] * chanstep
     chan0_freq = 356.718882
-
 
     chan0_vel = 3e5 * (chan0_freq - restfreq)/restfreq
     data, header = fits.getdata(final_data_path + name + '.uvf', header=True)
