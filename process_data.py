@@ -19,7 +19,7 @@ from tools import icr, already_exists, pipe, remove
 
 def casa_sequence(mol, raw_data_path, output_path,
                   spwID=1,
-                  cut_baselines=True, remake_all=False):
+                  cut_baselines=False, remake_all=False):
     """Cvel, split, and export as uvf the original cont-sub'ed .ms.
 
     Args:
