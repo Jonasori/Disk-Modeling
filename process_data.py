@@ -197,7 +197,7 @@ def run_full_pipeline():
     name = mol
     if cut_baselines is True:
         name += '-short' + str(lines[mol]['baseline_cutoff'])
-    final_data_path = jonas + 'freshStart/modeling/data/' + mol + '/' + name
+    final_data_path = jonas + 'freshStart/modeling/data/' + mol + '/'
 
     # Establish a string for the log file to be made at the end
     log = 'Files created on ' + today + '\n\n'
@@ -220,9 +220,16 @@ def run_full_pipeline():
     if already_exists(final_data_path + name + '.uvf') is False:
         # Note that var_vis takes in mol_exportuvfits, returns mol.uvf
         var_vis(final_data_path + name)
-
     print "Finished varvis; converting uvf to vis now....\n\n"
-    chan0_vel = 1
+    # These are HCO specific rn
+    restfreq = 356.73422300
+    chan0_freq = 356.718882
+
+
+    chan0_vel = 3e5 * (chan0_freq - restfreq)/restfreq
+    data, header = fits.getdata(final_data_path + name + '.uvf', header=True)
+    header['RESTFREQ'] = restfreq * 1e9
+    fits.writeto(final_data_path + name + '.uvf', data, header, overwrite=True)
     if already_exists(final_data_path + name + '.vis') is False:
         sp.Popen(['fits',
                   'op=uvin',
