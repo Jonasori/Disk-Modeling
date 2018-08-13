@@ -14,7 +14,7 @@ import time
 from astropy.io import fits
 from constants import lines, today
 from var_vis import var_vis
-from tools import icr, already_exists, pipe
+from tools import icr, already_exists, pipe, remove
 
 
 def casa_sequence(mol, raw_data_path, output_path,
@@ -36,6 +36,7 @@ def casa_sequence(mol, raw_data_path, output_path,
 
     # FIELD SPLIT
     # All files past this point should be saved to a different directory.
+    remove(raw_data_path + '-' + mol + '.ms')
     pipe(["split(",
           "vis='{}calibrated.ms',".format(raw_data_path),
           "outputvis='{}calibrated-{}.ms',".format(raw_data_path, mol),
@@ -45,6 +46,7 @@ def casa_sequence(mol, raw_data_path, output_path,
 
     # CONTINUUM SUBTRACTION
     # Want to exlude the data disk from our contsub, so use split_range
+    remove(raw_data_path + '-' + mol + '.ms.contsub')
     pipe(["uvcontsub(",
           "vis='{}calibrated-{}.ms',".format(raw_data_path, mol),
           "fitspw={},".format(split_range),
@@ -52,6 +54,7 @@ def casa_sequence(mol, raw_data_path, output_path,
           "spw='0'"])
 
     # CVEL
+    remove(output_path + '_cvel.ms')
     # The values of width and start should be changed.
     width, start = '0.42km/s', '-10.0km/s'
     pipe(["cvel(",
@@ -66,6 +69,7 @@ def casa_sequence(mol, raw_data_path, output_path,
           "outframe='LSRK')"
           ])
 
+    remove(output_path + '_split.ms')
     # There is only one spw now, so this is ok to do.
     spw = '0:' + str(split_range[0]) + '~' + str(split_range[1])
     split_str = (["split(",
@@ -88,6 +92,7 @@ def casa_sequence(mol, raw_data_path, output_path,
     pipe(split_str)
 
     # EXPORT IT
+    remove(output_path + '_exportuvfits.uvf')
     pipe(["exportuvfits(",
           "vis='{}_split.ms',".format(output_path),
           "fitsfile='{}_exportuvfits.uvf')".format(output_path)
@@ -189,10 +194,10 @@ def run_full_pipeline():
     # Paths to the data
     jonas = '/Volumes/disks/jonas/'
     raw_data_path = jonas + 'raw_data/'
-    final_data_path = jonas + 'freshStart/modeling/data/' + mol + '/' + mol
     name = mol
     if cut_baselines is True:
         name += '-short' + str(lines[mol]['baseline_cutoff'])
+    final_data_path = jonas + 'freshStart/modeling/data/' + mol + '/' + name
 
     # Establish a string for the log file to be made at the end
     log = 'Files created on ' + today + '\n\n'
@@ -217,14 +222,12 @@ def run_full_pipeline():
         var_vis(final_data_path + name)
 
     print "Finished varvis; converting uvf to vis now....\n\n"
-    # CRVAL4 IS NOT RESTFREQ
-    # d_file = fits.getheader(final_data_path + name + '.uvf')
-    # crval4, crpix4 = d_file['CRVAL4'], d_file['CRPIX4']
+    chan0_vel = 1
     if already_exists(final_data_path + name + '.vis') is False:
         sp.Popen(['fits',
                   'op=uvin',
                   'in={}.uvf'.format(name),
-                  # 'velocity=lsr,{},{}'.format(crval4, crpix4),
+                  'velocity=lsr,{},1'.format(chan0_vel),
                   'out={}.vis'.format(name)],
                  cwd=final_data_path).wait()
 
