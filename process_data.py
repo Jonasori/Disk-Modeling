@@ -223,7 +223,7 @@ def run_full_pipeline():
     # These are HCO specific rn
     restfreq = lines[mol]['restfreq']
     # Need this to be chan0 of the split set. Find it with something like
-    # chan0_freq = lines[mol][chan0] * split_range[0] * chanstep
+    # chan0_freq = lines[mol][chan0] + split_range[0] * chanstep
     chan0_freq = 356.718882
 
     chan0_vel = 3e5 * (chan0_freq - restfreq)/restfreq
