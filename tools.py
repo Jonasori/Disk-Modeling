@@ -350,7 +350,7 @@ def pipe(commands):
     print(call_string)
     # sp.call(['casa', '-c', call_string])
     sp.Popen(['casa', '-c', call_string]).wait()
-    # sp.Popen(['casa', '--nologger', '-c', call_string]).wait()
+    # sp.Popen(['casa', '--nologger', '--log2term', '-c', call_string]).wait()
 
     # clean up .log files that casa poops out
     sp.Popen('rm -rf *.log', shell=True).wait()

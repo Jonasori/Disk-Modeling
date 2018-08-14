@@ -222,9 +222,11 @@ def run_full_pipeline():
     print "Finished varvis; converting uvf to vis now....\n\n"
     # These are HCO specific rn
     restfreq = lines[mol]['restfreq']
-    # Need this to be chan0 of the split set. Find it with something like
-    # chan0_freq = lines[mol][chan0] + split_range[0] * chanstep
-    chan0_freq = 356.718882
+
+    # Need this to be chan0 of the split set.
+    # chan0_freq = 356.718882
+    with fits.getheader(final_data_path + name + '.uvf') as f:
+        chan0_freq = (f['CRVAL4'] - (f['CRPIX4']-1) * f['CDELT4']) * 1e-9
 
     chan0_vel = 3e5 * (chan0_freq - restfreq)/restfreq
     data, header = fits.getdata(final_data_path + name + '.uvf', header=True)
