@@ -230,7 +230,6 @@ def run_full_pipeline():
     # These are HCO specific rn
     restfreq = lines[mol]['restfreq']
 
-    # Need this to be chan0 of the split set.
     # chan0_freq = 356.718882
     f = fits.getheader(final_data_path + name + '.uvf')
     chan0_freq = (f['CRVAL4'] - (f['CRPIX4']-1) * f['CDELT4']) * 1e-9
