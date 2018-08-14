@@ -8,9 +8,10 @@ sp.Popen vs sp.call: Popen lets you change working directory for the call with
 """
 
 
-import subprocess as sp
-import argparse
 import time
+import argparse
+import numpy as np
+import subprocess as sp
 from astropy.io import fits
 from constants import lines, today
 from var_vis import var_vis
@@ -126,6 +127,12 @@ def find_split_cutoffs(mol, other_restfreq=0):
             min_diff = diff
             loc = i
 
+    # Need to account for the systemic velocitys shift of. Do so by rearranging
+    # d_nu/nu = dv/c
+    # ((sysv/c) * restfreq)/chanstep = nchans of shift to apply
+    # = (10.55/3e5) * 356.734223/0.000488281 = 25.692
+    # So shift in an extra 26 channels
+    loc = loc - 26 if loc > 26 else -np.inf
     split_range = [loc - 25, loc + 25]
 
     # v_step = 0.410339      # km/s
@@ -193,10 +200,10 @@ def run_full_pipeline():
     # Paths to the data
     jonas = '/Volumes/disks/jonas/'
     raw_data_path = jonas + 'raw_data/'
+    final_data_path = jonas + 'freshStart/modeling/data/' + mol + '/'
     name = mol
     if cut_baselines is True:
         name += '-short' + str(lines[mol]['baseline_cutoff'])
-    final_data_path = jonas + 'freshStart/modeling/data/' + mol + '/'
 
     # Establish a string for the log file to be made at the end
     log = 'Files created on ' + today + '\n\n'
@@ -225,9 +232,10 @@ def run_full_pipeline():
 
     # Need this to be chan0 of the split set.
     # chan0_freq = 356.718882
-    with fits.getheader(final_data_path + name + '.uvf') as f:
-        chan0_freq = (f['CRVAL4'] - (f['CRPIX4']-1) * f['CDELT4']) * 1e-9
+    f = fits.getheader(final_data_path + name + '.uvf')
+    chan0_freq = (f['CRVAL4'] - (f['CRPIX4']-1) * f['CDELT4']) * 1e-9
 
+    # Using the same math as in lines 130-135
     chan0_vel = 3e5 * (chan0_freq - restfreq)/restfreq
     data, header = fits.getdata(final_data_path + name + '.uvf', header=True)
     header['RESTFREQ'] = restfreq * 1e9
