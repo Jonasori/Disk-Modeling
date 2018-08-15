@@ -33,7 +33,7 @@ def casa_sequence(mol, raw_data_path, output_path,
     # blah
     split_range = find_split_cutoffs(mol)
     # By the time this gets used there is only one spw so this is fine
-    spw = '0:' + str(split_range[0]) + '~' + str(split_range[1])
+    spw = "0:' + str(split_range[0]) + '~' + str(split_range[1])
     print "Split range is ", str(split_range[0]), str(split_range[1])
 
     # FIELD SPLIT
@@ -50,7 +50,7 @@ def casa_sequence(mol, raw_data_path, output_path,
     remove(raw_data_path + '-' + mol + '.ms.contsub')
     pipe(["uvcontsub(",
           "vis='{}calibrated-{}.ms',".format(raw_data_path, mol),
-          "fitspw={},".format(spw),
+          "fitspw='{}',".format(spw),
           "excludechans=True,",
           "spw='0')"])
 
