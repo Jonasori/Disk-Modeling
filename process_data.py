@@ -19,7 +19,6 @@ from tools import icr, already_exists, pipe, remove
 
 
 def casa_sequence(mol, raw_data_path, output_path,
-                  spwID=1,
                   cut_baselines=False, remake_all=False):
     """Cvel, split, and export as uvf the original cont-sub'ed .ms.
 
@@ -42,8 +41,7 @@ def casa_sequence(mol, raw_data_path, output_path,
           "vis='{}calibrated.ms',".format(raw_data_path),
           "outputvis='{}calibrated-{}.ms',".format(raw_data_path, mol),
           "field='OrionField4',",
-          "source='OrionField4',",
-          "spw={}".format(spwID)])
+          "spw={})".format(lines[mol]['spwID'])])
 
     # CONTINUUM SUBTRACTION
     # Want to exlude the data disk from our contsub, so use split_range
