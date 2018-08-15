@@ -50,7 +50,7 @@ def casa_sequence(mol, raw_data_path, output_path,
           "vis='{}calibrated-{}.ms',".format(raw_data_path, mol),
           "fitspw={},".format(split_range),
           "excludechans=True,",
-          "spw='0'"])
+          "spw='0')"])
 
     # CVEL
     remove(output_path + '_cvel.ms')
