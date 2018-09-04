@@ -30,23 +30,22 @@ def casa_sequence(mol, raw_data_path, output_path,
         - cut_baselines: obvious.
         - remake_all (bool): if True, remove delete all pre-existing files.
     """
-    # blah
-    split_range = find_split_cutoffs(mol)
-    # By the time this gets used there is only one spw so this is fine
-    spw = '0:' + str(split_range[0]) + '~' + str(split_range[1])
-    print "Split range is ", str(split_range[0]), str(split_range[1])
-
     # FIELD SPLIT
-    # All files past this point should be saved to a different directory.
+    # All files past this point should be saved to a different directory
+    # (not currently implemented)
     remove(raw_data_path + '-' + mol + '.ms')
     pipe(["split(",
           "vis='{}calibrated.ms',".format(raw_data_path),
           "outputvis='{}calibrated-{}.ms',".format(raw_data_path, mol),
           "field='OrionField4',",
-          "spw={})".format(lines[mol]['spwID'])])
+          "spw={})".format(lines[mol]['spwID'])
+          ])
 
     # CONTINUUM SUBTRACTION
     # Want to exlude the data disk from our contsub, so use split_range
+    split_range = find_split_cutoffs(mol)
+    # By the time this gets used there is only one spw so 0 is fine
+    spw = '0:' + str(split_range[0]) + '~' + str(split_range[1])
     remove(raw_data_path + '-' + mol + '.ms.contsub')
     pipe(["uvcontsub(",
           "vis='{}calibrated-{}.ms',".format(raw_data_path, mol),
@@ -69,6 +68,10 @@ def casa_sequence(mol, raw_data_path, output_path,
           "outframe='LSRK')"
           ])
 
+    # SPLIT OUT VALUABLE CHANNELS
+    # Using the choices made earlier, split out the channels we want
+    # I'm concerned about the order of this; seems like it the desired split
+    # range will change before and after cvel
     remove(output_path + '_split.ms')
     split_str = (["split(",
                   "vis='{}_cvel.ms',".format(output_path),
@@ -78,8 +81,8 @@ def casa_sequence(mol, raw_data_path, output_path,
                   "keepflags=False)"
                   ])
 
-    # If necessary, insert a baseline cutoff. Not appending because we want
-    # to keep the ) in the right spot, so just put uvrange= in the middle.
+    # If necessary, insert a baseline cutoff. Because we want
+    # to keep the ) in the right spot, just put uvrange= in the middle.
     if cut_baselines is True:
         print "\nCutting baselines in casa_sequence\n"
         b_min = lines[mol]['baseline_cutoff']
@@ -90,7 +93,7 @@ def casa_sequence(mol, raw_data_path, output_path,
     pipe(split_str)
 
     # EXPORT IT
-    remove(output_path + '_exportuvfits.uvf')
+    remove(output_path + '_exportuvfits.uvf') if remake_all is True
     pipe(["exportuvfits(",
           "vis='{}_split.ms',".format(output_path),
           "fitsfile='{}_exportuvfits.uvf')".format(output_path)
@@ -125,7 +128,7 @@ def find_split_cutoffs(mol, other_restfreq=0):
             min_diff = diff
             loc = i
 
-    # Need to account for the systemic velocitys shift of. Do so by rearranging
+    # Need to account for the systemic velocitys shift. Do so by rearranging
     # d_nu/nu = dv/c
     # ((sysv/c) * restfreq)/chanstep = nchans of shift to apply
     # = (10.55/3e5) * 356.734223/0.000488281 = 25.692
@@ -225,10 +228,9 @@ def run_full_pipeline():
         # Note that var_vis takes in mol_exportuvfits, returns mol.uvf
         var_vis(final_data_path + name)
     print "Finished varvis; converting uvf to vis now....\n\n"
-    # These are HCO specific rn
-    restfreq = lines[mol]['restfreq']
 
-    # chan0_freq = 356.718882
+    # Not sure this is right
+    restfreq = lines[mol]['restfreq']
     f = fits.getheader(final_data_path + name + '.uvf')
     chan0_freq = (f['CRVAL4'] - (f['CRPIX4']-1) * f['CDELT4']) * 1e-9
 
@@ -245,13 +247,6 @@ def run_full_pipeline():
                   'out={}.vis'.format(name)],
                  cwd=final_data_path).wait()
 
-    """
-    # Cut out baselines.
-    if b_min != 0:
-        print "Cutting out baselines below", b_min
-        # uvaver(mol)
-        log += 'These visibilities were cut at' + str(b_min) + '\n'
-    """
 
     print "Convolving data to get image, converting output to .fits\n\n"
     if already_exists(final_data_path + name + '.cm') is False:
@@ -262,13 +257,9 @@ def run_full_pipeline():
     sp.Popen(['rm -rf {}.bm'.format(name)], shell=True, cwd=final_data_path)
     sp.Popen(['rm -rf {}.cl'.format(name)], shell=True, cwd=final_data_path)
     sp.Popen(['rm -rf {}.mp'.format(name)], shell=True, cwd=final_data_path)
-
-    sp.Popen(['rm -rf {}_cvel.*'.format(name)], shell=True,
-             cwd=final_data_path)
-    sp.Popen(['rm -rf {}_split.*'.format(name)], shell=True,
-             cwd=final_data_path)
-    sp.Popen(['rm -rf {}_exportuvfits.*'.format(name)],
-             shell=True, cwd=final_data_path)
+    sp.Popen(['rm -rf {}_cvel.*'.format(name)], shell=True, cwd=final_data_path)
+    sp.Popen(['rm -rf {}_split.*'.format(name)], shell=True, cwd=final_data_path)
+    sp.Popen(['rm -rf {}_exportuvfits.*'.format(name)], shell=True, cwd=final_data_path)
     sp.Popen(['rm -rf casa*.log'], shell=True, cwd=final_data_path)
 
     tf = time.time()
@@ -276,7 +267,6 @@ def run_full_pipeline():
     log += '\nThis processing took' + str(t_total) + 'minutes.'
     with open(final_data_path + 'file_log.txt', 'w') as f:
         f.write(log)
-
     print "All done! This processing took " + str(t_total) + " minutes."
 
 
