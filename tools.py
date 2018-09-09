@@ -10,11 +10,80 @@ Script some Miriad commands for easier calling, more specialized usage.
 """
 
 # Packages
-import subprocess as sp
-from astropy.io import fits
 import os
 import argparse
+import numpy as np
+import subprocess as sp
 from constants import lines, get_data_path, obs_stuff
+from astropy.io import fits
+from astropy.visualization import astropy_mpl_style
+from matplotlib.pylab import figure
+import matplotlib.pyplot as plt
+plt.style.use(astropy_mpl_style)
+
+
+def plot_fits(image_path, crop_factor=3, nchans_to_cut=0):
+    """
+    Plot some fits image data.
+
+    The cropping currently assumes a square image. That could be easily
+    fixed by just adding y_center, y_min, and y_max and putting them in the
+    imshow() call.
+    Args:
+        image_path (str): full path, including filetype, to image.
+        crop_factor (float): what multiple do we want to crop by?
+
+    To do:
+        - Add a beam ellipse
+        - The velocity labels seem to be about 4 channels off or the disk
+            in blah.fits is actually somehow centered around 12.6 km/s
+    """
+    # Get the data
+    image_data = fits.getdata(image_path, ext=0)
+    header = fits.getheader(image_path, ext=0)
+
+    # Figure out the cropping:
+    if crop_factor != 0:
+        # Floor divide just in case the dimension is an odd value
+        x_center = int(np.floor(image_data.shape[1]/2))
+        x_min = x_center - x_center/crop_factor
+        x_max = x_center + x_center/crop_factor
+
+    else:
+        x_min, x_max = 0, int(np.floor(image_data.shape[1]))
+
+    # Set up velocities:
+    chanstep_vel = header['CDELT3'] * 1e-3
+    # Reference pix value - chanstep * reference pix number
+    chan0_vel = (header['CRVAL3'] * 1e-3) - header['CRPIX3'] * chanstep_vel
+
+    # Cut half of nchans_to_cut out of the front end
+    chan_offset = int(np.floor(nchans_to_cut/2))
+    nchans = image_data.shape[0] - nchans_to_cut
+
+    # I think these are labeled backwards, but whatever.
+    n_rows = int(np.floor(np.sqrt(nchans)))
+    n_cols = int(np.ceil(np.sqrt(nchans)))
+
+    fig = figure(figsize=[n_rows, n_cols])
+
+    for i in range(nchans):
+        chan = i + int(np.floor(nchans_to_cut/2))
+        velocity = str(round(chan0_vel + chan * chanstep_vel, 2))
+
+        ax = fig.add_subplot(n_cols, n_rows, i+1)
+
+        ax.grid(False)
+        ax.set_xticklabels([])
+        ax.set_yticklabels([])
+        ax.text(40, 10, velocity + ' km/s',
+                fontsize=6, color='w',
+                horizontalalignment='center', verticalalignment='center')
+        ax.imshow(image_data[i + chan_offset][x_min:x_max, x_min:x_max])
+
+    plt.tight_layout()
+    plt.subplots_adjust(wspace=0.1, hspace=0.1)
+    plt.show(block=False)
 
 
 def cgdisp(imageName, crop=True, contours=True, rms=6.8e-3):
@@ -177,6 +246,10 @@ def icr(visPath, mol='hco', min_baseline=0, niters=1e4):
              stdout=open(os.devnull, 'wb'),
              cwd=filepath).wait()
 
+    for end in ['.cm', '.cl', '.bm', '.mp']:
+        remove(outName + end)
+        # sp.Popen('rm -rf {}.{}'.format(outName, end), shell=True, cwd=filepath).wait()
+
     # Invert stuff:
     invert_str = ['invert',
                   'vis={}.vis'.format(visName),
@@ -189,11 +262,6 @@ def icr(visPath, mol='hco', min_baseline=0, niters=1e4):
 
     if min_baseline != 0:
         invert_str.append('select=-uvrange(0,{})'.format(b))
-
-    for end in ['cm', 'cl', 'bm', 'mp']:
-        sp.Popen('rm -rf {}.{}'.format(outName, end),
-                 shell=True, cwd=filepath).wait()
-    print "Deleted", outName + '.[cm, cl, bm, mp]'
 
     # sp.call(invert_str, stdout=open(os.devnull, 'wb'))
     sp.Popen(invert_str, stdout=open(os.devnull, 'wb'), cwd=filepath).wait()
@@ -275,14 +343,13 @@ def get_residuals(filePath, mol='hco', show=False):
     """
     data_vis = './data/' + mol + '/' + mol
 
-    sp.call('rm -rf *{}.im'.format(filePath), shell=True)
-
+    remove(filePath + '.im')
     sp.call(['fits', 'op=xyin',
              'in={}.fits'.format(filePath),
              'out={}.im'.format(filePath)])
 
     # Sample the model image using the observation uv coverage
-    sp.call('rm -rf *{}.vis'.format(filePath), shell=True)
+    remove(filePath + '_resid.vis')
     sp.call(['uvmodel',
              'options=subtract',
              'vis={}'.format(data_vis),
@@ -290,7 +357,7 @@ def get_residuals(filePath, mol='hco', show=False):
              'out={}.vis'.format(filePath + '_resid')])
 
     # Convert to UVfits
-    sp.call('rm -rf *{}.uvf'.format(filePath + '_resid'), shell=True)
+    remove(filePath + '_resid.uvf')
     sp.call(['fits',
              'op=uvout',
              'in={}.vis'.format(filePath + '_resid'),
@@ -334,10 +401,10 @@ def remove(filePath):
     filePath is full filepath, including name and extension.
     Supports wildcards.
     """
-    if type(filePath) == 'str':
+    if type(filePath) == str:
         sp.Popen(['rm -rf {}'.format(filePath)], shell=True).wait()
 
-    elif type(filePath) == 'list':
+    elif type(filePath) == list:
         for f in filePath:
             sp.Popen(['rm -rf {}'.format(f)], shell=True).wait()
 
