@@ -13,10 +13,11 @@ import argparse
 import numpy as np
 import subprocess as sp
 from astropy.io import fits
+from astropy.constants import c
 from constants import lines, today
 from var_vis import var_vis
 from tools import icr, already_exists, pipe, remove
-
+c = c.to('km/s').value
 
 def casa_sequence(mol, raw_data_path, output_path,
                   cut_baselines=False, remake_all=False):
@@ -31,8 +32,6 @@ def casa_sequence(mol, raw_data_path, output_path,
         - remake_all (bool): if True, remove delete all pre-existing files.
     """
     # FIELD SPLIT
-    # All files past this point should be saved to a different directory
-    # (not currently implemented)
     remove(raw_data_path + '-' + mol + '.ms')
     pipe(["split(",
           "vis='{}calibrated.ms',".format(raw_data_path),
@@ -43,8 +42,8 @@ def casa_sequence(mol, raw_data_path, output_path,
 
     # CONTINUUM SUBTRACTION
     # Want to exlude the data disk from our contsub, so use split_range
-    split_range = find_split_cutoffs(mol)
     # By the time this gets used there is only one spw so 0 is fine
+    split_range = find_split_cutoffs(mol)
     spw = '0:' + str(split_range[0]) + '~' + str(split_range[1])
     remove(raw_data_path + '-' + mol + '.ms.contsub')
     pipe(["uvcontsub(",
@@ -55,15 +54,19 @@ def casa_sequence(mol, raw_data_path, output_path,
 
     # CVEL
     remove(output_path + '_cvel.ms')
-    # The values of width and start should be changed.
+    chan0_freq    = lines[mol]['chan0_freq']
+    chanstep_freq = lines[mol]['chanstep_freq']
+    restfreq      = lines[mol]['restfreq']
+    chan0_vel     = c * (chan0_freq - restfreq)/restfreq
+    chanstep_vel  = c * (chanstep_freq/restfreq)
     pipe(["cvel(",
           "vis='{}calibrated-{}.ms.contsub',".format(raw_data_path, mol),
           "outputvis='{}_cvel.ms',".format(output_path),
           "field='',",
           "mode='velocity',",
-          # "nchans=-1,",
-          # "width={},".format(width),
-          # "start={},".format(start),
+          "nchan=-1,",
+          "width='{}km/s',".format(chanstep_vel),
+          "start='{}km/s',".format(chan0_vel),
           "restfreq='{}GHz',".format(lines[mol]['restfreq']),
           "outframe='LSRK')"
           ])
@@ -93,7 +96,7 @@ def casa_sequence(mol, raw_data_path, output_path,
     pipe(split_str)
 
     # EXPORT IT
-    remove(output_path + '_exportuvfits.uvf') if remake_all is True
+    remove(output_path + '_exportuvfits.uvf')
     pipe(["exportuvfits(",
           "vis='{}_split.ms',".format(output_path),
           "fitsfile='{}_exportuvfits.uvf')".format(output_path)
@@ -103,21 +106,16 @@ def casa_sequence(mol, raw_data_path, output_path,
 def find_split_cutoffs(mol, other_restfreq=0):
     """Find the indices of the 50 channels around the restfreq.
 
-    chan_dir, chan0, nchans, chanstep from
+    chan_dir, chan0_freq, nchans, chanstep from
     listobs(vis='raw_data/calibrated-mol.ms.contsub')
     """
-    chan_dir = lines[mol]['chan_dir']
-    chan0 = lines[mol]['chan0']
-    restfreq = lines[mol]['restfreq']
-
     # ALl in GHz. Both values pulled from listobs
+    chan0_freq = lines[mol]['chan0_freq']
+    chanstep = lines[mol]['chanstep_freq']
+    restfreq = lines[mol]['restfreq']
     nchans = 3840
-    chanstep = 0.000488281 * chan_dir
-    freqs = [chan0 + chanstep*i for i in range(nchans)]
 
-    # Using these two different restfreqs yields locs of 1908 vs 1932. Weird.
-    if other_restfreq != 0:
-        restfreq = other_restfreq
+    freqs = [chan0_freq + chanstep*i for i in range(nchans)]
 
     # Find the index of the restfreq channel
     loc = 0
@@ -131,13 +129,12 @@ def find_split_cutoffs(mol, other_restfreq=0):
     # Need to account for the systemic velocitys shift. Do so by rearranging
     # d_nu/nu = dv/c
     # ((sysv/c) * restfreq)/chanstep = nchans of shift to apply
-    # = (10.55/3e5) * 356.734223/0.000488281 = 25.692
+    # = (10.55/c) * 356.734223/0.000488281 = 25.692
+    shift = int(np.floor((10.55/c) * (restfreq/chanstep)
     # So shift in an extra 26 channels
-    loc = loc - 26 if loc > 26 else -np.inf
-    split_range = [loc - 25, loc + 25]
+    loc = loc - shift if loc > shift else -np.inf
+    split_range = [loc - shift, loc + shift]
 
-    # v_step = 0.410339      # km/s
-    # split_range_vel =
     return split_range
 
 
@@ -195,8 +192,8 @@ def run_full_pipeline():
     mol = raw_input('Which line (HCN, HCO, CS, or CO)?\n').lower()
     cut = raw_input('Cut baselines for better signal (y/n)?\n').lower()
     cut_baselines = True if cut == 'y' else False
-    remake = raw_input('Remake everything (y/n)? (Not functional rn)\n')
-    remake_all = True if remake == 'y' else False
+    remake = raw_input('Remake everything (y/n)?\n')
+    remake_all = True if remake.lower() == 'y' else False
 
     # Paths to the data
     jonas = '/Volumes/disks/jonas/'
@@ -212,7 +209,7 @@ def run_full_pipeline():
     if remake_all is True:
         # This doesn't work yet.
         print "Remaking everything; emptied line dir and remaking."
-        sp.call(['rm -rf', '{}*'.format(final_data_path)], shell=True)
+        remove(final_data_path + '*')
         log += "Full remake occured; all files are fresh.\n\n"
     else:
         log += "Some files already existed and so were not remade.\n"
@@ -221,7 +218,6 @@ def run_full_pipeline():
     print "Now processing data...."
     casa_sequence(mol, raw_data_path,
                   final_data_path + name, cut_baselines)
-    print "Finished casa_sequence()\n\n"
 
     print "Running varvis....\n\n"
     if already_exists(final_data_path + name + '.uvf') is False:
@@ -229,13 +225,14 @@ def run_full_pipeline():
         var_vis(final_data_path + name)
     print "Finished varvis; converting uvf to vis now....\n\n"
 
-    # Not sure this is right
+    # Note that this is different than lines[mol][chan0_freq] bc
+    # it's dealing with the chopped vis set
     restfreq = lines[mol]['restfreq']
     f = fits.getheader(final_data_path + name + '.uvf')
-    chan0_freq = (f['CRVAL4'] - (f['CRPIX4']-1) * f['CDELT4']) * 1e-9
 
+    # chan0_freq = (f['CRVAL4'] - (f['CRPIX4']-1) * f['CDELT4']) * 1e-9
     # Using the same math as in lines 130-135
-    chan0_vel = 3e5 * (chan0_freq - restfreq)/restfreq
+    # chan0_vel = c * (chan0_freq - restfreq)/restfreq
     data, header = fits.getdata(final_data_path + name + '.uvf', header=True)
     header['RESTFREQ'] = restfreq * 1e9
     fits.writeto(final_data_path + name + '.uvf', data, header, overwrite=True)
@@ -243,7 +240,9 @@ def run_full_pipeline():
         sp.Popen(['fits',
                   'op=uvin',
                   'in={}.uvf'.format(name),
-                  'velocity=lsr,{},1'.format(chan0_vel),
+                  # DONT PUT THIS BACK IN
+                  # Or if you do, flip the sign of chan0_vel to pos
+                  # 'velocity=lsr,{},1'.format(chan0_vel),
                   'out={}.vis'.format(name)],
                  cwd=final_data_path).wait()
 
@@ -253,23 +252,22 @@ def run_full_pipeline():
         icr(final_data_path + name, mol=mol)
 
     print "Deleting the junk process files...\n\n"
-    # Clear out the bad stuff. There's gotta be a better way of doing this.
-    sp.Popen(['rm -rf {}.bm'.format(name)], shell=True, cwd=final_data_path)
-    sp.Popen(['rm -rf {}.cl'.format(name)], shell=True, cwd=final_data_path)
-    sp.Popen(['rm -rf {}.mp'.format(name)], shell=True, cwd=final_data_path)
-    sp.Popen(['rm -rf {}_cvel.*'.format(name)], shell=True, cwd=final_data_path)
-    sp.Popen(['rm -rf {}_split.*'.format(name)], shell=True, cwd=final_data_path)
-    sp.Popen(['rm -rf {}_exportuvfits.*'.format(name)], shell=True, cwd=final_data_path)
-    sp.Popen(['rm -rf casa*.log'], shell=True, cwd=final_data_path)
+    fpath = final_data_path + name
+    files_to_remove = [fpath + '.bm', fpath + '_split.*',
+                       fpath + '.cl', fpath + '_cvel.*',
+                       fpath + '.mp', fpath + '_exportuvfits.*',
+                       'casa*.log', '*.last']
+    remove(files_to_remove)
 
     tf = time.time()
     t_total = (tf - t0)/60
-    log += '\nThis processing took' + str(t_total) + 'minutes.'
+    log += '\nThis processing took ' + str(t_total) + ' minutes.'
     with open(final_data_path + 'file_log.txt', 'w') as f:
         f.write(log)
     print "All done! This processing took " + str(t_total) + " minutes."
 
 
+# ARGPARSE STUFF
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Process the data.')
     parser.add_argument('-r', '--run', action='store_true',

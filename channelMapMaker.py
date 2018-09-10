@@ -175,8 +175,8 @@ subplots_adjust(wspace=0.1, hspace=0.1)
 c1 = 12
 c2 = 55
 
-bmin = head['bmin']*3600.
-bmaj = head['bmaj']*3600.
+bmin = head['bmin'] * 3600.
+bmaj = head['bmaj'] * 3600.
 bpa = head['bpa']
 
 # Loop over channels and plot each panel

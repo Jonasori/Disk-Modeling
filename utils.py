@@ -124,7 +124,7 @@ def sumDisks(filePathA, filePathB, outputPath):
     im.header = model_header
 
     # Now swap out some of the values using values from the data file:
-    with fits.open(dataPath + '_veloTest.fits') as data:
+    with fits.open(dataPath + '.fits') as data:
         data_header = data[0].header
 
     # Does the fact that I have to change these reflect a deeper problem?

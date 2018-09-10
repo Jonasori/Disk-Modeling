@@ -12,14 +12,16 @@ from constants import today
 from tools import already_exists, remove
 
 
-# Which line are we looking at, and how are we fitting?
+# Which fitting method?
 gs = True
 
 
 if gs:
     # Set up a symlink to the /scratch directory to dump the model files to.
-    print "Making new directories and setting up symlink."
     """
+    print "Making new directories and setting up symlink."
+    Symlink setup got moved to grid_search
+
     # A little bit janky
     scratch_home = '/scratch/jonas/'
     this_run_basename = today
@@ -38,13 +40,12 @@ if gs:
 
     sp.call(['mkdir', scratch_dir])
     sp.call(['ln', '-s', scratch_dir, './models/'])
-    """
     print "Starting fullRun"
-
+    """
     # Give the grid search the path to be dumping things into.
-    modelPath = './models/' + this_run + '/' + this_run
-    fullRun(diskAParams, diskBParams, modelPath)
+    # modelPath = './models/' + this_run + '/' + this_run
+    fullRun(diskAParams, diskBParams)
 
 
-# else:
+# if mc:
 #     mcmc.fullRun()

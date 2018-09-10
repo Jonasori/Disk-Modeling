@@ -14,15 +14,16 @@ import os
 import argparse
 import numpy as np
 import subprocess as sp
-from constants import lines, get_data_path, obs_stuff
+from constants import lines, get_data_path, obs_stuff, offsets
 from astropy.io import fits
+from matplotlib.patches import Ellipse as ellipse
 from astropy.visualization import astropy_mpl_style
 from matplotlib.pylab import figure
 import matplotlib.pyplot as plt
 plt.style.use(astropy_mpl_style)
 
 
-def plot_fits(image_path, crop_factor=3, nchans_to_cut=0):
+def plot_fits(image_path, crop_arcsec=2, nchans_to_cut=12, cmap='CMRmap'):
     """
     Plot some fits image data.
 
@@ -31,26 +32,38 @@ def plot_fits(image_path, crop_factor=3, nchans_to_cut=0):
     imshow() call.
     Args:
         image_path (str): full path, including filetype, to image.
-        crop_factor (float): what multiple do we want to crop by?
+        crop_arcsec (float): How many arcseconds from 0 should the axis limits be set?
+        nchans_to_cut (int): cut n/2 chans off the front and end
+        cmap (str): colormap to use. Magma, copper, afmhot, CMRmap(_r) are nice
 
-    To do:
-        - Add a beam ellipse
-        - The velocity labels seem to be about 4 channels off or the disk
-            in blah.fits is actually somehow centered around 12.6 km/s
+    Known Bugs:
+        - Some values of n_chans_to_cut give a weird error. I don't really wanna
+            figure that out right now
+
     """
     # Get the data
-    image_data = fits.getdata(image_path, ext=0)
-    header = fits.getheader(image_path, ext=0)
+    image_data = fits.getdata(image_path, ext=0).squeeze()
+    header     = fits.getheader(image_path, ext=0)
 
-    # Figure out the cropping:
-    if crop_factor != 0:
-        # Floor divide just in case the dimension is an odd value
-        x_center = int(np.floor(image_data.shape[1]/2))
-        x_min = x_center - x_center/crop_factor
-        x_max = x_center + x_center/crop_factor
+    # Add some crosses to show where the disks should be centered.
+    offsets_dA = [-0.0298, 0.072]
+    offsets_dB = [-1.0456, -0.1879]
 
-    else:
-        x_min, x_max = 0, int(np.floor(image_data.shape[1]))
+    # Beam stuff
+    add_beam = True if 'bmaj' in header else False
+    if add_beam is True:
+        bmin = header['bmin'] * 3600.
+        bmaj = header['bmaj'] * 3600.
+        bpa = header['bpa']
+
+    # Cropping: How many arcsecs radius should it be
+    x_center = int(np.floor(image_data.shape[1]/2))
+    # If zero is entered, just don't do any cropping and show full image.
+    if crop_arcsec == 0:
+        crop_arcsec = 256 * 0.045
+
+    crop_pix = int(crop_arcsec / 0.045)
+    xmin, xmax = x_center - crop_pix, x_center + crop_pix
 
     # Set up velocities:
     chanstep_vel = header['CDELT3'] * 1e-3
@@ -67,20 +80,32 @@ def plot_fits(image_path, crop_factor=3, nchans_to_cut=0):
 
     fig = figure(figsize=[n_rows, n_cols])
 
+    # Add the actual data
     for i in range(nchans):
         chan = i + int(np.floor(nchans_to_cut/2))
         velocity = str(round(chan0_vel + chan * chanstep_vel, 2))
-
+        # i+1 because plt indexes from 1
         ax = fig.add_subplot(n_cols, n_rows, i+1)
-
         ax.grid(False)
         ax.set_xticklabels([])
         ax.set_yticklabels([])
-        ax.text(40, 10, velocity + ' km/s',
+        ax.text(0, -0.8 * crop_arcsec, velocity + ' km/s',
                 fontsize=6, color='w',
                 horizontalalignment='center', verticalalignment='center')
-        ax.imshow(image_data[i + chan_offset][x_min:x_max, x_min:x_max])
+        ax.imshow(image_data[i + chan_offset][xmin:xmax, xmin:xmax],
+                  cmap=cmap, extent=(crop_arcsec, -crop_arcsec,
+                                     crop_arcsec, -crop_arcsec))
 
+        ax.plot(offsets_dA[0], offsets_dA[1], '+g')
+        ax.plot(offsets_dB[0], offsets_dB[1], '+g')
+
+        if i == n_rows * (n_cols - 1) and add_beam is True:
+            el = ellipse(xy=[0.8 * crop_arcsec, 0.8*crop_arcsec],
+                         width=bmin, height=bmaj, angle=-bpa,
+                         fc='k', ec='w', fill=False, hatch='/', zorder=10)
+            ax.add_artist(el)
+
+    # fig.colorbar(cmap=cmap)
     plt.tight_layout()
     plt.subplots_adjust(wspace=0.1, hspace=0.1)
     plt.show(block=False)
@@ -208,7 +233,6 @@ def imstat(modelName, ext='.cm', plane_to_check=32):
     return float(d['Mean']), float(d['rms'])
 
 
-# Invert/clean/restor: Take in a visibility, put out a convolved clean map.
 def icr(visPath, mol='hco', min_baseline=0, niters=1e4):
     """Invert/clean/restor: Turn a vis into a convolved clean map.
 

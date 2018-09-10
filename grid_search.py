@@ -109,7 +109,7 @@ def gridSearch(VariedDiskParams, StaticDiskParams, DI, modelPath,
                             print "\n\n\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
                             print "Currently fitting for: ", outNameVaried
                             print "Beginning model ", str(
-                                counter + steps_so_far) + "/"+str(num_iters)
+                                counter + steps_so_far) + "/" + str(num_iters)
                             print "ta:", ta
                             print "tqq", tqq
                             print "xmol:", xmol
@@ -192,7 +192,7 @@ def gridSearch(VariedDiskParams, StaticDiskParams, DI, modelPath,
 
 
 # PERFORM A FULL RUN USING FUNCTIONS ABOVE #
-def fullRun(diskAParams, diskBParams, modelPath, use_a_previous_result=False):
+def fullRun(diskAParams, diskBParams, use_a_previous_result=False):
     """Run it all.
 
     diskXParams are fed in from full_run.py,
@@ -211,26 +211,10 @@ def fullRun(diskAParams, diskBParams, modelPath, use_a_previous_result=False):
 
     n, dt = na + nb, 2.5
     t = n * dt
-    if t < 60:
-        t = str(n * dt) + " minutes."
-    else:
-        t = str(n * dt/60) + " hours."
+    t = str(n * dt) + " minutes." if t < 60 else str(n * dt/60) + " hours."
 
-    # Parameter Check:
-    print "This run will be iteratating through these parameters for Disk A:"
-    print diskAParams
-    print "\nAnd these values for Disk B:\n", diskBParams
-    print "\nThis run will take", n, "steps, spanning about ", t
-    print "\nOutput will be in", modelPath, '\n'
-    response = raw_input(
-        'Sound good? (press Enter to continue, any other key to stop)\n')
-    if response != "":
-        print "\nGo fix whatever you don't like and try again.\n\n"
-        return
-    else:
-        print "Sounds good!\n"
 
-    # SET UP SYMLINK
+    # Begin setting up symlink and get directory paths lined up
     scratch_home = '/scratch/jonas/'
     this_run_basename = today
 
@@ -242,10 +226,23 @@ def fullRun(diskAParams, diskBParams, modelPath, use_a_previous_result=False):
 
     # Cool. Now we know where we're symlinking to.
     scratch_dir = scratch_home + this_run
+    modelPath = './models/' + this_run + '/' + this_run
 
+    # Parameter Check:
+    print "This run will iterate through these parameters for Disk A:"
+    print diskAParams
+    print "\nAnd these values for Disk B:\n", diskBParams
+    print "\nThis run will take", n, "steps, spanning about ", t
+    print "\nOutput will be in", modelPath, '\n'
+    response = raw_input('Sound good? (Enter to begin, anything else to stop)\n')
+    if response != "":
+        return "\nGo fix whatever you don't like and try again.\n\n"
+    else:
+        print "Sounds good!\n"
+
+    # Make the symlink:
     # remove(modelPath)
     # remove(scratch_dir)
-
     sp.call(['mkdir', scratch_dir])
     sp.call(['ln', '-s', scratch_dir, './models/'])
 
@@ -261,9 +258,9 @@ def fullRun(diskAParams, diskBParams, modelPath, use_a_previous_result=False):
             'Please enter the path to the .fits file to use from a previous',
             'run (should be ./models/date/run_date/datefitted_[A/B].fits)\n')
         if 'A' in response2:
-            to_skip = 'A'
+            to_skip = 'fitted_A'
         elif 'B' in response2:
-            to_skip = 'B'
+            to_skip = 'fitted_B'
         else:
             print "Bad path; must have 'fitted_A or fitted_B' in it. Try again"
             return

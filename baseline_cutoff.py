@@ -3,13 +3,13 @@
 Testing a change.
 """
 
-import subprocess as sp
 import numpy as np
-import matplotlib.pyplot as plt
 import pandas as pd
 import argparse as ap
-from tools import icr, imstat, already_exists
+import subprocess as sp
+import matplotlib.pyplot as plt
 from constants import today
+from tools import icr, imstat, already_exists
 
 
 baselines = np.arange(0, 130, 5)
@@ -30,10 +30,9 @@ def get_baseline_rmss(mol, niters=1e4, baselines=baselines, remake_all=False):
     new_vis = run_dir + mol
 
     if remake_all is True or already_exists(new_vis) is False:
-        sp.call(['rm -rf {}'.format(scratch_dir)], shell=True)
+        remove(scratch_dir)
         # :-1 because a symlink with a deleted root isn't a directory anymore
-        sp.call(['rm -rf {}'.format(run_dir[:-1])], shell=True)
-
+        remove(run_dir[:-1])
         sp.call(['mkdir {}'.format(scratch_dir)], shell=True)
         sp.call(['ln', '-s', scratch_dir, './baselines/'])
 

@@ -3,9 +3,11 @@
 FOR GRID SEARCH.
 """
 
+from astropy.constants import c
 from astropy.io import fits
 import numpy as np
 import datetime
+c = c.to('km/s').value
 
 
 mol = 'hco'
@@ -17,31 +19,31 @@ mol = 'hco'
 lines = {'hco': {'restfreq': 356.73422300,
                  'jnum': 3,
                  'rms': 1,
-                 'chan_dir': 1,
+                 'chanstep_freq': 1 * 0.000488281,
                  'baseline_cutoff': 110,
-                 'chan0': 355.791034,
+                 'chan0_freq': 355.791034,
                  'spwID': 1},
          'hcn': {'restfreq': 354.50547590,
                  'jnum': 3,
                  'rms': 1,
-                 'chan_dir': 1,
+                 'chanstep_freq': 1 * 0.000488281,
                  'baseline_cutoff': 0,
-                 'chan0': 354.2837,
+                 'chan0_freq': 354.2837,
                  'spwID': 0},
          'co': {'restfreq': 345.79598990,
                 'jnum': 2,
                 'rms': 1,
-                'chan_dir': -1,
+                'chanstep_freq': -1 * 0.000488281,
                 'baseline_cutoff': 35,
-                'chan0': 346.114523,
+                'chan0_freq': 346.114523,
                 'spwID': 2},
          'cs': {'restfreq': 342.88285030,
                 'jnum': 6,
                 'rms': 1,
-                'chan_dir': -1,
+                'chanstep_freq': -1 * 0.000488281,
                 'baseline_cutoff': 30,
-                'chan0': 344.237292,
-                'spwID': 3},
+                'chan0_freq': 344.237292,
+                'spwID': 3}
          }
 
 """
@@ -57,7 +59,7 @@ headers = {'hco': {'im': fits.getheader('./data/hco/hco.fits'),
 
 
 # Get rid of chandir later (extract it from the header in stead with chanstep)
-# Chan0 comes from listobs; could get it later or just trust
+# chan0_freq comes from listobs; could get it later or just trust
 # Chanstep here is a frequency, not velocity!
 lines = {'hco': {'restfreq': headers['hco']['im']['RESTFREQ'] * 1e-9,
                  'chanstep': headers['hco']['vis']['CDELT4'] * 1e-9,
@@ -65,28 +67,28 @@ lines = {'hco': {'restfreq': headers['hco']['im']['RESTFREQ'] * 1e-9,
                  'rms': 1,
                  'chan_dir': 1,
                  'baseline_cutoff': 110,
-                 'chan0': 355.791034},
+                 'chan0_freq': 355.791034},
          'hcn': {'restfreq': headers['hcn']['im']['RESTFREQ'] * 1e-9,
                  'chanstep': headers['hcn']['vis']['CDELT4'] * 1e-9,
                  'jnum': 3,
                  'rms': 1,
                  'chan_dir': 1,
                  'baseline_cutoff': 0,
-                 'chan0': 354.2837},
+                 'chan0_freq': 354.2837},
          'co': {'restfreq': headers['co']['RESTFREQ'] * 1e-9,
                 'chanstep': headers['co']['vis']['CDELT4'] * 1e-9,
                 'jnum': 2,
                 'rms': 1,
                 'chan_dir': 1,
                 'baseline_cutoff': 35,
-                'chan0': 346.114523},
+                'chan0_freq': 346.114523},
          'cs': {'restfreq': headers['cs']['RESTFREQ'] * 1e-9,
                 'chanstep': headers['cs']['vis']['CDELT4'] * 1e-9,
                 'jnum': 6,
                 'rms': 1,
                 'chan_dir': 1,
                 'baseline_cutoff': 30,
-                'chan0': 344.237292}
+                'chan0_freq': 344.237292}
          }
 """
 
@@ -139,7 +141,7 @@ other_params = [col_dens, Tfo, Tmid, m_star, m_disk, r_in, rotHand, offsets]
 def obs_stuff(mol):
     """Get freqs, restfreq, obsv, chanstep, both n_chans, and both chanmins.
 
-    Just making this a function because it's ugly and line-dependent.
+    Just putting this stuff in a function because it's ugly and line-dependent.
     """
     jnum = lines[mol]['jnum']
     # vsys isn't a function of molecule, but is needed here, so just keeping it
@@ -151,22 +153,24 @@ def obs_stuff(mol):
     restfreq = lines[mol]['restfreq']
     # restfreq = hdr['CRVAL4'] * 1e-9
 
-    # Each freq step:
-    # arange( nchans + 1 - chanNum) * chanStepFreq + ChanNumFreq * Hz2GHz
-    # I don't know why the arange is there, but it's making len(freqs)=51
-    # That's not good, so I'm pulling it for now.
-    freqs = ((np.arange(hdr['naxis4']) + 1 - hdr['crpix4']) * hdr['cdelt4'] + hdr['crval4']) * 1e-9
-    # freqs = ((hdr['naxis4'] + 1 - hdr['crpix4']) * hdr['cdelt4'] + hdr['crval4']) * 1e-9
+    # Get the frequencies and velocities of each step
+    # {[arange(nchans) + 1 - chanNum] * chanStepFreq) + ChanNumFreq} * Hz2GHz
+    # [-25,...,25] * d_nu + ref_chan_freq
+    freqs = ( (np.arange(hdr['naxis4']) + 1 - hdr['crpix4']) * hdr['cdelt4'] + hdr['crval4']) * 1e-9
+    obsv = c * (restfreq-freqs)/restfreq
 
-    # len(obsv) = 51; it's the velocity of each channel
-    obsv = (restfreq-freqs)/restfreq * 2.99e5
+    chan_dir = lines[mol]['chanstep_freq']/np.abs(lines[mol]['chanstep_freq'])
+    chanstep = -1 * chan_dir * np.abs(obsv[1]-obsv[0])
+    # chanstep = c * (lines[mol]['chanstep_freq']/lines[mol]['restfreq'])
 
-    chanstep = lines[mol]['chan_dir'] * np.abs(obsv[1]-obsv[0])
-
+    # Find the largest distance between a point on the velocity grid and sysv
+    # Double it to cover both directions, convert from velocity to chans
+    # The raytracing code will interpolate this (larger) grid onto the smaller
+    # grid defined by nchans automatically.
     nchans_a = int(2*np.ceil(np.abs(obsv-vsys[0]).max()/np.abs(chanstep))+1)
     nchans_b = int(2*np.ceil(np.abs(obsv-vsys[1]).max()/np.abs(chanstep))+1)
-    chanmin_a = -(nchans_a/2.-.5)*chanstep
-    chanmin_b = -(nchans_b/2.-.5)*chanstep
+    chanmin_a = -(nchans_a/2.-.5) * chanstep
+    chanmin_b = -(nchans_b/2.-.5) * chanstep
     n_chans, chanmins = [nchans_a, nchans_b], [chanmin_a, chanmin_b]
 
     return [vsys, restfreq, freqs, obsv, chanstep, n_chans, chanmins, jnum]
