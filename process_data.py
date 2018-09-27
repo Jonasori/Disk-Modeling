@@ -130,7 +130,7 @@ def find_split_cutoffs(mol, other_restfreq=0):
     # d_nu/nu = dv/c
     # ((sysv/c) * restfreq)/chanstep = nchans of shift to apply
     # = (10.55/c) * 356.734223/0.000488281 = 25.692
-    shift = int(np.floor((10.55/c) * (restfreq/chanstep)
+    shift = int(np.floor(10.55/c) * (restfreq/chanstep))
     # So shift in an extra 26 channels
     loc = loc - shift if loc > shift else -np.inf
     split_range = [loc - shift, loc + shift]

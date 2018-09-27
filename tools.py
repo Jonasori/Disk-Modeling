@@ -1,6 +1,7 @@
 """
-Script some Miriad commands for easier calling, more specialized usage.
+Script some commands for easier calling, more specialized usage.
 
+- Plot a fits image
 - cgdisp: Display a map.
 - imstat: Get rms and mean noise from a plane of the image.
 - imspec: Display a spectrum.
@@ -11,19 +12,25 @@ Script some Miriad commands for easier calling, more specialized usage.
 
 # Packages
 import os
+import re
 import argparse
 import numpy as np
 import subprocess as sp
 from constants import lines, get_data_path, obs_stuff, offsets
-from astropy.io import fits
+from matplotlib.pylab import figure
 from matplotlib.patches import Ellipse as ellipse
 from astropy.visualization import astropy_mpl_style
-from matplotlib.pylab import figure
+from astropy.io import fits
 import matplotlib.pyplot as plt
 plt.style.use(astropy_mpl_style)
 
+from matplotlib.ticker import *
+from matplotlib.pylab import *
 
-def plot_fits(image_path, crop_arcsec=2, nchans_to_cut=12, cmap='CMRmap'):
+
+def plot_fits(image_path, crop_arcsec=2, nchans_to_cut=12,
+              cmap='CMRmap', save=True, show=True,
+              save_to_results=True):
     """
     Plot some fits image data.
 
@@ -40,12 +47,18 @@ def plot_fits(image_path, crop_arcsec=2, nchans_to_cut=12, cmap='CMRmap'):
         - Some values of n_chans_to_cut give a weird error. I don't really wanna
             figure that out right now
 
+    To Do:
+        - Maybe do horizontal layout for better screenshots for Evernote.
     """
     # Get the data
     image_data = fits.getdata(image_path, ext=0).squeeze()
     header     = fits.getheader(image_path, ext=0)
 
-    # Add some crosses to show where the disks should be centered.
+    # Get the min and max flux vals
+    vmin = np.nanmin(image_data)
+    vmax = np.nanmax(image_data)
+
+    # Add some crosses to show where the disks should be centered (arcsec)
     offsets_dA = [-0.0298, 0.072]
     offsets_dB = [-1.0456, -0.1879]
 
@@ -92,26 +105,70 @@ def plot_fits(image_path, crop_arcsec=2, nchans_to_cut=12, cmap='CMRmap'):
         ax.text(0, -0.8 * crop_arcsec, velocity + ' km/s',
                 fontsize=6, color='w',
                 horizontalalignment='center', verticalalignment='center')
+        """
         ax.imshow(image_data[i + chan_offset][xmin:xmax, xmin:xmax],
                   cmap=cmap, extent=(crop_arcsec, -crop_arcsec,
-                                     crop_arcsec, -crop_arcsec))
-
-        ax.plot(offsets_dA[0], offsets_dA[1], '+g')
-        ax.plot(offsets_dB[0], offsets_dB[1], '+g')
+                                     crop_arcsec, -crop_arcsec),
+                  vmin=vmin, vmax=vmax)
+        """
 
         if i == n_rows * (n_cols - 1) and add_beam is True:
             el = ellipse(xy=[0.8 * crop_arcsec, 0.8*crop_arcsec],
                          width=bmin, height=bmaj, angle=-bpa,
-                         fc='k', ec='w', fill=False, hatch='/', zorder=10)
+                         fc='k', ec='w', fill=False, hatch='////////')
             ax.add_artist(el)
 
-    # fig.colorbar(cmap=cmap)
+        ax.imshow(image_data[i + chan_offset][xmin:xmax, xmin:xmax],
+                  cmap=cmap, vmin=vmin, vmax=vmax,
+                  extent=(crop_arcsec, -crop_arcsec,
+                          crop_arcsec, -crop_arcsec))
+
+        ax.plot(offsets_dA[0], offsets_dA[1], '+g')
+        ax.plot(offsets_dB[0], offsets_dB[1], '+g')
+
+
     plt.tight_layout()
     plt.subplots_adjust(wspace=0.1, hspace=0.1)
+
+    if save is True:
+        if save_to_results is True:
+            resultsPath = '/Volumes/disks/jonas/freshStart/modeling/results/'
+            run_date = image_path.split('/')[-2]
+            outpath = resultsPath + run_date + '_image.png'
+        else:
+            run_path = image_path.split('.')[0]
+            outpath = run_path + '_image.png'
+
+        plt.savefig(outpath, dpi=200)
+        print "Image saved to" + outpath + '_image.png'
+
+    if show is True:
+        plt.show(block=False)
+    plt.gca()
+    """
+
+    cax = fig.add_axes([0.92, 0.12, 0.02, 0.75])
+
+    cbar = colorbar(cpal,cax=cax)
+    cbar.set_label('Jy/beam',labelpad=-10,fontsize=12)
+    cbmin = -0.0
+    cbmax = 1							# HCO: 1, HCN: 0.25, CO: 1, CS: 0.05
+    cbtmaj = 0.5
+    cbtmin = 0.05
+    cbnum = int((cbmax-cbmin)/cbtmin)
+
+    cbar.set_ticks(np.arange(0,cbmax,cbtmaj))
+    minorLocator   = LinearLocator(cbnum+1)
+    cbar.ax.yaxis.set_minor_locator(minorLocator)
+    cbar.update_ticks()
+
+    # Save the figure to pdf/eps
+
+    # fig.savefig(figFileName)
     plt.show(block=False)
+    """
 
-
-def cgdisp(imageName, crop=True, contours=True, rms=6.8e-3):
+def cgdisp(imageName, crop=True, contours=True, olay=True, rms=6.8e-3):
     """Drop some sweet chanmaps.
 
     Args:
@@ -131,7 +188,6 @@ def cgdisp(imageName, crop=True, contours=True, rms=6.8e-3):
                 'in={}'.format(imageName),
                 'device=/xs',
                 'region=arcsec,box{}'.format(r),
-                'olay={}'.format('centering_for_olay.cgdisp'),
                 'beamtyp=b,l,3',
                 'labtyp=arcsec,arcsec,abskms',
                 'options=3value',
@@ -144,6 +200,9 @@ def cgdisp(imageName, crop=True, contours=True, rms=6.8e-3):
         call_str.append('slev=a,{}'.format(rms))
         call_str.append('levs1=3,6,9')
         call_str.append('options=3value,mirror,beambl')
+
+    if olay:
+        call_str.append('olay={}'.format('centering_for_olay.cgdisp'))
 
     sp.call(call_str)
     """
@@ -181,7 +240,7 @@ def cgdisp(imageName, crop=True, contours=True, rms=6.8e-3):
     """
 
 
-def imstat(modelName, ext='.cm', plane_to_check=32):
+def imstat(modelName, ext='.cm', plane_to_check=39):
     """Call imstat to find rms and mean.
 
     Want an offsource region so that we can look at the noise. Decision to look
@@ -190,8 +249,8 @@ def imstat(modelName, ext='.cm', plane_to_check=32):
     Args:
         modelName (str): name of the input file. Not necessarily a model.
         plane_to_check (int): Basically which channel to look at, but that
-        this includes the ~10 header planes, too, so I think plane 30
-        corresponds to channel 21 or so.
+        this includes the ~10 header planes, too, so plane 39 corresponds to
+        channel 29 (v=11.4) or so.
     """
     print '\nIMSTATING ', modelName, '\n'
 
@@ -400,6 +459,35 @@ def imspec(imageName):
 
 
 def already_exists(query):
+    """Search an ls call to see if query is in it.
+
+    The loop here is to check that directories in the path of the query also
+    exist.
+    """
+    f = query.split('/')
+    f = filter(None, f)
+    f = f[1:] if f[0] == '.' else f
+
+    i = 0
+    while i < len(f):
+        short_path = '/'.join(f[:i])
+        print short_path
+        if short_path == '':
+            output = sp.check_output('ls').split('\n')
+        else:
+            output = sp.check_output('ls', cwd=short_path).split('\n')
+
+        if f[i] not in output:
+            #print "False"
+            #break
+            return False
+        else:
+            i += 1
+    # print "True"
+    return True
+
+
+def already_exists_old(query):
     """Search an ls call to see if query is in it."""
     f = query.split('/')[-1]
     # path = query.split(f)[0]
@@ -425,6 +513,9 @@ def remove(filePath):
     filePath is full filepath, including name and extension.
     Supports wildcards.
     """
+    if filePath == '/':
+        return "DONT DO IT! DONT BURN IT ALL DOWN YOU STOOP!"
+
     if type(filePath) == str:
         sp.Popen(['rm -rf {}'.format(filePath)], shell=True).wait()
 

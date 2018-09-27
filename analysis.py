@@ -4,17 +4,18 @@ Some thoughts:
     - All of them (so far) have
 """
 
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
 import pickle
 import matplotlib
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
 
 matplotlib.rcParams['font.sans-serif'] = "Times"
 matplotlib.rcParams['font.family'] = "serif"
 
+resultsPath = '/Volumes/disks/jonas/freshStart/modeling/results/'
 
 def depickleLogFile(fname):
     """Read in the pickle'd full-log file from a run.
@@ -81,7 +82,7 @@ def plot_gridSearch_log(fname, show=False):
 
     Args:
         fname (str): Name of the pickled step log from the grid search.
-        Assumes fname is './models/run_dateofrun/dateofrun'
+        Assumes fname is './models/dateofrun/dateofrun'
     """
     run_date = fname.split('/')[-1]
     # Grab the values to distribute
@@ -91,7 +92,7 @@ def plot_gridSearch_log(fname, show=False):
 
     # Plot out
     colors = ['red', 'blue']
-    f, axarr = plt.subplots(len(disk_A) + 1, 2, figsize=[6, 6])
+    f, axarr = plt.subplots(len(disk_A) + 1, 2, figsize=[8, 8])
     # f, axarr = plt.subplots(len(disk_A), 2, figsize=[5, 8])
     # Add the text info
     axarr[0, 0].axis('off')
@@ -122,9 +123,10 @@ def plot_gridSearch_log(fname, show=False):
                                  markeredgewidth=3)
 
     plt.tight_layout()
-    plt.savefig('./models/' + fname.split('/')[-1] + '_results.png')
+    plt.savefig(resultsPath + run_date + '_results.png', dpi=200)
     if show is True:
         plt.show()
+    plt.clf()
 
 
 def plot_step_duration(dataPath, ns=[10, 20, 50], show=False):
@@ -148,6 +150,7 @@ def plot_step_duration(dataPath, ns=[10, 20, 50], show=False):
             avg_ys.append(avg_y)
         return avg_ys
 
+    plt.figure(figsize=(7,5))
     plt.plot(xs, ys, '-k', linewidth=0.1, label='True time')
 
     colors = ['orange', 'red', 'blue', 'green', 'yellow']
@@ -164,10 +167,10 @@ def plot_step_duration(dataPath, ns=[10, 20, 50], show=False):
     plt.title('Time per Step for Grid Search Run on ' + run_date,
               fontweight='bold', fontsize=14)
 
-    plt.savefig('./models/' + dataPath.split('/')[-1] + '_durations.png')
+    plt.savefig(resultsPath + run_date + '_durations.png', dpi=200)
     if show is True:
         plt.show()
-    plt.close()
+    plt.clf()
 
 
 def full_analysis_plot(pickleLog, timeLog):
@@ -253,3 +256,4 @@ def full_analysis_plot(pickleLog, timeLog):
 
 
 # The End
+

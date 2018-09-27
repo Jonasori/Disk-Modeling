@@ -24,6 +24,10 @@ from constants import mol, obs_stuff, other_params, dataPath
 col_dens, Tfo, Tmid, m_star, m_disk, r_in, rotHand, offsets = other_params
 vsys, restfreq, freq0, obsv, chanstep, n_chans, chanmins, jnum = obs_stuff(mol)
 
+distance = 1/(2.569750671443057 * 10**(-3))
+
+0.0526 * distance**(-2)
+
 
 ####################
 # USEFUL FUNCTIONS #
@@ -48,13 +52,16 @@ def makeModel(diskParams, outputPath, DI):
 
     # Clear out space
     # sp.call('rm -rf {}.{{fits,vis,uvf,im}}'.format(outputPath), shell=True)
-
+    # To just make a model (no grid search), add [0] after each param. Not sure why.
     Tatms = diskParams[0]
-    Tqq = diskParams[1]
-    Xmol = diskParams[2]
-    Rout = diskParams[3]
-    PA = diskParams[4]
-    Incl = diskParams[5]
+    Tqq   = diskParams[1]
+    Xmol  = diskParams[2]
+    Rout  = diskParams[3]
+    PA    = diskParams[4]
+    Incl  = diskParams[5]
+    Pos_X = diskParams[6]
+    Pos_Y = diskParams[7]
+    v_sys = diskParams[8]
 
     a = Disk(params=[Tqq,
                      m_disk[DI],
@@ -74,15 +81,16 @@ def makeModel(diskParams, outputPath, DI):
                      rotHand[DI]])
 
     # The data have 51 channels (from the casa split()), so n_chans must be 51
-    rt.total_model(a, imres=0.045,
+    rt.total_model(a,
+                   imres=0.045,
                    nchans=n_chans[DI],
                    chanmin=chanmins[DI],
                    chanstep=chanstep,
-                   distance=414,
+                   distance=389,
                    xnpix=256,
-                   vsys=vsys[DI],
+                   vsys=v_sys,
                    PA=PA,
-                   offs=offsets[DI],
+                   offs=[Pos_X, Pos_Y],
                    modfile=outputPath,
                    isgas=True,
                    flipme=False,
@@ -151,7 +159,7 @@ def sumDisks(filePathA, filePathB, outputPath):
     print "Deleted .im, .uvf, and .vis\n"
 
 
-def chiSq(infile):
+def chiSq(infile, cut_central_chans=False):
     """Calculate chi-squared metric between model and data.
 
     Args:
@@ -171,21 +179,51 @@ def chiSq(infile):
     # Turn polarized data to stokes
     # data_vis.squeeze(): [visibilities, chans, polarizations?, real/imaginary]
     # Should the 2s be floats?
-    data_real = (data_vis[:, :, 0, 0] + data_vis[:, :, 1, 0])/2.
-    data_imag = (data_vis[:, :, 0, 1] + data_vis[:, :, 1, 1])/2.
+    if cut_central_chans is False:
+        data_real = (data_vis[:, :, 0, 0] + data_vis[:, :, 1, 0])/2.
+        data_imag = (data_vis[:, :, 0, 1] + data_vis[:, :, 1, 1])/2.
 
-    # Get real and imaginary vals, skipping repeating vals created by uvmodel.
-    # When uvmodel converts to Stokes I, it either puts the value in place
-    # of BOTH xx and yy, or makes xx and yy the same.
-    # Either way, selecting every other value solves the problem.
-    model_real = model_vis[::2, :, 0]
-    model_imag = model_vis[::2, :, 1]
+        # Get real and imaginary vals, skipping repeating vals created by uvmodel.
+        # When uvmodel converts to Stokes I, it either puts the value in place
+        # of BOTH xx and yy, or makes xx and yy the same.
+        # Either way, selecting every other value solves the problem.
+        model_real = model_vis[::2, :, 0]
+        model_imag = model_vis[::2, :, 1]
 
-    wt = data_vis[:, :, 0, 2]
-    # loc = np.where(wt > 0)
+        wt = data_vis[:, :, 0, 2]
+        raw_chi = np.sum(wt*(data_real - model_real)**2) + \
+            np.sum(wt*(data_imag - model_imag)**2)
 
-    raw_chi = np.sum(wt*(data_real - model_real)**2) + \
-        np.sum(wt*(data_imag - model_imag)**2)
+
+    elif cut_central_chans is True:
+        # Define the bounds of the slice that's getting pulled out
+        slice_front = 26
+        slice_back = 34
+
+        data_real_front = (data_vis[:, :slice_front, 0, 0] + data_vis[:, :slice_front, 1, 0])/2.
+        data_real_back = (data_vis[:, slice_back:, 0, 0] + data_vis[:, slice_back:, 1, 0])/2.
+
+        data_imag_front = (data_vis[:, :slice_front, 0, 1] + data_vis[:, :slice_front, 1, 1])/2.
+        data_imag_back = (data_vis[:, slice_back:, 0, 1] + data_vis[:, slice_back:, 1, 1])/2.
+
+        model_real_front = model_vis[::2, :slice_front, 0]
+        model_real_back = model_vis[::2, slice_back:, 0]
+
+        model_imag_front = model_vis[::2, :slice_front, 1]
+        model_imag_back = model_vis[::2, slice_back:, 1]
+
+        wt_front = data_vis[:, :slice_front, 0, 2]
+        wt_back = data_vis[:, slice_back:, 0, 2]
+
+        # Do chi-front, chi-back and then just sum them instead of cat'ing
+
+        raw_chi_front = np.sum(wt_front * (data_real_front - model_real_front)**2) + \
+            np.sum(wt_front*(data_imag_front - model_imag_front)**2)
+
+        raw_chi_back = np.sum(wt_back * (data_real_back - model_real_back)**2) + \
+            np.sum(wt_back * (data_imag_back - model_imag_back)**2)
+
+        raw_chi = raw_chi_back + raw_chi_front
 
     # Degrees of freedom is how many total real and imaginary weights exist.
     dof = 2 * len(data_vis)

@@ -17,33 +17,6 @@ gs = True
 
 
 if gs:
-    # Set up a symlink to the /scratch directory to dump the model files to.
-    """
-    print "Making new directories and setting up symlink."
-    Symlink setup got moved to grid_search
-
-    # A little bit janky
-    scratch_home = '/scratch/jonas/'
-    this_run_basename = today
-
-    counter = 2
-    this_run = this_run_basename
-    while already_exists(scratch_home + this_run) is True:
-        this_run = this_run_basename + '-' + str(counter)
-        counter += 1
-
-    # Cool. Now we know where we're symlinking to.
-    scratch_dir = scratch_home + this_run
-
-    # remove(modelPath)
-    # remove(scratch_dir)
-
-    sp.call(['mkdir', scratch_dir])
-    sp.call(['ln', '-s', scratch_dir, './models/'])
-    print "Starting fullRun"
-    """
-    # Give the grid search the path to be dumping things into.
-    # modelPath = './models/' + this_run + '/' + this_run
     fullRun(diskAParams, diskBParams)
 
 

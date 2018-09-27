@@ -20,7 +20,7 @@ lines = {'hco': {'restfreq': 356.73422300,
                  'jnum': 3,
                  'rms': 1,
                  'chanstep_freq': 1 * 0.000488281,
-                 'baseline_cutoff': 110,
+                 'baseline_cutoff': 0,
                  'chan0_freq': 355.791034,
                  'spwID': 1},
          'hcn': {'restfreq': 354.50547590,
@@ -56,44 +56,10 @@ headers = {'hco': {'im': fits.getheader('./data/hco/hco.fits'),
            'cs': {'im': fits.getheader('./data//cs.fits'),
                   'vis': fits.getheader('./data/cs/cs.uvf')}
            }
-
-
-# Get rid of chandir later (extract it from the header in stead with chanstep)
-# chan0_freq comes from listobs; could get it later or just trust
-# Chanstep here is a frequency, not velocity!
-lines = {'hco': {'restfreq': headers['hco']['im']['RESTFREQ'] * 1e-9,
-                 'chanstep': headers['hco']['vis']['CDELT4'] * 1e-9,
-                 'jnum': 3,
-                 'rms': 1,
-                 'chan_dir': 1,
-                 'baseline_cutoff': 110,
-                 'chan0_freq': 355.791034},
-         'hcn': {'restfreq': headers['hcn']['im']['RESTFREQ'] * 1e-9,
-                 'chanstep': headers['hcn']['vis']['CDELT4'] * 1e-9,
-                 'jnum': 3,
-                 'rms': 1,
-                 'chan_dir': 1,
-                 'baseline_cutoff': 0,
-                 'chan0_freq': 354.2837},
-         'co': {'restfreq': headers['co']['RESTFREQ'] * 1e-9,
-                'chanstep': headers['co']['vis']['CDELT4'] * 1e-9,
-                'jnum': 2,
-                'rms': 1,
-                'chan_dir': 1,
-                'baseline_cutoff': 35,
-                'chan0_freq': 346.114523},
-         'cs': {'restfreq': headers['cs']['RESTFREQ'] * 1e-9,
-                'chanstep': headers['cs']['vis']['CDELT4'] * 1e-9,
-                'jnum': 6,
-                'rms': 1,
-                'chan_dir': 1,
-                'baseline_cutoff': 30,
-                'chan0_freq': 344.237292}
-         }
 """
 
 # DATA FILE NAME
-def get_data_path(mol, short_vis_only=True):
+def get_data_path(mol, short_vis_only=False):
     """Get the path to the data files for a given line."""
     dataPath = './data/' + mol + '/' + mol
     if short_vis_only is True:
@@ -101,11 +67,11 @@ def get_data_path(mol, short_vis_only=True):
     return dataPath
 
 
-dataPath = get_data_path(mol)
+dataPath = get_data_path(mol, short_vis_only=False)
 
 # What day is it? Used to ID files.
-months = ['jan', 'feb', 'march', 'april', 'may',
-          'june', 'july', 'aug', 'sep', 'oct', 'nov', 'dec']
+months = ['jan', 'feb', 'march', 'april', 'may', 'june',
+          'july', 'aug', 'sep', 'oct', 'nov', 'dec']
 td = datetime.datetime.now()
 today = months[td.month - 1] + str(td.day)
 
@@ -133,7 +99,12 @@ r_out = [500, 300]
 rotHand = [-1, -1]
 # Offsets (from center), in arcseconds
 # centering_for_olay.cgdisp is the file that actually makes the green crosses!
-offsets = [[-0.0298, 0.072], [-1.0456, -0.1879]]
+# Williams values: offsets = [[-0.0298, 0.072], [-1.0456, -0.1879]]
+# Fit values:
+offsets = [[0.0002, 0.032], [-1.006, -0.318]]
+# Williams vals: vsys = [10.55, 10.85]
+vsys = [9.95, 10.75]
+
 
 other_params = [col_dens, Tfo, Tmid, m_star, m_disk, r_in, rotHand, offsets]
 
@@ -144,8 +115,6 @@ def obs_stuff(mol):
     Just putting this stuff in a function because it's ugly and line-dependent.
     """
     jnum = lines[mol]['jnum']
-    # vsys isn't a function of molecule, but is needed here, so just keeping it
-    vsys = [10.55, 10.85]
 
     # Dig some observational params out of the data file.
     hdr = fits.getheader(dataPath + '.uvf')

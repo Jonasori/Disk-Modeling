@@ -8,11 +8,12 @@ import pandas as pd
 import argparse as ap
 import subprocess as sp
 import matplotlib.pyplot as plt
+from tools import icr, imstat, already_exists, remove
 from constants import today
-from tools import icr, imstat, already_exists
 
 
-baselines = np.arange(0, 130, 5)
+# baselines = np.arange(0, 130, 5)
+baselines = np.arange(0, 250, 5)
 default_mol = 'hco'
 
 
@@ -44,10 +45,8 @@ def get_baseline_rmss(mol, niters=1e4, baselines=baselines, remake_all=False):
     data_list = []
     for b in baselines:
         print '\n\n\n    NEW ITERATION\nBaseline: ', b, '\n'
-        if b != 0:
-            name = run_dir + mol + str(b)
-        else:
-            name = run_dir + mol
+        name = run_dir + mol + str(b) if b != 0 else run_dir + mol
+
         # Check if we've already icr'ed this one.
         if already_exists(name + '.cm') is True:
             print "File already exists; going straight to imstat"
